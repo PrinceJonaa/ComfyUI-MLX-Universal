@@ -1,0 +1,11 @@
+argmaxtools>=0.1.13
+torch
+safetensors
+mlx
+jaxtyping
+transformers
+pillow
+sentencepiece
+mlx-lm
+mlx-vlm
+mlx-video @ git+https://github.com/Blaizzy/mlx-video.git

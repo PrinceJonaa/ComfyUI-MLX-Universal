@@ -1,0 +1,14 @@
+[project]
+name = "comfyui-mlx-universal"
+description = "The Universal Apple Silicon Backend for ComfyUI. Faster workflows for Mac users."
+version = "2.0.0"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/PrinceJonaa/ComfyUI-MLX-Universal"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "princejona"
+DisplayName = "ComfyUI MLX Universal"
+Icon = ""
