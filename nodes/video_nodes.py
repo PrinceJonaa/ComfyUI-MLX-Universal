@@ -176,6 +176,7 @@ class MLXVideoGenerator:
             buf = ""
 
             while True:
+                # Required for long-running subprocesses so user interruption doesn't leave orphaned generator processes
                 comfy.model_management.throw_exception_if_processing_interrupted()
                 char = process.stdout.read(1)
                 if not char and process.poll() is not None: break

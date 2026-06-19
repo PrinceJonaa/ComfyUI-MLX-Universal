@@ -32,6 +32,7 @@ def mlx_to_torch(mlx_tensor) -> torch.Tensor:
     """Convert an MLX array to a ComfyUI IMAGE tensor (B, H, W, C)."""
     import mlx.core as mx
     # MLX is usually (B, H, W, C) but may have different types
+    # Prevents silent data corruption or performance bottlenecks when PyTorch accesses uncomputed lazy arrays
     mx.eval(mlx_tensor)
     if mlx_tensor.dtype == mx.bfloat16:
         np_arr = np.array(mlx_tensor.astype(mx.float32))

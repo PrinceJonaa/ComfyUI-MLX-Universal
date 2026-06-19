@@ -24,6 +24,7 @@ class MLXDecoder:
     def decode(self, latent_image, mlx_vae):
         decoded = mlx_vae(latent_image)
         decoded = mx.clip(decoded / 2 + 0.5, 0, 1)
+        # Force evaluation here to prevent passing uncomputed graphs to the bridging layer, avoiding deadlocks
         mx.eval(decoded)
 
         # Use bridge to convert to PyTorch efficiently
