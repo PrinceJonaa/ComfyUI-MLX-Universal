@@ -41,7 +41,7 @@ class MLXModelLoaderUnified:
             "required": {
                 "model_path": ("STRING", {"default": "mlx-community/Qwen3.5-4B-OptiQ-4bit"}),
                 "model_type": (["auto", "mlx-lm", "mlx-vlm", "sam3"], {"default": "auto"}),
-                "trust_remote_code": ("BOOLEAN", {"default": True}),
+                "trust_remote_code": ("BOOLEAN", {"default": False}),
                 "quantize_activations": ("BOOLEAN", {"default": False}),
             },
             "optional": {
