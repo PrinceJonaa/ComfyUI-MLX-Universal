@@ -5,7 +5,7 @@
 
 import os
 import unittest
-from typing import Dict
+from typing import Dict, Optional
 
 import coremltools as ct
 import torch
@@ -144,7 +144,7 @@ def convert_mmdit_to_mlpackage(
     model_version: str,
     latent_h: int,
     latent_w: int,
-    output_dir: str = None,
+    output_dir: Optional[str] = None,
     **test_config_kwargs,
 ) -> str:
     """Converts a MMDiT model to a CoreML package.

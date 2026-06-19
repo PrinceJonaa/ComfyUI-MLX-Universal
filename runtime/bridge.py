@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from PIL import Image
 
+
 def tensor_to_pil(image_tensor: torch.Tensor) -> list[Image.Image]:
     """Convert ComfyUI IMAGE tensor (B, H, W, C) to a list of PIL Images."""
     pil_images = []
@@ -15,6 +16,7 @@ def tensor_to_pil(image_tensor: torch.Tensor) -> list[Image.Image]:
             img_np = np.squeeze(img_np, axis=2)
         pil_images.append(Image.fromarray(img_np))
     return pil_images
+
 
 def pil_to_tensor(pil_image: Image.Image) -> torch.Tensor:
     """Convert a PIL Image to a ComfyUI IMAGE tensor (1, H, W, C) scaled to [0, 1]."""

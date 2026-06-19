@@ -10,25 +10,38 @@ import comfy.utils
 import comfy.model_management
 from ..runtime.bridge import tensor_to_pil
 
+
 class MLXVideoGenerator:
     @classmethod
     def INPUT_TYPES(s):
         return {
             "required": {
-                "model_repo_or_dir": ("STRING", {"default": "mlx-community/LTX-2-dev-bf16"}),
-                "prompt": ("STRING", {"multiline": True, "default": "Two dogs sitting on a beach wearing sunglasses, close up, cinematic, sunset"}),
+                "model_repo_or_dir": (
+                    "STRING",
+                    {"default": "mlx-community/LTX-2-dev-bf16"},
+                ),
+                "prompt": (
+                    "STRING",
+                    {
+                        "multiline": True,
+                        "default": "Two dogs sitting on a beach wearing sunglasses, close up, cinematic, sunset",
+                    },
+                ),
                 "negative_prompt": ("STRING", {"default": "blurry, low quality"}),
                 "width": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
                 "height": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
                 "num_frames": ("INT", {"default": 81, "min": 1, "max": 500}),
                 "steps": ("INT", {"default": 30, "min": 1, "max": 200}),
-                "guide_scale": ("FLOAT", {"default": 5.0, "min": 0.0, "max": 50.0, "step": 0.5}),
+                "guide_scale": (
+                    "FLOAT",
+                    {"default": 5.0, "min": 0.0, "max": 50.0, "step": 0.5},
+                ),
                 "seed": ("INT", {"default": 42, "min": -1, "max": 2**32 - 1}),
             },
             "optional": {
                 "image": ("IMAGE",),
                 "audio_path": ("STRING", {"default": ""}),
-            }
+            },
         }
 
     RETURN_TYPES = ("STRING", "IMAGE")
@@ -36,9 +49,21 @@ class MLXVideoGenerator:
     FUNCTION = "generate_video"
     CATEGORY = "MLX Universal/Video"
 
-    def generate_video(self, model_repo_or_dir, prompt, negative_prompt, width, height,
-                       num_frames, steps, guide_scale, seed, image=None, audio_path=""):
-        
+    def generate_video(
+        self,
+        model_repo_or_dir,
+        prompt,
+        negative_prompt,
+        width,
+        height,
+        num_frames,
+        steps,
+        guide_scale,
+        seed,
+        image=None,
+        audio_path="",
+    ):
+
         name_lower = model_repo_or_dir.lower()
         if "wan" in name_lower:
             cmd_family = "wan"
@@ -52,12 +77,30 @@ class MLXVideoGenerator:
 
         if cmd_family == "wan":
             cmd = [
-                sys.executable, "-m", "mlx_video.wan_2.generate",
-                "--model-dir", model_repo_or_dir, "--prompt", prompt, "--negative-prompt", negative_prompt,
-                "--width", str(width), "--height", str(height), "--num-frames", str(num_frames),
-                "--steps", str(steps), "--guide-scale", str(guide_scale), "--output-path", output_path,
+                sys.executable,
+                "-m",
+                "mlx_video.wan_2.generate",
+                "--model-dir",
+                model_repo_or_dir,
+                "--prompt",
+                prompt,
+                "--negative-prompt",
+                negative_prompt,
+                "--width",
+                str(width),
+                "--height",
+                str(height),
+                "--num-frames",
+                str(num_frames),
+                "--steps",
+                str(steps),
+                "--guide-scale",
+                str(guide_scale),
+                "--output-path",
+                output_path,
             ]
-            if seed != -1: cmd += ["--seed", str(seed)]
+            if seed != -1:
+                cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
                 temp_img_path = os.path.join(temp_dir, "input_frame.png")
@@ -65,12 +108,28 @@ class MLXVideoGenerator:
                 cmd += ["--image", temp_img_path]
         elif cmd_family == "cogvideo":
             cmd = [
-                sys.executable, "-m", "mlx_video.cogvideox.generate",
-                "--model-dir", model_repo_or_dir, "--prompt", prompt,
-                "--width", str(width), "--height", str(height), "--num-frames", str(num_frames),
-                "--steps", str(steps), "--guidance-scale", str(guide_scale), "--output-path", output_path,
+                sys.executable,
+                "-m",
+                "mlx_video.cogvideox.generate",
+                "--model-dir",
+                model_repo_or_dir,
+                "--prompt",
+                prompt,
+                "--width",
+                str(width),
+                "--height",
+                str(height),
+                "--num-frames",
+                str(num_frames),
+                "--steps",
+                str(steps),
+                "--guidance-scale",
+                str(guide_scale),
+                "--output-path",
+                output_path,
             ]
-            if seed != -1: cmd += ["--seed", str(seed)]
+            if seed != -1:
+                cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
                 temp_img_path = os.path.join(temp_dir, "input_frame.png")
@@ -78,12 +137,28 @@ class MLXVideoGenerator:
                 cmd += ["--image", temp_img_path]
         else:
             cmd = [
-                sys.executable, "-m", "mlx_video.ltx_2.generate",
-                "--model-repo", model_repo_or_dir, "--prompt", prompt,
-                "--width", str(width), "--height", str(height), "--num-frames", str(num_frames),
-                "--steps", str(steps), "--cfg-scale", str(guide_scale), "--output", output_path,
+                sys.executable,
+                "-m",
+                "mlx_video.ltx_2.generate",
+                "--model-repo",
+                model_repo_or_dir,
+                "--prompt",
+                prompt,
+                "--width",
+                str(width),
+                "--height",
+                str(height),
+                "--num-frames",
+                str(num_frames),
+                "--steps",
+                str(steps),
+                "--cfg-scale",
+                str(guide_scale),
+                "--output",
+                output_path,
             ]
-            if seed != -1: cmd += ["--seed", str(seed)]
+            if seed != -1:
+                cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
                 temp_img_path = os.path.join(temp_dir, "input_frame.png")
@@ -93,7 +168,6 @@ class MLXVideoGenerator:
                 cmd += ["--audio-file", audio_path]
 
         print(f"Running video generation CLI command: {' '.join(cmd)}")
-        
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
         
         try:
@@ -144,6 +218,7 @@ class MLXVideoGenerator:
                 process.terminate()
                 process.wait()
             shutil.rmtree(temp_dir, ignore_errors=True)
+
 
 NODE_CLASS_MAPPINGS = {
     "MLXVideoGenerator": MLXVideoGenerator,

@@ -9,6 +9,7 @@ import mlx.nn as nn
 
 class BaseSampler(nn.Module):
     """Base class for sampler scheduling (ie timestep/sigma calculations)"""
+
     def __init__(self, shift=1.0):
         super().__init__()
         self.shift = shift

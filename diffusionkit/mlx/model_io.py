@@ -846,8 +846,8 @@ def load_tokenizer(
     merges_file = hf_hub_download(key, _MODELS[key][merges_key])
     with open(merges_file, encoding="utf-8") as f:
         bpe_merges = f.read().strip().split("\n")[1 : 49152 - 256 - 2 + 1]
-    bpe_merges = [tuple(m.split()) for m in bpe_merges]
-    bpe_ranks = dict(map(reversed, enumerate(bpe_merges)))
+    bpe_merges_tuples = [tuple(m.split()) for m in bpe_merges]
+    bpe_ranks = {merge: i for i, merge in enumerate(bpe_merges_tuples)}
 
     return Tokenizer(bpe_ranks, vocab, pad_with_eos)
 

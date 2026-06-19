@@ -4,7 +4,7 @@ from PIL import Image
 
 def bytes2gigabytes(n: int) -> int:
     """Convert bytes to gigabytes"""
-    return n / 1024**3
+    return int(n / 1024**3)
 
 
 def image_psnr(reference: Image, proxy: Image) -> float:

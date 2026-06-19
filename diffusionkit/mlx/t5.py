@@ -5,7 +5,7 @@
 # Copyright (C) 2024 Argmax, Inc. All Rights Reserved.
 #
 
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 import mlx.core as mx
 import mlx.nn as nn
@@ -114,7 +114,7 @@ class MultiHeadAttention(nn.Module):
         values: mx.array,
         mask: Optional[mx.array],
         cache: Optional[Tuple[mx.array, mx.array]] = None,
-    ) -> [mx.array, Tuple[mx.array, mx.array]]:
+    ) -> Tuple[mx.array, Tuple[mx.array, mx.array]]:
         queries = self.query_proj(queries)
         keys = self.key_proj(keys)
         values = self.value_proj(values)
@@ -259,7 +259,7 @@ class TransformerDecoderLayer(nn.Module):
         memory: mx.array,
         mask: mx.array,
         memory_mask: mx.array,
-        cache: Optional[List[Tuple[mx.array, mx.array]]] = None,
+        cache: Optional[Tuple[mx.array, mx.array]] = None,
     ):
         y = self.ln1(x)
         y, cache = self.self_attention(y, y, y, mask, cache)
