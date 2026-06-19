@@ -23,6 +23,7 @@ torch.set_grad_enabled(False)
 logger = get_logger(__name__)
 
 TEST_SD3_CKPT_PATH = os.getenv("TEST_SD3_CKPT_PATH", None) or None
+TEST_MODEL_VERSION = os.getenv("TEST_MODEL_VERSION", None) or "2b"
 TEST_SD3_HF_REPO = os.getenv("TEST_SD3_HF_REPO", None) or None
 TEST_CACHE_DIR = os.getenv("TEST_CACHE_DIR", None) or "/tmp"
 TEST_DEV = os.getenv("TEST_DEV", None) or get_fastest_device()
@@ -38,6 +39,11 @@ if HAS_TORCH_DEPS:
 else:
     SD3_8b = None
     SD3_2b = None
+
+TEST_MODELS = {
+    "2b": SD3_2b,
+    "8b": SD3_8b,
+}
 
 TEST_MODELS = {
     "2b": SD3_2b,
@@ -72,6 +78,7 @@ class TestSD3VAEDecoder(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCa
     @classmethod
     def setUpClass(cls):
         global TEST_SD3_CKPT_PATH
+        global TEST_MODEL_VERSION
         cls.model_name = "VAEDecoder"
         cls.test_output_names = ["image"]
         cls.test_cache_dir = TEST_CACHE_DIR
@@ -79,7 +86,10 @@ class TestSD3VAEDecoder(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCa
         # Base test model
         logger.info("Initializing SD3 VAEDecoder model")
         cls.test_torch_model = (
-            vae.VAEDecoder(TEST_MODELS[cls.model_version]).to(TEST_DEV).to(TEST_TORCH_DTYPE).eval()
+            vae.VAEDecoder(TEST_MODELS[TEST_MODEL_VERSION])
+            .to(TEST_DEV)
+            .to(TEST_TORCH_DTYPE)
+            .eval()
         )
         logger.info("Initialized.")
 
@@ -96,7 +106,7 @@ class TestSD3VAEDecoder(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCa
             )
 
         # Sample inputs
-        cls.test_torch_inputs = get_test_inputs(TEST_MODELS[cls.model_version])
+        cls.test_torch_inputs = get_test_inputs(TEST_MODELS[TEST_MODEL_VERSION])
 
         super().setUpClass()
 
@@ -166,6 +176,13 @@ if __name__ == "__main__":
     parser.add_argument("--sd3-ckpt-path", default=TEST_SD3_CKPT_PATH, type=str)
     parser.add_argument("-o", default=TEST_CACHE_DIR, type=str)
     parser.add_argument("--latent-size", default=TEST_LATENT_SIZE, type=int)
+    parser.add_argument(
+        "--model-version",
+        required=True,
+        default="2b",
+        choices=TEST_MODELS.keys(),
+        type=str,
+    )
     args = parser.parse_args()
 
     TestSD3VAEDecoder.model_version = args.model_version
@@ -175,6 +192,7 @@ if __name__ == "__main__":
     )
     TEST_SD3_HF_REPO = args.sd3_ckpt_path
     TEST_LATENT_SIZE = args.latent_size
+    TEST_MODEL_VERSION = args.model_version
 
     setup_test_config()
 
