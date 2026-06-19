@@ -3,8 +3,8 @@
 <!-- ============================================================ -->
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://capsule-render.vercel.app/api?type=venom&color=gradient&customColorList=6,11,20&height=220&text=COMFYUI%20MLX&fontSize=70&fontColor=ffffff&animation=twinkling&fontAlignY=41&stroke=7c3aed&strokeWidth=2&desc=The%20Universal%20Apple%20Silicon%20Backend&descAlignY=63&descSize=17&descColor=c4b5fd" />
-  <source media="(prefers-color-scheme: light)" srcset="https://capsule-render.vercel.app/api?type=venom&color=gradient&customColorList=6,11,20&height=220&text=COMFYUI%20MLX&fontSize=70&fontColor=111827&animation=twinkling&fontAlignY=41&stroke=e9d5ff&strokeWidth=2&desc=The%20Universal%20Apple%20Silicon%20Backend&descAlignY=63&descSize=17&descColor=5b21b6" />
-  <img width="100%" alt="COMFYUI MLX header banner" src="https://capsule-render.vercel.app/api?type=venom&color=gradient&customColorList=6,11,20&height=220&text=COMFYUI%20MLX&fontSize=70&fontColor=111827&animation=twinkling&fontAlignY=41&stroke=e9d5ff&strokeWidth=2&desc=The%20Universal%20Apple%20Silicon%20Backend&descAlignY=63&descSize=17&descColor=5b21b6" />
+  <source media="(prefers-color-scheme: light)" srcset="https://capsule-render.vercel.app/api?type=venom&color=gradient&customColorList=6,11,20&height=220&text=COMFYUI%20MLX&fontSize=70&fontColor=ffffff&animation=twinkling&fontAlignY=41&stroke=e9d5ff&strokeWidth=2&desc=The%20Universal%20Apple%20Silicon%20Backend&descAlignY=63&descSize=17&descColor=c4b5fd" />
+  <img width="100%" alt="COMFYUI MLX header banner" src="https://capsule-render.vercel.app/api?type=venom&color=gradient&customColorList=6,11,20&height=220&text=COMFYUI%20MLX&fontSize=70&fontColor=ffffff&animation=twinkling&fontAlignY=41&stroke=e9d5ff&strokeWidth=2&desc=The%20Universal%20Apple%20Silicon%20Backend&descAlignY=63&descSize=17&descColor=c4b5fd" />
 </picture>
 
 <!-- ============================================================ -->
@@ -25,7 +25,11 @@
 <!--  TYPING SVG                                                  -->
 <!-- ============================================================ -->
 <div align="center">
-  <img alt="Typing status lines" src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=20&duration=3000&pause=1000&color=A78BFA&center=true&vCenter=true&letterSpacing=2px&width=680&height=50&lines=//+the+one+stop+shop+for+MLX;//+zero+memory+leaks;//+bridging+Apple+Silicon+to+ComfyUI;//+unified+tensors.+unified+cache." />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=20&duration=3000&pause=1000&color=A78BFA&center=true&vCenter=true&letterSpacing=2px&width=680&height=50&lines=//+the+one+stop+shop+for+MLX;//+zero+memory+leaks;//+bridging+Apple+Silicon+to+ComfyUI;//+unified+tensors.+unified+cache." />
+    <source media="(prefers-color-scheme: light)" srcset="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=20&duration=3000&pause=1000&color=5B21B6&center=true&vCenter=true&letterSpacing=2px&width=680&height=50&lines=//+the+one+stop+shop+for+MLX;//+zero+memory+leaks;//+bridging+Apple+Silicon+to+ComfyUI;//+unified+tensors.+unified+cache." />
+    <img alt="Typing status lines" src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=20&duration=3000&pause=1000&color=5B21B6&center=true&vCenter=true&letterSpacing=2px&width=680&height=50&lines=//+the+one+stop+shop+for+MLX;//+zero+memory+leaks;//+bridging+Apple+Silicon+to+ComfyUI;//+unified+tensors.+unified+cache." />
+  </picture>
 </div>
 
 <!-- ─────────────────────── DIVIDER ─────────────────────────── -->
