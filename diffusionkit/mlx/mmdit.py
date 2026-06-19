@@ -9,7 +9,7 @@ import mlx.core as mx
 import mlx.nn as nn
 import numpy as np
 from argmaxtools.utils import get_logger
-from beartype.typing import Dict, List, Optional, Tuple
+from beartype.typing import Dict, Optional, Tuple
 from mlx.utils import tree_map
 
 from .config import MMDiTConfig, PositionalEncoding
@@ -42,6 +42,7 @@ class MMDiT(nn.Module):
             self.x_pos_embedder = LatentImagePositionalEmbedding(config)
             self.pre_sdpa_rope = nn.Identity()
         elif config.pos_embed_type == PositionalEncoding.PreSDPARope:
+            assert config.rope_axes_dim is not None
             self.pre_sdpa_rope = RoPE(
                 theta=10000,
                 axes_dim=config.rope_axes_dim,
@@ -100,12 +101,12 @@ class MMDiT(nn.Module):
                     block.image_transformer_block._modulation_params = dict()
                     block.text_transformer_block._modulation_params = dict()
 
-                block.image_transformer_block._modulation_params[
-                    timestep_key
-                ] = block.image_transformer_block.adaLN_modulation(modulation_inputs)
-                block.text_transformer_block._modulation_params[
-                    timestep_key
-                ] = block.text_transformer_block.adaLN_modulation(modulation_inputs)
+                block.image_transformer_block._modulation_params[timestep_key] = (
+                    block.image_transformer_block.adaLN_modulation(modulation_inputs)
+                )
+                block.text_transformer_block._modulation_params[timestep_key] = (
+                    block.text_transformer_block.adaLN_modulation(modulation_inputs)
+                )
                 mx.eval(block.image_transformer_block._modulation_params[timestep_key])
                 mx.eval(block.text_transformer_block._modulation_params[timestep_key])
 
@@ -137,9 +138,9 @@ class MMDiT(nn.Module):
                 for block in self.unified_transformer_blocks:
                     if not hasattr(block.transformer_block, "_modulation_params"):
                         block.transformer_block._modulation_params = dict()
-                    block.transformer_block._modulation_params[
-                        timestep_key
-                    ] = block.transformer_block.adaLN_modulation(modulation_inputs)
+                    block.transformer_block._modulation_params[timestep_key] = (
+                        block.transformer_block.adaLN_modulation(modulation_inputs)
+                    )
                     mx.eval(block.transformer_block._modulation_params[timestep_key])
 
                     if final_timestep:
@@ -157,9 +158,9 @@ class MMDiT(nn.Module):
 
             if not hasattr(self.final_layer, "_modulation_params"):
                 self.final_layer._modulation_params = dict()
-            self.final_layer._modulation_params[
-                timestep_key
-            ] = self.final_layer.adaLN_modulation(modulation_inputs)
+            self.final_layer._modulation_params[timestep_key] = (
+                self.final_layer.adaLN_modulation(modulation_inputs)
+            )
             mx.eval(self.final_layer._modulation_params[timestep_key])
 
             if final_timestep:
@@ -301,7 +302,7 @@ class LatentImageAdapter(nn.Module):
 
         return self.proj(x)
 
-    def unpack(self, x: mx.array, latent_image_resolution: Tuple[int]) -> mx.array:
+    def unpack(self, x: mx.array, latent_image_resolution: Tuple[int, int]) -> mx.array:
         """Unpacks the latent image embeddings to the original resolution
         for `config.patchify_via_reshape` models
         """
@@ -634,9 +635,9 @@ class MultiModalTransformerBlock(nn.Module):
             )
 
         if self.config.low_memory_mode:
-            multimodal_sdpa_inputs[
-                "memory_efficient_threshold"
-            ] = SDPA_FLASH_ATTN_THRESHOLD
+            multimodal_sdpa_inputs["memory_efficient_threshold"] = (
+                SDPA_FLASH_ATTN_THRESHOLD
+            )
 
         # Compute multi-modal SDPA
         sdpa_outputs = (
@@ -727,9 +728,9 @@ class UnifiedTransformerBlock(nn.Module):
             )
 
         if self.config.low_memory_mode:
-            multimodal_sdpa_inputs[
-                "memory_efficient_threshold"
-            ] = SDPA_FLASH_ATTN_THRESHOLD
+            multimodal_sdpa_inputs["memory_efficient_threshold"] = (
+                SDPA_FLASH_ATTN_THRESHOLD
+            )
 
         # Compute multi-modal SDPA
         sdpa_outputs = (
@@ -852,18 +853,18 @@ class LayerNorm(nn.Module):
 class RoPE(nn.Module):
     """Custom RoPE implementation for FLUX"""
 
-    def __init__(self, theta: int, axes_dim: List[int]) -> None:
+    def __init__(self, theta: int, axes_dim: Tuple[int, ...]) -> None:
         super().__init__()
         self.theta = theta
         self.axes_dim = axes_dim
 
         # Cache for consecutive identical calls
-        self.rope_embeddings = None
-        self.last_image_resolution = None
-        self.last_text_sequence_length = None
+        self.rope_embeddings: Optional[mx.array] = None
+        self.last_image_resolution: Optional[Tuple[int, int]] = None
+        self.last_text_sequence_length: Optional[int] = None
 
     def _get_positions(
-        self, latent_image_resolution: Tuple[int], text_sequence_length: int
+        self, latent_image_resolution: Tuple[int, int], text_sequence_length: int
     ) -> mx.array:
         h, w = latent_image_resolution
         image_positions = mx.stack(
@@ -911,7 +912,7 @@ class RoPE(nn.Module):
         ).astype(positions.dtype)
 
     def __call__(
-        self, latent_image_resolution: Tuple[int], text_sequence_length: int
+        self, latent_image_resolution: Tuple[int, int], text_sequence_length: int
     ) -> mx.array:
         identical_to_last_call = (
             latent_image_resolution == self.last_image_resolution

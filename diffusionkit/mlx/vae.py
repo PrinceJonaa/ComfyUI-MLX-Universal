@@ -6,7 +6,7 @@
 #
 
 import math
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import mlx.core as mx
 import mlx.nn as nn
@@ -156,7 +156,7 @@ class Encoder(nn.Module):
         self,
         in_channels: int,
         out_channels: int,
-        block_out_channels: List[int] = [64],
+        block_out_channels: Tuple[int, ...] = (64,),
         layers_per_block: int = 2,
         resnet_groups: int = 32,
     ):
@@ -201,8 +201,8 @@ class Encoder(nn.Module):
     def __call__(self, x):
         x = self.conv_in(x)
 
-        for l in self.down_blocks:
-            x = l(x)
+        for layer in self.down_blocks:
+            x = layer(x)
 
         x = self.mid_blocks[0](x)
         x = self.mid_blocks[1](x)
@@ -222,7 +222,7 @@ class Decoder(nn.Module):
         self,
         in_channels: int,
         out_channels: int,
-        block_out_channels: List[int] = [64],
+        block_out_channels: Tuple[int, ...] = (64,),
         layers_per_block: int = 2,
         resnet_groups: int = 32,
     ):
@@ -272,8 +272,8 @@ class Decoder(nn.Module):
         x = self.mid_blocks[1](x)
         x = self.mid_blocks[2](x)
 
-        for l in self.up_blocks:
-            x = l(x)
+        for layer in self.up_blocks:
+            x = layer(x)
 
         x = self.conv_norm_out(x)
         x = nn.silu(x)
@@ -340,7 +340,7 @@ class VAEDecoder(nn.Module):
         self,
         in_channels: int = 16,
         out_channels: int = 3,
-        block_out_channels: List[int] = [128, 256, 512, 512],
+        block_out_channels: Tuple[int, ...] = (128, 256, 512, 512),
         layers_per_block: int = 3,
         resnet_groups: int = 32,
     ):
@@ -366,7 +366,7 @@ class VAEDecoder(nn.Module):
 
         channels = list(reversed(block_out_channels))
         channels = [channels[0]] + channels
-        self.up_blocks = []
+        self.up_blocks: List[nn.Module] = []
         for i, (in_c, out_c) in enumerate(zip(channels, channels[1:])):
             up = EncoderDecoderBlock2D(
                 in_c,
@@ -390,8 +390,8 @@ class VAEDecoder(nn.Module):
         x = self.mid_blocks[1](x)
         x = self.mid_blocks[2](x)
 
-        for l in reversed(self.up_blocks):
-            x = l(x)
+        for layer in reversed(self.up_blocks):
+            x = layer(x)
             mx.eval(x)
 
         x = self.conv_norm_out(x)
@@ -408,7 +408,7 @@ class VAEEncoder(nn.Module):
         self,
         in_channels: int = 3,
         out_channels: int = 32,
-        block_out_channels: List[int] = [128, 256, 512, 512],
+        block_out_channels: Tuple[int, ...] = (128, 256, 512, 512),
         layers_per_block: int = 2,
         resnet_groups: int = 32,
     ):
@@ -453,8 +453,8 @@ class VAEEncoder(nn.Module):
     def __call__(self, x):
         x = self.conv_in(x)
 
-        for l in self.down_blocks:
-            x = l(x)
+        for layer in self.down_blocks:
+            x = layer(x)
 
         x = self.mid_blocks[0](x)
         x = self.mid_blocks[1](x)

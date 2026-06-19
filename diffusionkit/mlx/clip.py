@@ -100,8 +100,8 @@ class CLIPTextModel(nn.Module):
         # Compute the features from the transformer
         mask = self._get_mask(N, x.dtype)
         hidden_states = []
-        for l in self.layers:
-            x = l(x, mask)
+        for layer in self.layers:
+            x = layer(x, mask)
             hidden_states.append(x)
 
         # Apply the final layernorm and return
