@@ -31,6 +31,11 @@ TEST_LATENT_WIDTH = TEST_LATENT_SIZE
 SD3_8b = vae.VAEDecoderConfig(resolution=1024)
 SD3_2b = vae.VAEDecoderConfig(resolution=512)
 
+TEST_MODELS = {
+    "2b": SD3_2b,
+    "8b": SD3_8b,
+}
+
 
 def setup_test_config(
     min_speedup_vs_cpu=3.0,
@@ -53,6 +58,8 @@ def setup_test_config(
 class TestSD3VAEDecoder(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCase):
     """Unit tests for stable_duffusion_3.vae.VAEDecoder module"""
 
+    model_version = "2b"
+
     @classmethod
     def setUpClass(cls):
         global TEST_SD3_CKPT_PATH
@@ -63,7 +70,7 @@ class TestSD3VAEDecoder(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCa
         # Base test model
         logger.info("Initializing SD3 VAEDecoder model")
         cls.test_torch_model = (
-            vae.VAEDecoder(SD3_2b).to(TEST_DEV).to(TEST_TORCH_DTYPE).eval()
+            vae.VAEDecoder(TEST_MODELS[cls.model_version]).to(TEST_DEV).to(TEST_TORCH_DTYPE).eval()
         )
         logger.info("Initialized.")
 
@@ -80,8 +87,7 @@ class TestSD3VAEDecoder(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCa
             )
 
         # Sample inputs
-        # TODO(atiorh): CLI configurable model version
-        cls.test_torch_inputs = get_test_inputs(SD3_2b)
+        cls.test_torch_inputs = get_test_inputs(TEST_MODELS[cls.model_version])
 
         super().setUpClass()
 
@@ -147,10 +153,13 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("--model-version", choices=["2b", "8b"], default="2b", type=str)
     parser.add_argument("--sd3-ckpt-path", default=TEST_SD3_CKPT_PATH, type=str)
     parser.add_argument("-o", default=TEST_CACHE_DIR, type=str)
     parser.add_argument("--latent-size", default=TEST_LATENT_SIZE, type=int)
     args = parser.parse_args()
+
+    TestSD3VAEDecoder.model_version = args.model_version
 
     TEST_SD3_CKPT_PATH = (
         args.sd3_ckpt_path if os.path.exists(args.sd3_ckpt_path) else None
