@@ -100,7 +100,6 @@ graph TD
         GN --> Bridge[bridge.py]
         SN --> Bridge
         VN --> Bridge
-        DN --> Bridge
         
         Reg --> Data[data_types.py]
     end
@@ -118,10 +117,10 @@ graph TD
 
 > We need community help to build the remaining modules to achieve the final vision.
 
-**Phase 1: Stabilization (Completed)**
-- [x] Unified pipelines for Text, Vision, Samplers, and Video.
+**Phase 1: Stabilization (In Progress)**
+- [ ] Unified pipelines for Text, Vision, Samplers, and Video.
 - [x] Safe Native LoRA integration.
-- [x] `registry.py` tracking and `bridge.py` conversions.
+- [ ] `registry.py` tracking and `bridge.py` conversions.
 
 **Phase 2: Expansion (Help Wanted!)**
 
