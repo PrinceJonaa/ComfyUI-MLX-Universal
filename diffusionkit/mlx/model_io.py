@@ -365,6 +365,7 @@ def mmdit_state_dict_adjustments(state_dict, prefix=""):
 
     return state_dict
 
+
 def _common_vae_adjustments(state_dict):
     # Filter out MMDIT related tensors
     state_dict = {k: v for k, v in state_dict.items() if "diffusion_model." not in k}
@@ -423,11 +424,16 @@ def _common_vae_adjustments(state_dict):
         k: v[:, :, 0, 0] if "proj.weight" in k else v for k, v in state_dict.items()
     }
     if "conv_in.weight" in state_dict:
-        state_dict["conv_in.weight"] = state_dict["conv_in.weight"].transpose(0, 2, 3, 1)
+        state_dict["conv_in.weight"] = state_dict["conv_in.weight"].transpose(
+            0, 2, 3, 1
+        )
     if "conv_out.weight" in state_dict:
-        state_dict["conv_out.weight"] = state_dict["conv_out.weight"].transpose(0, 2, 3, 1)
+        state_dict["conv_out.weight"] = state_dict["conv_out.weight"].transpose(
+            0, 2, 3, 1
+        )
 
     return state_dict
+
 
 def vae_decoder_state_dict_adjustments(state_dict, prefix="decoder."):
     # Keep only the keys that have the prefix
@@ -473,35 +479,31 @@ def vae_encoder_state_dict_adjustments(state_dict, prefix="encoder."):
 
 
 def t5_encoder_state_dict_adjustments(state_dict, prefix=""):
-    state_dict = {k.replace(prefix, ""): v for k, v in state_dict.items()}
+    def _map_key(k):
+        k = k.replace(prefix, "")
+        if "layer.0.layer_norm" in k:
+            k = k.replace("layer.0.layer_norm", "ln1")
+        if "layer.1.layer_norm" in k:
+            k = k.replace("layer.1.layer_norm", "ln2")
+        if "layer.0." in k:
+            k = k.replace("layer.0.", "")
+        if "layer.1." in k:
+            k = k.replace("layer.1.", "")
+        if "block" in k:
+            k = k.replace("block", "layers")
+        if "SelfAttention.q" in k:
+            k = k.replace("SelfAttention.q", "attention.query_proj")
+        if "SelfAttention.k" in k:
+            k = k.replace("SelfAttention.k", "attention.key_proj")
+        if "SelfAttention.v" in k:
+            k = k.replace("SelfAttention.v", "attention.value_proj")
+        if "SelfAttention.o" in k:
+            k = k.replace("SelfAttention.o", "attention.out_proj")
+        if "DenseReluDense" in k:
+            k = k.replace("DenseReluDense", "dense")
+        return k
 
-    for i in range(2):
-        state_dict = {
-            k.replace(f"layer.{i}.layer_norm", f"ln{i+1}"): v
-            for k, v in state_dict.items()
-        }
-    for i in range(2):
-        state_dict = {k.replace(f"layer.{i}.", ""): v for k, v in state_dict.items()}
-    state_dict = {k.replace("block", "layers"): v for k, v in state_dict.items()}
-    state_dict = {
-        k.replace("SelfAttention.q", "attention.query_proj"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("SelfAttention.k", "attention.key_proj"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("SelfAttention.v", "attention.value_proj"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("SelfAttention.o", "attention.out_proj"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("DenseReluDense", "dense"): v for k, v in state_dict.items()
-    }
+    state_dict = {_map_key(k): v for k, v in state_dict.items()}
 
     state_dict["encoder.relative_attention_bias.embeddings.weight"] = state_dict[
         "encoder.layers.0.SelfAttention.relative_attention_bias.weight"
