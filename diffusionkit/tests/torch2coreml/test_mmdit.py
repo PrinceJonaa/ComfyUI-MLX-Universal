@@ -11,8 +11,12 @@ import coremltools as ct
 import torch
 from argmaxtools import test_utils as argmaxtools_test_utils
 from argmaxtools.utils import get_fastest_device, get_logger
-from diffusionkit.torch import mmdit
-from diffusionkit.torch.model_io import _load_mmdit_weights
+try:
+    from diffusionkit.torch import mmdit
+    from diffusionkit.torch.model_io import _load_mmdit_weights
+    HAS_TORCH_DEPS = True
+except ImportError:
+    HAS_TORCH_DEPS = False
 from huggingface_hub import hf_hub_download
 
 torch.set_grad_enabled(False)
@@ -29,10 +33,13 @@ TEST_LATENT_SIZE = 64  # 64 latent -> 512 image, 128 latent -> 1024 image
 TEST_LATENT_HEIGHT = TEST_LATENT_SIZE
 TEST_LATENT_WIDTH = TEST_LATENT_SIZE
 
-TEST_MODELS = {
-    "2b": mmdit.SD3_2b,
-    "8b": mmdit.SD3_8b,
-}
+if HAS_TORCH_DEPS:
+    TEST_MODELS = {
+        "2b": mmdit.SD3_2b,
+        "8b": mmdit.SD3_8b,
+    }
+else:
+    TEST_MODELS = {}
 
 
 def setup_test_config(
@@ -53,6 +60,7 @@ def setup_test_config(
     argmaxtools_test_utils.TEST_COMPILE_COREML = compile_coreml
 
 
+@unittest.skipIf(not HAS_TORCH_DEPS, "diffusionkit.torch is missing")
 class TestSD3MMDiT(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCase):
     """Unit tests for stable_duffusion_3.mmdit.MMDiT module"""
 
@@ -99,7 +107,7 @@ class TestSD3MMDiT(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCase):
         super().tearDownClass()
 
 
-def get_test_inputs(cfg: mmdit.MMDiTConfig) -> Dict[str, torch.Tensor]:
+def get_test_inputs(cfg: 'Any') -> Dict[str, torch.Tensor]:
     """Generate random inputs for the SD3 MMDiT model"""
     batch_size = 2  # classifier-free guidance
     assert TEST_LATENT_HEIGHT <= cfg.max_latent_resolution

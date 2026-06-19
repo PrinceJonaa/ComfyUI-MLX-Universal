@@ -7,8 +7,7 @@
 import argparse
 
 from argmaxtools.utils import get_logger
-from diffusionkit.mlx import DiffusionPipeline, FluxPipeline
-from diffusionkit.mlx.model_io import _MMDIT as MMDIT_CKPT
+from diffusionkit.mlx import MODEL_REPO_IDS, DiffusionPipeline, FluxPipeline
 
 logger = get_logger(__name__)
 
@@ -46,7 +45,7 @@ def cli():
     )
     parser.add_argument(
         "--model-version",
-        choices=tuple(MMDIT_CKPT.keys()),
+        choices=tuple(MODEL_REPO_IDS.keys()),
         default="argmaxinc/mlx-FLUX.1-schnell",
         help="Diffusion model version, e.g. FLUX-1.schnell, stable-diffusion-3-medium",
     )

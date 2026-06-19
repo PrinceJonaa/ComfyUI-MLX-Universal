@@ -48,9 +48,7 @@ class MLXLMGenerateText:
         tokenizer = mlx_model.processor
         if hasattr(tokenizer, "chat_template") and tokenizer.chat_template is not None:
             messages = [{"role": "user", "content": prompt}]
-            formatted_prompt = tokenizer.apply_chat_template(
-                messages, add_generation_prompt=True
-            )
+            formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         else:
             formatted_prompt = prompt
 

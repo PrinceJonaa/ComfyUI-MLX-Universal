@@ -68,11 +68,12 @@ class MLXSAM3Predictor:
             score = float(result.scores[i])
             box = result.boxes[i]
             x1, y1, x2, y2 = map(float, box)
-
-            mask = raw_masks[i]
+            mask = np.array(raw_masks[i]).squeeze()
             if mask.shape != (H, W):
                 mask_pil = Image.fromarray(mask.astype(np.uint8) * 255).resize((W, H))
                 mask = np.array(mask_pil) > 0
+            else:
+                mask = mask > 0
 
             masks_list.append(mask)
             color = colors[i % len(colors)]
