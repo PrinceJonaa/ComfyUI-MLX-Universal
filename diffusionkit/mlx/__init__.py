@@ -19,6 +19,7 @@ from argmaxtools.utils import get_logger
 from ..utils import bytes2gigabytes
 from PIL import Image
 
+from . import model_io
 from .model_io import (
     _DEFAULT_MODEL,
     load_flux,
