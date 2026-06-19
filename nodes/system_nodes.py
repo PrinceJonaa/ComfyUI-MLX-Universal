@@ -6,6 +6,10 @@ class MLXClearCache:
     def INPUT_TYPES(cls):
         return {"required": {}}
 
+    @classmethod
+    def IS_CHANGED(cls, **kwargs):
+        return float("NaN")
+
     CATEGORY = "MLX Universal/System"
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("status",)
@@ -24,6 +28,10 @@ class MLXCacheStats:
     @classmethod
     def INPUT_TYPES(cls):
         return {"required": {}}
+
+    @classmethod
+    def IS_CHANGED(cls, **kwargs):
+        return float("NaN")
 
     CATEGORY = "MLX Universal/System"
     RETURN_TYPES = ("STRING",)
