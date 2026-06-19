@@ -2,9 +2,9 @@
 <!--  HEADER: theme-aware venom banner (light/dark text variants) -->
 <!-- ============================================================ -->
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://capsule-render.vercel.app/api?type=venom&color=gradient&customColorList=6,11,20&height=220&text=ComfyUI%20MLX%20Universal&fontSize=55&fontColor=ffffff&animation=twinkling&fontAlignY=41&stroke=7c3aed&strokeWidth=2&desc=The%20Universal%20Apple%20Silicon%20Backend&descAlignY=63&descSize=17&descColor=c4b5fd" />
-  <source media="(prefers-color-scheme: light)" srcset="https://capsule-render.vercel.app/api?type=venom&color=gradient&customColorList=6,11,20&height=220&text=ComfyUI%20MLX%20Universal&fontSize=55&fontColor=ffffff&animation=twinkling&fontAlignY=41&stroke=e9d5ff&strokeWidth=2&desc=The%20Universal%20Apple%20Silicon%20Backend&descAlignY=63&descSize=17&descColor=c4b5fd" />
-  <img width="100%" alt="COMFYUI MLX header banner" src="https://capsule-render.vercel.app/api?type=venom&color=gradient&customColorList=6,11,20&height=220&text=ComfyUI%20MLX%20Universal&fontSize=55&fontColor=ffffff&animation=twinkling&fontAlignY=41&stroke=e9d5ff&strokeWidth=2&desc=The%20Universal%20Apple%20Silicon%20Backend&descAlignY=63&descSize=17&descColor=c4b5fd" />
+  <source media="(prefers-color-scheme: dark)" srcset="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=220&text=ComfyUI%20MLX%20Universal&fontSize=55&fontColor=ffffff&animation=twinkling&fontAlignY=41&stroke=7c3aed&strokeWidth=2&desc=The%20Universal%20Apple%20Silicon%20Backend&descAlignY=63&descSize=17&descColor=c4b5fd" />
+  <source media="(prefers-color-scheme: light)" srcset="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=220&text=ComfyUI%20MLX%20Universal&fontSize=55&fontColor=ffffff&animation=twinkling&fontAlignY=41&stroke=e9d5ff&strokeWidth=2&desc=The%20Universal%20Apple%20Silicon%20Backend&descAlignY=63&descSize=17&descColor=c4b5fd" />
+  <img width="100%" alt="COMFYUI MLX header banner" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=220&text=ComfyUI%20MLX%20Universal&fontSize=55&fontColor=ffffff&animation=twinkling&fontAlignY=41&stroke=e9d5ff&strokeWidth=2&desc=The%20Universal%20Apple%20Silicon%20Backend&descAlignY=63&descSize=17&descColor=c4b5fd" />
 </picture>
 
 <!-- ============================================================ -->
