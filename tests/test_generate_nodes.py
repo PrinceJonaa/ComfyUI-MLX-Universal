@@ -130,7 +130,7 @@ def make_key(*args, **kwargs):
         self.assertEqual(result, ("generated response",))
         mock_mx.random.seed.assert_called_once_with(42)
         mocked_model.processor.apply_chat_template.assert_called_once_with(
-            [{"role": "user", "content": "Hello"}], add_generation_prompt=True
+            [{"role": "user", "content": "Hello"}], tokenize=False, add_generation_prompt=True
         )
         mock_mlx_lm.generate.assert_called_once_with(
             mocked_model.model,
