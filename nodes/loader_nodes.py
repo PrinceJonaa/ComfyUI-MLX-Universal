@@ -63,11 +63,12 @@ class MLXModelLoaderUnified:
         def _load():
             print(f"Loading model '{model_path}' using type mode '{resolved_type}'...")
             kwargs = {"trust_remote_code": trust_remote_code}
-            if adapter_path and os.path.exists(adapter_path):
+            if adapter_path:
                 kwargs["adapter_path"] = adapter_path
-                print(f"Applying LoRA adapter from: {adapter_path}")
-            elif adapter_path:
-                print(f"Warning: adapter_path '{adapter_path}' does not exist on disk.")
+                if os.path.exists(adapter_path):
+                    print(f"Applying LoRA adapter from local path: {adapter_path}")
+                else:
+                    print(f"adapter_path '{adapter_path}' not found locally. Assuming remote Hugging Face Hub repo.")
             
             if resolved_type == "mlx-lm":
                 import mlx_lm
@@ -115,10 +116,10 @@ class MLXApplyLoRA:
         def _load():
             print(f"Loading base model '{model_path}' WITH adapter '{adapter_path}'...")
             kwargs = {"trust_remote_code": trust_remote_code}
-            if adapter_path and os.path.exists(adapter_path):
+            if adapter_path:
                 kwargs["adapter_path"] = adapter_path
-            else:
-                print(f"Warning: adapter_path '{adapter_path}' does not exist on disk.")
+                if not os.path.exists(adapter_path):
+                    print(f"adapter_path '{adapter_path}' not found locally. Assuming remote Hugging Face Hub repo.")
             
             if resolved_type == "mlx-lm":
                 import mlx_lm
