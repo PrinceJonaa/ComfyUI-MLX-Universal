@@ -21,3 +21,18 @@ def pil_to_tensor(pil_image: Image.Image) -> torch.Tensor:
     if tensor.ndim == 3:
         tensor = tensor.unsqueeze(0)
     return tensor
+
+def mlx_to_torch(mlx_tensor) -> torch.Tensor:
+    """Convert an MLX array to a ComfyUI IMAGE tensor (B, H, W, C)."""
+    import mlx.core as mx
+    # MLX is usually (B, H, W, C) but may have different types
+    mx.eval(mlx_tensor)
+    if mlx_tensor.dtype == mx.bfloat16:
+        np_arr = np.array(mlx_tensor.astype(mx.float32))
+    else:
+        np_arr = np.array(mlx_tensor)
+    
+    tensor = torch.from_numpy(np_arr)
+    if tensor.dim() == 3:
+        tensor = tensor.unsqueeze(0)
+    return tensor
