@@ -434,9 +434,9 @@ def vae_decoder_state_dict_adjustments(state_dict, prefix="decoder."):
     state_dict = {k: v for k, v in state_dict.items() if prefix in k}
     state_dict = {k.replace(prefix, ""): v for k, v in state_dict.items()}
 
-    state_dict = {k.replace("up", "up_blocks"): v for k, v in state_dict.items()}
+    state_dict = {k.replace("up.", "up_blocks."): v for k, v in state_dict.items()}
     state_dict = {
-        k.replace(".up_blockssample.conv.", ".upsample."): v
+        k.replace(".upsample.conv.", ".upsample."): v
         for k, v in state_dict.items()
     }
 
