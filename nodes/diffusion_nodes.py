@@ -22,7 +22,7 @@ class MLXDecoder:
     CATEGORY = "MLX Universal/Diffusion"
 
     def decode(self, latent_image, mlx_vae):
-        decoded = mlx_vae(latent_image)
+        decoded = mlx_vae(latent_image["samples"])
         decoded = mx.clip(decoded / 2 + 0.5, 0, 1)
         mx.eval(decoded)
 
