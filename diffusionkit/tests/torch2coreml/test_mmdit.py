@@ -19,6 +19,7 @@ torch.set_grad_enabled(False)
 logger = get_logger(__name__)
 
 TEST_SD3_CKPT_PATH = os.getenv("TEST_SD3_CKPT_PATH", None) or None
+TEST_MODEL_VERSION = os.getenv("TEST_MODEL_VERSION", None) or "2b"
 TEST_CKPT_FILE_NAME = os.getenv("TEST_CKPT_FILE_NAME", None) or None
 TEST_SD3_HF_REPO = os.getenv("TEST_SD3_HF_REPO", None) or None
 TEST_CACHE_DIR = os.getenv("TEST_CACHE_DIR", None) or "/tmp"
@@ -56,11 +57,10 @@ def setup_test_config(
 class TestSD3MMDiT(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCase):
     """Unit tests for stable_duffusion_3.mmdit.MMDiT module"""
 
-    model_version = "2b"
-
     @classmethod
     def setUpClass(cls):
         global TEST_SD3_CKPT_PATH
+        global TEST_MODEL_VERSION
         cls.model_name = "MultiModalDiffusionTransformer"
         cls.test_output_names = ["denoiser_output"]
         cls.test_cache_dir = TEST_CACHE_DIR
@@ -68,7 +68,7 @@ class TestSD3MMDiT(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCase):
         # Base test model
         logger.info("Initializing SD3 model")
         cls.test_torch_model = (
-            mmdit.MMDiT(TEST_MODELS[cls.model_version])
+            mmdit.MMDiT(TEST_MODELS[TEST_MODEL_VERSION])
             .to(TEST_DEV)
             .to(TEST_TORCH_DTYPE)
             .eval()
@@ -87,8 +87,7 @@ class TestSD3MMDiT(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCase):
             )
 
         # Sample inputs
-        # TODO(atiorh): CLI configurable model version
-        cls.test_torch_inputs = get_test_inputs(TEST_MODELS[cls.model_version])
+        cls.test_torch_inputs = get_test_inputs(TEST_MODELS[TEST_MODEL_VERSION])
 
         super().setUpClass()
 
@@ -191,6 +190,7 @@ if __name__ == "__main__":
     TEST_SD3_HF_REPO = args.sd3_ckpt_path
     TEST_LATENT_SIZE = args.latent_size
     TEST_CKPT_FILE_NAME = args.ckpt_file_name
+    TEST_MODEL_VERSION = args.model_version
 
     setup_test_config()
 
