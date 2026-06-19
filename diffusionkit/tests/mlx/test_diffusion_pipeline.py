@@ -8,7 +8,7 @@ import os
 import unittest
 
 from argmaxtools.utils import get_logger
-from diffusionkit.mlx import MMDIT_CKPT, DiffusionPipeline
+from diffusionkit.mlx import MODEL_REPO_IDS, DiffusionPipeline
 from diffusionkit.utils import image_psnr
 from huggingface_hub import hf_hub_download
 from PIL import Image
@@ -188,7 +188,7 @@ if __name__ == "__main__":
         "--model-size",
         type=str,
         default="argmaxinc/mlx-stable-diffusion-3-medium",
-        choices=tuple(MMDIT_CKPT.keys()),
+        choices=tuple(MODEL_REPO_IDS.keys()),
         help="model version to test",
     )
     parser.add_argument(
