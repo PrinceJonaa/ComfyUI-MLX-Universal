@@ -7,7 +7,8 @@
 import argparse
 
 from argmaxtools.utils import get_logger
-from diffusionkit.mlx import MMDIT_CKPT, DiffusionPipeline, FluxPipeline
+from diffusionkit.mlx import DiffusionPipeline, FluxPipeline
+from diffusionkit.mlx.model_io import _MMDIT as MMDIT_CKPT
 
 logger = get_logger(__name__)
 

@@ -31,7 +31,7 @@ class MMDiTConfig:
     vae_latent_dim: int = 16  # = in_channels = out_channels
     layer_norm_eps: float = 1e-6
     pos_embed_type: PositionalEncoding = PositionalEncoding.LearnedInputEmbedding
-    rope_axes_dim: Optional[Tuple[int]] = None
+    rope_axes_dim: Optional[Tuple[int, ...]] = None
     # FLUX uses RMSNorm post-QK projection
     use_qk_norm: bool = False
     upcast_multimodal_blocks: Optional[List[int]] = None
@@ -115,7 +115,7 @@ class AutoencoderConfig:
     out_channels: int = 3
     latent_channels_out: int = 8
     latent_channels_in: int = 4
-    block_out_channels: Tuple[int] = (128, 256, 512, 512)
+    block_out_channels: Tuple[int, ...] = (128, 256, 512, 512)
     layers_per_block: int = 2
     norm_num_groups: int = 32
     scaling_factor: float = 0.18215
@@ -125,7 +125,7 @@ class AutoencoderConfig:
 class VAEDecoderConfig:
     in_channels: int = 16
     out_channels: int = 3
-    block_out_channels: Tuple[int] = (128, 256, 512, 512)
+    block_out_channels: Tuple[int, ...] = (128, 256, 512, 512)
     layers_per_block: int = 3
     resnet_groups: int = 32
 
@@ -134,7 +134,7 @@ class VAEDecoderConfig:
 class VAEEncoderConfig:
     in_channels: int = 3
     out_channels: int = 32
-    block_out_channels: Tuple[int] = (128, 256, 512, 512)
+    block_out_channels: Tuple[int, ...] = (128, 256, 512, 512)
     layers_per_block: int = 2
     resnet_groups: int = 32
 

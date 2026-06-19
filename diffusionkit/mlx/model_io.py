@@ -365,6 +365,7 @@ def mmdit_state_dict_adjustments(state_dict, prefix=""):
 
     return state_dict
 
+
 def _common_vae_adjustments(state_dict):
     # Filter out MMDIT related tensors
     state_dict = {k: v for k, v in state_dict.items() if "diffusion_model." not in k}
@@ -423,11 +424,16 @@ def _common_vae_adjustments(state_dict):
         k: v[:, :, 0, 0] if "proj.weight" in k else v for k, v in state_dict.items()
     }
     if "conv_in.weight" in state_dict:
-        state_dict["conv_in.weight"] = state_dict["conv_in.weight"].transpose(0, 2, 3, 1)
+        state_dict["conv_in.weight"] = state_dict["conv_in.weight"].transpose(
+            0, 2, 3, 1
+        )
     if "conv_out.weight" in state_dict:
-        state_dict["conv_out.weight"] = state_dict["conv_out.weight"].transpose(0, 2, 3, 1)
+        state_dict["conv_out.weight"] = state_dict["conv_out.weight"].transpose(
+            0, 2, 3, 1
+        )
 
     return state_dict
+
 
 def vae_decoder_state_dict_adjustments(state_dict, prefix="decoder."):
     # Keep only the keys that have the prefix
@@ -844,8 +850,8 @@ def load_tokenizer(
     merges_file = hf_hub_download(key, _MODELS[key][merges_key])
     with open(merges_file, encoding="utf-8") as f:
         bpe_merges = f.read().strip().split("\n")[1 : 49152 - 256 - 2 + 1]
-    bpe_merges = [tuple(m.split()) for m in bpe_merges]
-    bpe_ranks = dict(map(reversed, enumerate(bpe_merges)))
+    bpe_merges_tuples = [tuple(m.split()) for m in bpe_merges]
+    bpe_ranks = {merge: i for i, merge in enumerate(bpe_merges_tuples)}
 
     return Tokenizer(bpe_ranks, vocab, pad_with_eos)
 

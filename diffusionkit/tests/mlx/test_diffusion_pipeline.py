@@ -8,7 +8,8 @@ import os
 import unittest
 
 from argmaxtools.utils import get_logger
-from diffusionkit.mlx import MMDIT_CKPT, DiffusionPipeline
+from diffusionkit.mlx import DiffusionPipeline
+from diffusionkit.mlx.model_io import _MMDIT as MMDIT_CKPT
 from diffusionkit.utils import image_psnr
 from huggingface_hub import hf_hub_download
 from PIL import Image

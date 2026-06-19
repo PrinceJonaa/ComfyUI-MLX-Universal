@@ -16,9 +16,11 @@ import mlx.nn as nn
 import numpy as np
 from argmaxtools.test_utils import AppleSiliconContextMixin, InferenceContextSpec
 from argmaxtools.utils import get_logger
+from typing import Any, Dict, Union
 from ..utils import bytes2gigabytes
 from PIL import Image
 
+from . import model_io
 from .model_io import (
     _DEFAULT_MODEL,
     load_flux,
@@ -66,7 +68,7 @@ class DiffusionPipeline:
         self.model = _DEFAULT_MODEL
         self.model_version = model_version
         self.sampler = ModelSamplingDiscreteFlow(shift=shift)
-        self.latent_format = SD3LatentFormat()
+        self.latent_format: Union[SD3LatentFormat, FluxLatentFormat] = SD3LatentFormat()
         self.use_clip_g = True
         self.check_and_load_models()
 
@@ -239,7 +241,7 @@ class DiffusionPipeline:
         pooled_conditioning,
         num_steps: int = 2,
         cfg_weight: float = 0.0,
-        latent_size: Tuple[int] = (64, 64),
+        latent_size: Tuple[int, int] = (64, 64),
         seed=None,
         image_path: Optional[str] = None,
         denoise: float = 1.0,
@@ -280,7 +282,7 @@ class DiffusionPipeline:
         num_steps: int = 2,
         cfg_weight: float = 0.0,
         negative_text: str = "",
-        latent_size: Tuple[int] = (64, 64),
+        latent_size: Tuple[int, int] = (64, 64),
         seed=None,
         verbose: bool = True,
         image_path: Optional[str] = None,
@@ -298,7 +300,7 @@ class DiffusionPipeline:
         start_time = time.time()
 
         # Initialize the memory log
-        log = {
+        log: Dict[str, Any] = {
             "text_encoding": {
                 "pre": {
                     "peak_memory": round(
