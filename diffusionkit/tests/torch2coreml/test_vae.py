@@ -11,8 +11,12 @@ import coremltools as ct
 import torch
 from argmaxtools import test_utils as argmaxtools_test_utils
 from argmaxtools.utils import get_fastest_device, get_logger
-from diffusionkit.torch import vae
-from diffusionkit.torch.model_io import _load_vae_decoder_weights
+try:
+    from diffusionkit.torch import vae
+    from diffusionkit.torch.model_io import _load_vae_decoder_weights
+    HAS_TORCH_DEPS = True
+except ImportError:
+    HAS_TORCH_DEPS = False
 from huggingface_hub import hf_hub_download
 
 torch.set_grad_enabled(False)
@@ -28,8 +32,12 @@ TEST_LATENT_SIZE = 64  # 64 latent -> 512 image, 128 latent -> 1024 image
 TEST_LATENT_HEIGHT = TEST_LATENT_SIZE
 TEST_LATENT_WIDTH = TEST_LATENT_SIZE
 
-SD3_8b = vae.VAEDecoderConfig(resolution=1024)
-SD3_2b = vae.VAEDecoderConfig(resolution=512)
+if HAS_TORCH_DEPS:
+    SD3_8b = vae.VAEDecoderConfig(resolution=1024)
+    SD3_2b = vae.VAEDecoderConfig(resolution=512)
+else:
+    SD3_8b = None
+    SD3_2b = None
 
 TEST_MODELS = {
     "2b": SD3_2b,
@@ -55,6 +63,7 @@ def setup_test_config(
     argmaxtools_test_utils.TEST_COMPILE_COREML = compile_coreml
 
 
+@unittest.skipIf(not HAS_TORCH_DEPS, "diffusionkit.torch is missing")
 class TestSD3VAEDecoder(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCase):
     """Unit tests for stable_duffusion_3.vae.VAEDecoder module"""
 
@@ -98,7 +107,7 @@ class TestSD3VAEDecoder(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCa
         super().tearDownClass()
 
 
-def get_test_inputs(config: vae.VAEDecoderConfig) -> Dict[str, torch.Tensor]:
+def get_test_inputs(config: 'Any') -> Dict[str, torch.Tensor]:
     """Generate random inputs for the SD3 MMDiT model"""
     config_expected_latent_resolution = (
         config.resolution // 2 ** len(config.channel_multipliers) - 1
