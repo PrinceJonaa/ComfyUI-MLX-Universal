@@ -50,6 +50,11 @@ TEST_MODELS = {
     "8b": SD3_8b,
 }
 
+TEST_MODELS = {
+    "2b": SD3_2b,
+    "8b": SD3_8b,
+}
+
 
 def setup_test_config(
     min_speedup_vs_cpu=3.0,
