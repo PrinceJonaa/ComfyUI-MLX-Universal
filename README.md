@@ -61,6 +61,7 @@ The **ComfyUI MLX Universal Node Architecture** serves as a foundational runtime
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Segmentation** | `SAM3` | Open-vocabulary semantic segmentation and object detection. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Adapters** | `registry.py` | Safe, dynamic LoRA fusions injected directly into the unified memory pool. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **System** | `mx.metal` | Explicit cache eviction to protect against Mac swap-memory death. |
+| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Audio** | `mlx-whisper` | Fast local audio transcription. |
 
 <!-- ─────────────────────── DIVIDER ─────────────────────────── -->
 <img width="100%" alt="" src="https://capsule-render.vercel.app/api?type=rect&color=gradient&customColorList=6,11,20&height=3" />
@@ -79,6 +80,7 @@ graph TD
         UI_Vid[MLX Generate Video]
         UI_Diff[MLX Generate Image]
         UI_Sys[MLX Clear Cache]
+        UI_Audio[MLX Audio Transcribe]
     end
 
     subgraph nodes/ [Frontend Nodes]
@@ -90,6 +92,7 @@ graph TD
         UI_Vid --> VN[video_nodes.py]
         UI_Diff --> DN[diffusion_nodes.py]
         UI_Sys --> SysN[system_nodes.py]
+        UI_Audio --> AN[audio_nodes.py]
     end
 
     subgraph runtime/ [Execution Substrate]
@@ -126,7 +129,6 @@ graph TD
 
 | Status | Target | Goal |
 |:---:|---|---|
-| ![WIP](https://img.shields.io/badge/○-WIP-555555?style=flat-square&labelColor=0d0d0d) | **Audio** | Integrate Whisper/Kokoro via `mlx-audio`. |
 | ![WIP](https://img.shields.io/badge/○-WIP-555555?style=flat-square&labelColor=0d0d0d) | **SDXL / ControlNet** | Native image pipelines beyond base Flux. |
 | ![WIP](https://img.shields.io/badge/○-WIP-555555?style=flat-square&labelColor=0d0d0d) | **VAEs** | Standalone causal video and image VAE encode/decode nodes. |
 
