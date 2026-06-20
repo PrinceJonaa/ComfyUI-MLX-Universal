@@ -52,6 +52,8 @@ class MLXLMGenerateText:
         else:
             formatted_prompt = prompt
 
+        # Create a sampler to pass both temperature and top_p
+        import mlx_lm.sample_utils
         sampler = mlx_lm.sample_utils.make_sampler(temp=temperature, top_p=top_p)
 
         response = mlx_lm.generate(

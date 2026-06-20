@@ -15,6 +15,10 @@ mock_mx = MagicMock()
 mock_mlx_lm = MagicMock()
 sys.modules['mlx_lm'] = mock_mlx_lm
 
+mock_mlx_lm_sample_utils = MagicMock()
+sys.modules['mlx_lm.sample_utils'] = mock_mlx_lm_sample_utils
+mock_mlx_lm.sample_utils = mock_mlx_lm_sample_utils
+
 mock_mlx_vlm = MagicMock()
 sys.modules['mlx_vlm'] = mock_mlx_vlm
 
