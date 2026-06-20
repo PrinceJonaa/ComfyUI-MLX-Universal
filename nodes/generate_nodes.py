@@ -44,6 +44,7 @@ class MLXLMGenerateText:
 
         mx.random.seed(seed)
         import mlx_lm
+        from mlx_lm.sample_utils import make_sampler
 
         tokenizer = mlx_model.processor
         if hasattr(tokenizer, "chat_template") and tokenizer.chat_template is not None:
@@ -52,11 +53,13 @@ class MLXLMGenerateText:
         else:
             formatted_prompt = prompt
 
+        sampler = make_sampler(temp=temperature, top_p=top_p)
+
         response = mlx_lm.generate(
             mlx_model.model,
             tokenizer,
             prompt=formatted_prompt,
-            temp=temperature,
+            sampler=sampler,
             max_tokens=max_tokens,
             verbose=False,
         )
