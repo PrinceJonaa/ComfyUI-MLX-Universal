@@ -52,11 +52,13 @@ class MLXLMGenerateText:
         else:
             formatted_prompt = prompt
 
+        sampler = mlx_lm.sample_utils.make_sampler(temp=temperature, top_p=top_p)
+
         response = mlx_lm.generate(
             mlx_model.model,
             tokenizer,
             prompt=formatted_prompt,
-            temp=temperature,
+            sampler=sampler,
             max_tokens=max_tokens,
             verbose=False,
         )

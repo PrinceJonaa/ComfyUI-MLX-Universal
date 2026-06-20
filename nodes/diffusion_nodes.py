@@ -22,7 +22,8 @@ class MLXDecoder:
     CATEGORY = "MLX Universal/Diffusion"
 
     def decode(self, latent_image, mlx_vae):
-        decoded = mlx_vae(latent_image["samples"])
+        latent_array = mx.array(latent_image["samples"].cpu().numpy())
+        decoded = mlx_vae(latent_array)
         decoded = mx.clip(decoded / 2 + 0.5, 0, 1)
         mx.eval(decoded)
 
@@ -93,7 +94,8 @@ class MLXSampler:
 
         mx.eval(latents)
         latents = latents.astype(mlx_model.activation_dtype)
-        return (latents,)
+        latents_torch = torch.from_numpy(np.array(latents))
+        return ({"samples": latents_torch},)
 
 
 class MLXLoadFlux:

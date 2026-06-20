@@ -116,6 +116,8 @@ def make_key(*args, **kwargs):
         mocked_model.processor.chat_template = "template"
         mocked_model.processor.apply_chat_template.return_value = "formatted_prompt"
 
+        mock_mlx_lm.sample_utils = MagicMock()
+        mock_mlx_lm.sample_utils.make_sampler.return_value = "mock_sampler_1"
         mock_mlx_lm.generate.return_value = "generated response"
 
         result = node.generate(
@@ -132,11 +134,12 @@ def make_key(*args, **kwargs):
         mocked_model.processor.apply_chat_template.assert_called_once_with(
             [{"role": "user", "content": "Hello"}], tokenize=False, add_generation_prompt=True
         )
+        mock_mlx_lm.sample_utils.make_sampler.assert_called_once_with(temp=0.7, top_p=0.9)
         mock_mlx_lm.generate.assert_called_once_with(
             mocked_model.model,
             mocked_model.processor,
             prompt="formatted_prompt",
-            temp=0.7,
+            sampler="mock_sampler_1",
             max_tokens=100,
             verbose=False
         )
@@ -148,6 +151,8 @@ def make_key(*args, **kwargs):
         # Simulate missing chat_template
         del mocked_model.processor.chat_template
 
+        mock_mlx_lm.sample_utils = MagicMock()
+        mock_mlx_lm.sample_utils.make_sampler.return_value = "mock_sampler_2"
         mock_mlx_lm.generate.return_value = "generated response no template"
 
         result = node.generate(
@@ -161,11 +166,12 @@ def make_key(*args, **kwargs):
 
         self.assertEqual(result, ("generated response no template",))
         mock_mx.random.seed.assert_called_once_with(123)
+        mock_mlx_lm.sample_utils.make_sampler.assert_called_once_with(temp=1.0, top_p=0.5)
         mock_mlx_lm.generate.assert_called_once_with(
             mocked_model.model,
             mocked_model.processor,
             prompt="Hello raw",
-            temp=1.0,
+            sampler="mock_sampler_2",
             max_tokens=50,
             verbose=False
         )
