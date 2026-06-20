@@ -22,6 +22,7 @@ class MLXDecoder:
     CATEGORY = "MLX Universal/Diffusion"
 
     def decode(self, latent_image, mlx_vae):
+        print("Decoding VAE latents...")
         decoded = mlx_vae(latent_image["samples"])
         decoded = mx.clip(decoded / 2 + 0.5, 0, 1)
         # Force evaluation here to prevent passing uncomputed graphs to the bridging layer, avoiding deadlocks
@@ -50,6 +51,7 @@ class MLXSampler:
                         "max": 100.0,
                         "step": 0.1,
                         "round": 0.01,
+                        "tooltip": "Classifier-Free Guidance (CFG). Higher values force the image to match the prompt closer.",
                     },
                 ),
                 "mlx_positive_conditioning": ("mlx_conditioning",),
@@ -81,6 +83,7 @@ class MLXSampler:
         batch, channels, height, width = latent_image["samples"].shape
         latent_size = (height, width)
 
+        print("Generating image...")
         latents, iter_time = mlx_model.denoise_latents(
             conditioning,
             pooled_conditioning,

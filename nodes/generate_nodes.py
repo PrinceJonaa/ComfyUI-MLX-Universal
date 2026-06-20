@@ -40,7 +40,7 @@ class MLXLMGenerateText:
         self, mlx_model: LoadedMLXModel, prompt, max_tokens, temperature, top_p, seed
     ):
         if mlx_model.family != "mlx-lm":
-            raise ValueError(f"Expected family='mlx-lm', got {mlx_model.family}")
+            raise ValueError(f"Expected model family 'mlx-lm' for text generation, but got '{mlx_model.family}'. This usually means you connected a vision or SAM model to a text generation node. Please connect a text model like Qwen or Llama.")
 
         mx.random.seed(seed)
         import mlx_lm
@@ -114,7 +114,7 @@ class MLXVLMDescribeImage:
     ):
 
         if mlx_model.family != "mlx-vlm":
-            raise ValueError(f"Expected family='mlx-vlm', got {mlx_model.family}")
+            raise ValueError(f"Expected model family 'mlx-vlm' for image understanding, but got '{mlx_model.family}'. This usually means you connected a text-only model to a vision node. Please connect a vision model like Qwen-VL or LLaVA.")
 
         mx.random.seed(seed)
         import mlx_vlm

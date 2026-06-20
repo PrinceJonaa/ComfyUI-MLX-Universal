@@ -141,7 +141,7 @@ class MLXModelLoaderUnified:
                     processor=processor,
                 )
             else:
-                raise ValueError(f"Unknown resolved model type: {resolved_type}")
+                raise ValueError(f"Unknown resolved model type: '{resolved_type}'. The model type could not be automatically detected or is unsupported. Try explicitly setting 'model_type' to 'mlx-lm', 'mlx-vlm', or 'sam3' instead of 'auto'.")
 
         loaded = get_or_load_model(cache_key, _load)
         return (loaded,)
@@ -214,7 +214,7 @@ class MLXApplyLoRA:
                     processor=processor,
                 )
             else:
-                raise ValueError(f"Unknown resolved model type: {resolved_type}")
+                raise ValueError(f"Unknown resolved model type: {resolved_type}. The base model's type is unrecognized. Make sure the base model loaded correctly before applying LoRA.")
 
         loaded = get_or_load_model(cache_key, _load)
         return (loaded,)

@@ -30,11 +30,11 @@ class MLXVideoGenerator:
                 "negative_prompt": ("STRING", {"default": "blurry, low quality"}),
                 "width": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
                 "height": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
-                "num_frames": ("INT", {"default": 81, "min": 1, "max": 500}),
+                "num_frames": ("INT", {"default": 17, "min": 1, "max": 500}),
                 "steps": ("INT", {"default": 30, "min": 1, "max": 200}),
                 "guide_scale": (
                     "FLOAT",
-                    {"default": 5.0, "min": 0.0, "max": 50.0, "step": 0.5},
+                    {"default": 5.0, "min": 0.0, "max": 50.0, "step": 0.5, "tooltip": "Controls how closely the generation follows your prompt (higher = closer but less creative)"},
                 ),
                 "seed": ("INT", {"default": 42, "min": -1, "max": 2**32 - 1}),
             },
@@ -199,8 +199,8 @@ class MLXVideoGenerator:
             pbar.update_absolute(steps)
 
             rc = process.poll()
-            if rc != 0: raise RuntimeError(f"Video generation process failed with exit code {rc}")
-            if not os.path.exists(output_path): raise FileNotFoundError(f"Generation completed but output video was not found at: {output_path}")
+            if rc != 0: raise RuntimeError(f"Video generation process failed with exit code {rc}. This is often caused by running out of memory (OOM). Try reducing the resolution, number of frames, or using a smaller model.")
+            if not os.path.exists(output_path): raise FileNotFoundError(f"Generation completed but output video was not found at: {output_path}. This could be due to a silent crash or lack of disk space. Check the console logs for specific errors.")
 
             import cv2
             cap = cv2.VideoCapture(output_path)
@@ -212,7 +212,7 @@ class MLXVideoGenerator:
                 frames.append(frame.astype(np.float32) / 255.0)
             cap.release()
 
-            if len(frames) == 0: raise ValueError("No frames could be extracted from generated video.")
+            if len(frames) == 0: raise ValueError("No frames could be extracted from generated video. The video file may be corrupt or an unsupported format. Try generating with a different model or seed.")
             return (output_path, torch.from_numpy(np.stack(frames, axis=0)))
         finally:
             if process.poll() is None:

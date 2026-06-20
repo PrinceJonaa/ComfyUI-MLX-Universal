@@ -28,17 +28,18 @@ class MLXSAM3Predictor:
 
     def predict(self, mlx_model: LoadedMLXModel, image, text_prompt, score_threshold):
         if mlx_model.family != "sam3":
-            raise ValueError(f"Expected family='sam3', got {mlx_model.family}")
+            raise ValueError(f"Expected model family 'sam3' for segmentation, but got '{mlx_model.family}'. You need to load a SAM3 model to use this node.")
 
         from mlx_vlm.models.sam3.generate import Sam3Predictor
 
         pil_images = tensor_to_pil(image)
         if not pil_images:
-            raise ValueError("Empty image batch provided.")
+            raise ValueError("Empty image batch provided to the segmenter. Make sure an image is actually connected and loaded successfully.")
 
         pil_img = pil_images[0]
         W, H = pil_img.size
 
+        print("Segmenting image with SAM3...")
         predictor = Sam3Predictor(
             mlx_model.model, mlx_model.processor, score_threshold=score_threshold
         )
