@@ -54,8 +54,8 @@ The **ComfyUI MLX Universal Node Architecture** serves as a foundational runtime
 
 | Status | Modality | Tech Stack | Description |
 |:---:|---|---|---|
-| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **LLMs** | `mlx-lm` | Universal text generation, speculative decoding, thinking tokens. |
-| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **VLMs** | `mlx-vlm` | Multimodal visual reasoning and prompt alignment. |
+| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **LLMs** | `mlx-lm` | Universal text generation. |
+| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **VLMs** | `mlx-vlm` | Multimodal visual reasoning, prompt alignment, speculative decoding, thinking tokens. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Diffusion** | `DiffusionKit` | Native MLX sampling/decoding for Flux architectures. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Video** | `mlx_video` | CLI subprocess wrappers supporting Wan2.x, LTX-2, and CogVideoX. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Segmentation** | `SAM3` | Open-vocabulary semantic segmentation and object detection. |
@@ -120,7 +120,7 @@ graph TD
 **Phase 1: Stabilization (In Progress)**
 - [ ] Unified pipelines for Text, Vision, Samplers, and Video.
 - [x] Safe Native LoRA integration.
-- [ ] `registry.py` tracking and `bridge.py` conversions.
+- [x] `registry.py` tracking and `bridge.py` conversions.
 
 **Phase 2: Expansion (Help Wanted!)**
 

@@ -14,6 +14,7 @@ def get_or_load_model(key: str, loader: Callable[[], Any]) -> Any:
     """Retrieve from cache or load and cache."""
     if key not in _MODEL_CACHE:
         # Prevent runaway memory if cache gets large
+        # Explicitly bounds Unified Memory allocations to avoid hard OS swapping during large model context switches
         if len(_MODEL_CACHE) >= 2:
             clear_all_caches()
             print("Cleared MLX Metal cache to free unified memory for new model.")
