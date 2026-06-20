@@ -180,6 +180,7 @@ class MLXApplyLoRA:
         )
 
         def _load():
+            # LoRA weights are fused at load-time rather than dynamically applied to existing instances to ensure safe tracking within the unified memory cache.
             print(f"Loading base model '{model_path}' WITH adapter '{adapter_path}'...")
             kwargs = {"trust_remote_code": trust_remote_code}
             if adapter_path:

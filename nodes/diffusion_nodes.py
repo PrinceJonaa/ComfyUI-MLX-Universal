@@ -92,6 +92,7 @@ class MLXSampler:
             denoise=denoise,
         )
 
+        # Evaluates the latent graph lazily accumulated during sampling loops before returning to ComfyUI to prevent upstream deadlock.
         mx.eval(latents)
         latents = latents.astype(mlx_model.activation_dtype)
         return (latents,)
