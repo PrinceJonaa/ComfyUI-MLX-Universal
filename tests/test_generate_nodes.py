@@ -15,6 +15,9 @@ mock_mx = MagicMock()
 mock_mlx_lm = MagicMock()
 sys.modules['mlx_lm'] = mock_mlx_lm
 
+mock_mlx_lm_sample_utils = MagicMock()
+sys.modules['mlx_lm.sample_utils'] = mock_mlx_lm_sample_utils
+
 mock_mlx_vlm = MagicMock()
 sys.modules['mlx_vlm'] = mock_mlx_vlm
 
@@ -80,6 +83,8 @@ def make_key(*args, **kwargs):
         # Reset mocks before each test
         mock_mx.random.seed.reset_mock()
         mock_mlx_lm.generate.reset_mock()
+        if hasattr(mock_mlx_lm, "sample_utils"):
+            mock_mlx_lm.sample_utils.make_sampler.reset_mock()
         mock_mlx_vlm.generate.reset_mock()
         mock_mlx_vlm_prompt_utils.apply_chat_template.reset_mock()
         mock_mlx_vlm_speculative_drafters.load_drafter.reset_mock()
@@ -109,7 +114,9 @@ def make_key(*args, **kwargs):
 
         self.assertEqual(str(context.exception), "Expected family='mlx-lm', got unknown-family")
 
-    def test_mlx_lm_generate_happy_path_with_chat_template(self):
+    @patch('mlx_lm.sample_utils.make_sampler')
+    def test_mlx_lm_generate_happy_path_with_chat_template(self, mock_make_sampler):
+        mock_make_sampler.return_value = "mocked_sampler"
         node = self.MLXLMGenerateText()
         mocked_model = self.get_mocked_model()
         mocked_model.family = "mlx-lm"
@@ -132,16 +139,19 @@ def make_key(*args, **kwargs):
         mocked_model.processor.apply_chat_template.assert_called_once_with(
             [{"role": "user", "content": "Hello"}], tokenize=False, add_generation_prompt=True
         )
+        mock_make_sampler.assert_called_once_with(temp=0.7, top_p=0.9)
         mock_mlx_lm.generate.assert_called_once_with(
             mocked_model.model,
             mocked_model.processor,
             prompt="formatted_prompt",
-            temp=0.7,
+            sampler="mocked_sampler",
             max_tokens=100,
             verbose=False
         )
 
-    def test_mlx_lm_generate_happy_path_without_chat_template(self):
+    @patch('mlx_lm.sample_utils.make_sampler')
+    def test_mlx_lm_generate_happy_path_without_chat_template(self, mock_make_sampler):
+        mock_make_sampler.return_value = "mocked_sampler_2"
         node = self.MLXLMGenerateText()
         mocked_model = self.get_mocked_model()
         mocked_model.family = "mlx-lm"
@@ -161,11 +171,12 @@ def make_key(*args, **kwargs):
 
         self.assertEqual(result, ("generated response no template",))
         mock_mx.random.seed.assert_called_once_with(123)
+        mock_make_sampler.assert_called_once_with(temp=1.0, top_p=0.5)
         mock_mlx_lm.generate.assert_called_once_with(
             mocked_model.model,
             mocked_model.processor,
             prompt="Hello raw",
-            temp=1.0,
+            sampler="mocked_sampler_2",
             max_tokens=50,
             verbose=False
         )
