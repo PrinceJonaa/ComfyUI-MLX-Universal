@@ -100,6 +100,11 @@ class DiffusionPipeline:
         if not hasattr(self, "encoder"):
             self.encoder = load_vae_encoder(float16=False, key=self.mmdit_ckpt)
 
+        self.set_up_clip()
+        if self.use_t5 and not hasattr(self, "t5_encoder"):
+            self.set_up_t5()
+
+    def set_up_clip(self):
         if not hasattr(self, "clip_l"):
             self.clip_l = load_text_encoder(
                 self.model,
@@ -124,8 +129,6 @@ class DiffusionPipeline:
                 vocab_key="tokenizer_g_vocab",
                 pad_with_eos=False,
             )
-        if self.use_t5 and not hasattr(self, "t5_encoder"):
-            self.set_up_t5()
 
     def set_up_t5(self):
         if not hasattr(self, "t5_encoder") or self.t5_encoder is None:
@@ -333,7 +336,8 @@ class DiffusionPipeline:
                 f"Pre text encoding active memory: {log['text_encoding']['pre']['active_memory']}GB"
             )
 
-        # FIXME(arda): Need the same for CLIP models (low memory mode will not succeed a second time otherwise)
+        if not hasattr(self, "clip_l"):
+            self.set_up_clip()
         if not hasattr(self, "t5"):
             self.set_up_t5()
 
