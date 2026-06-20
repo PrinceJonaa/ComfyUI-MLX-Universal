@@ -43,3 +43,28 @@ def mlx_to_torch(mlx_tensor) -> torch.Tensor:
     if tensor.dim() == 3:
         tensor = tensor.unsqueeze(0)
     return tensor
+
+def torch_to_mlx(torch_tensor: torch.Tensor):
+    """Convert a PyTorch tensor to an MLX array."""
+    import mlx.core as mx
+    # Move to CPU and numpy before creating MLX array
+    np_arr = torch_tensor.detach().cpu().numpy()
+    mlx_tensor = mx.array(np_arr)
+    return mlx_tensor
+
+def mlx_to_latent(mlx_tensor) -> dict:
+    """Convert an MLX latent array into a ComfyUI-compliant latent dictionary."""
+    import mlx.core as mx
+    mx.eval(mlx_tensor)
+    if mlx_tensor.dtype == mx.bfloat16:
+        np_arr = np.array(mlx_tensor.astype(mx.float32))
+    else:
+        np_arr = np.array(mlx_tensor)
+    torch_tensor = torch.from_numpy(np_arr)
+    return {"samples": torch_tensor}
+
+def latent_to_mlx(latent_dict: dict):
+    """Safely unpack a ComfyUI latent dictionary and convert its PyTorch tensor back to an MLX array."""
+    if not isinstance(latent_dict, dict) or "samples" not in latent_dict:
+        raise ValueError("Expected a ComfyUI latent dictionary with a 'samples' key.")
+    return torch_to_mlx(latent_dict["samples"])
