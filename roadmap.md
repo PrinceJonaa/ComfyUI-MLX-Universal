@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-06-19 at commit 281d862
+> Last curated: 2026-06-21 at commit e157412
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -9,15 +9,10 @@
 
 ## Planned
 
-### [RM-001] Add Speculative Decoding and Thinking Tokens to LLM Node
+### [RM-007] Enforce ComfyUI Latent Dictionary Format and Tensor Bridging in Diffusion Nodes
 - Status: Planned
-- Evidence: `README.md` claims `mlx-lm` has "speculative decoding, thinking tokens", but `nodes/generate_nodes.py`'s `MLXLMGenerateText` lacks parameters for them, whereas `MLXVLMDescribeImage` has them.
-- Why it matters: Keeps text generation capabilities on par with visual capabilities and fulfills the advertised feature set.
-
-### [RM-002] Implement IS_CHANGED for System Nodes
-- Status: Planned
-- Evidence: `nodes/system_nodes.py` nodes (`MLXClearCache`, `MLXCacheStats`) lack required inputs but missing `IS_CHANGED` method.
-- Why it matters: Without `IS_CHANGED`, ComfyUI will cache these nodes and only run them once per session, preventing caching stats and cache clearing from working iteratively.
+- Evidence: `nodes/diffusion_nodes.py`'s `MLXSampler` returns a raw MLX array `(latents,)` instead of the required ComfyUI format `{"samples": torch_tensor}` and skips `runtime/bridge.py`.
+- Why it matters: Breaks downstream ComfyUI nodes expecting standard PyTorch latent format, violating the architecture tensor bridge rules.
 
 ### [RM-003] Integrate Whisper/Kokoro via `mlx-audio`
 - Status: Planned
@@ -38,8 +33,12 @@
 
 ## Recently Completed
 
+### [RM-002] Implement IS_CHANGED for System Nodes — completed 2026-06-21
+- Evidence: `nodes/system_nodes.py` already implements `IS_CHANGED` returning `float("NaN")`.
+
 ### [RM-006] Registry Tracking and Tensor Bridge Conversions
 - Status: Completed
 - Evidence: `runtime/registry.py` and `runtime/bridge.py` are fully implemented, used across codebase.
 
 ## Deferred / Rejected
+- **[RM-001] Add Speculative Decoding and Thinking Tokens to LLM Node** — removed 2026-06-21. Reason: README claim is already accurate; speculative decoding/thinking tokens are correctly attributed to VLMs, not LLMs.
