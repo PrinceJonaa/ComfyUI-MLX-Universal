@@ -40,7 +40,7 @@ class MLXLMGenerateText:
         self, mlx_model: LoadedMLXModel, prompt, max_tokens, temperature, top_p, seed
     ):
         if mlx_model.family != "mlx-lm":
-            raise ValueError(f"Expected family='mlx-lm', got {mlx_model.family}")
+            raise ValueError(f"Expected a language model (family='mlx-lm') + Found family='{mlx_model.family}' instead + Please connect a model loaded via MLX Load Model with model_type='mlx-lm' or 'auto'.")
 
         mx.random.seed(seed)
         import mlx_lm
@@ -114,7 +114,7 @@ class MLXVLMDescribeImage:
     ):
 
         if mlx_model.family != "mlx-vlm":
-            raise ValueError(f"Expected family='mlx-vlm', got {mlx_model.family}")
+            raise ValueError(f"Expected a vision-language model (family='mlx-vlm') + Found family='{mlx_model.family}' instead + Please connect a model loaded via MLX Load Model with model_type='mlx-vlm' or 'auto'.")
 
         mx.random.seed(seed)
         import mlx_vlm

@@ -141,7 +141,7 @@ class MLXModelLoaderUnified:
                     processor=processor,
                 )
             else:
-                raise ValueError(f"Unknown resolved model type: {resolved_type}")
+                raise ValueError(f"Expected a valid resolved model type ('mlx-lm', 'mlx-vlm', or 'sam3') + Found unknown type '{resolved_type}' + Please check the model_type parameter or ensure the model config is valid.")
 
         loaded = get_or_load_model(cache_key, _load)
         return (loaded,)
@@ -214,7 +214,7 @@ class MLXApplyLoRA:
                     processor=processor,
                 )
             else:
-                raise ValueError(f"Unknown resolved model type: {resolved_type}")
+                raise ValueError(f"Expected a valid resolved model type ('mlx-lm', 'mlx-vlm', or 'sam3') + Found unknown type '{resolved_type}' + Please check the model_type parameter or ensure the model config is valid.")
 
         loaded = get_or_load_model(cache_key, _load)
         return (loaded,)

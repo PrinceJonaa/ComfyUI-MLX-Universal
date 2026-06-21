@@ -4,6 +4,7 @@ import re
 import tempfile
 import subprocess
 import shutil
+import folder_paths
 import numpy as np
 import torch
 import comfy.utils
@@ -72,8 +73,10 @@ class MLXVideoGenerator:
         else:
             cmd_family = "ltx_2"
 
-        temp_dir = tempfile.mkdtemp()
-        output_path = os.path.join(temp_dir, "output.mp4")
+        import uuid
+        temp_dir = folder_paths.get_temp_directory()
+        run_id = str(uuid.uuid4())[:8]
+        output_path = os.path.join(temp_dir, f"mlx_video_{run_id}.mp4")
 
         if cmd_family == "wan":
             cmd = [
@@ -103,7 +106,7 @@ class MLXVideoGenerator:
                 cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
-                temp_img_path = os.path.join(temp_dir, "input_frame.png")
+                temp_img_path = os.path.join(temp_dir, f"mlx_input_{run_id}.png")
                 pil_imgs[0].save(temp_img_path)
                 cmd += ["--image", temp_img_path]
         elif cmd_family == "cogvideo":
@@ -132,7 +135,7 @@ class MLXVideoGenerator:
                 cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
-                temp_img_path = os.path.join(temp_dir, "input_frame.png")
+                temp_img_path = os.path.join(temp_dir, f"mlx_input_{run_id}.png")
                 pil_imgs[0].save(temp_img_path)
                 cmd += ["--image", temp_img_path]
         else:
@@ -161,7 +164,7 @@ class MLXVideoGenerator:
                 cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
-                temp_img_path = os.path.join(temp_dir, "input_frame.png")
+                temp_img_path = os.path.join(temp_dir, f"mlx_input_{run_id}.png")
                 pil_imgs[0].save(temp_img_path)
                 cmd += ["--image", temp_img_path]
             if audio_path and os.path.exists(audio_path):
@@ -199,7 +202,7 @@ class MLXVideoGenerator:
             pbar.update_absolute(steps)
 
             rc = process.poll()
-            if rc != 0: raise RuntimeError(f"Video generation process failed with exit code {rc}")
+            if rc != 0: raise RuntimeError(f"Expected the video generation subprocess to exit cleanly + It failed with exit code {rc} + Check the ComfyUI console logs for specific MLX Video CLI errors.")
             if not os.path.exists(output_path): raise FileNotFoundError(f"Generation completed but output video was not found at: {output_path}")
 
             import cv2
@@ -212,13 +215,12 @@ class MLXVideoGenerator:
                 frames.append(frame.astype(np.float32) / 255.0)
             cap.release()
 
-            if len(frames) == 0: raise ValueError("No frames could be extracted from generated video.")
+            if len(frames) == 0: raise ValueError("Expected video frames to be extracted + No frames could be read from the generated MP4 file + Check if ffmpeg/opencv is installed correctly and the output video is not corrupted.")
             return (output_path, torch.from_numpy(np.stack(frames, axis=0)))
         finally:
             if process.poll() is None:
                 process.terminate()
                 process.wait()
-            shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 NODE_CLASS_MAPPINGS = {
