@@ -63,16 +63,16 @@ def detect_model_type(model_path_or_id):
 
 class MLXModelLoaderUnified:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "model_path": ("STRING", {"default": "mlx-community/Qwen3.5-4B-OptiQ-4bit"}),
-                "model_type": (["auto", "mlx-lm", "mlx-vlm", "sam3"], {"default": "auto"}),
-                "trust_remote_code": ("BOOLEAN", {"default": False}),
-                "quantize_activations": ("BOOLEAN", {"default": False}),
+                "model_path": ("STRING", {"default": "mlx-community/Qwen3.5-4B-OptiQ-4bit", "tooltip": "HuggingFace repo ID or local path to the MLX model"}),
+                "model_type": (["auto", "mlx-lm", "mlx-vlm", "sam3"], {"default": "auto", "tooltip": "Model family type. 'auto' usually works."}),
+                "trust_remote_code": ("BOOLEAN", {"default": False, "tooltip": "Enable if the model requires custom execution code from its repository"}),
+                "quantize_activations": ("BOOLEAN", {"default": False, "tooltip": "Quantize activations to save memory at the cost of slight performance"}),
             },
             "optional": {
-                "adapter_path": ("STRING", {"default": ""}),
+                "adapter_path": ("STRING", {"default": "", "tooltip": "Optional HuggingFace repo ID or local path to a LoRA adapter"}),
             },
         }
 
@@ -141,7 +141,7 @@ class MLXModelLoaderUnified:
                     processor=processor,
                 )
             else:
-                raise ValueError(f"Unknown resolved model type: {resolved_type}")
+                raise ValueError(f"The model type '{resolved_type}' was not recognized as a supported MLX format. The auto-detector might have failed, or the model is unsupported. Try explicitly setting 'model_type' to 'mlx-lm' or 'mlx-vlm'.")
 
         loaded = get_or_load_model(cache_key, _load)
         return (loaded,)
@@ -149,11 +149,11 @@ class MLXModelLoaderUnified:
 
 class MLXApplyLoRA:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "mlx_model": ("MLX_MODEL",),
-                "adapter_path": ("STRING", {"default": ""}),
+                "mlx_model": ("MLX_MODEL", {"tooltip": "The base MLX model to apply the LoRA to"}),
+                "adapter_path": ("STRING", {"default": "", "tooltip": "HuggingFace repo ID or local path to the LoRA adapter"}),
             }
         }
 
@@ -214,7 +214,7 @@ class MLXApplyLoRA:
                     processor=processor,
                 )
             else:
-                raise ValueError(f"Unknown resolved model type: {resolved_type}")
+                raise ValueError(f"The base model type '{resolved_type}' was not recognized while applying the LoRA. Try reloading the base model with an explicit 'model_type'.")
 
         loaded = get_or_load_model(cache_key, _load)
         return (loaded,)

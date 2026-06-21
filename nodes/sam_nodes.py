@@ -8,15 +8,15 @@ from ..runtime.bridge import tensor_to_pil, pil_to_tensor
 
 class MLXSAM3Predictor:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "mlx_model": ("MLX_MODEL",),
-                "image": ("IMAGE",),
-                "text_prompt": ("STRING", {"default": "a dog"}),
+                "mlx_model": ("MLX_MODEL", {"tooltip": "The loaded MLX SAM3 model"}),
+                "image": ("IMAGE", {"tooltip": "The input image to segment"}),
+                "text_prompt": ("STRING", {"default": "a dog", "tooltip": "Text describing what to segment in the image"}),
                 "score_threshold": (
                     "FLOAT",
-                    {"default": 0.3, "min": 0.0, "max": 1.0, "step": 0.05},
+                    {"default": 0.3, "min": 0.0, "max": 1.0, "step": 0.05, "tooltip": "Minimum confidence score for a detection to be returned"},
                 ),
             }
         }
@@ -28,13 +28,13 @@ class MLXSAM3Predictor:
 
     def predict(self, mlx_model: LoadedMLXModel, image, text_prompt, score_threshold):
         if mlx_model.family != "sam3":
-            raise ValueError(f"Expected family='sam3', got {mlx_model.family}")
+            raise ValueError(f"Expected a segmentation model (sam3) but got '{mlx_model.family}'. This usually happens if you connect a Text or Vision model to a SAM node. Please connect a model loaded with type 'sam3'.")
 
         from mlx_vlm.models.sam3.generate import Sam3Predictor
 
         pil_images = tensor_to_pil(image)
         if not pil_images:
-            raise ValueError("Empty image batch provided.")
+            raise ValueError("Expected an image input but received an empty batch. Check your image loading/routing nodes and ensure they are passing valid image data.")
 
         pil_img = pil_images[0]
         W, H = pil_img.size
@@ -42,7 +42,9 @@ class MLXSAM3Predictor:
         predictor = Sam3Predictor(
             mlx_model.model, mlx_model.processor, score_threshold=score_threshold
         )
+        print(f"Running SAM3 prediction for prompt: '{text_prompt}'...")
         result = predictor.predict(pil_img, text_prompt=text_prompt)
+        print("SAM3 prediction completed.")
 
         overlay = pil_img.copy()
         draw_width = max(2, int(min(W, H) * 0.005))

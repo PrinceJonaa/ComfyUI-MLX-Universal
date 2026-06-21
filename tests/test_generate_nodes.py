@@ -112,7 +112,7 @@ def make_key(*args, **kwargs):
                 seed=42
             )
 
-        self.assertEqual(str(context.exception), "Expected family='mlx-lm', got unknown-family")
+        self.assertEqual(str(context.exception), "Expected a text model (mlx-lm) but got 'unknown-family'. This usually happens if you connect a Vision or SAM model to a text generation node. Please connect a model loaded with type 'mlx-lm'.")
 
     @patch('mlx_lm.sample_utils.make_sampler')
     def test_mlx_lm_generate_happy_path_with_chat_template(self, mock_make_sampler):
@@ -199,7 +199,7 @@ def make_key(*args, **kwargs):
                 thinking_budget=100
             )
 
-        self.assertEqual(str(context.exception), "Expected family='mlx-vlm', got unknown-family")
+        self.assertEqual(str(context.exception), "Expected a vision model (mlx-vlm) but got 'unknown-family'. This usually happens if you connect a Text or SAM model to a vision generation node. Please connect a model loaded with type 'mlx-vlm'.")
 
     @patch('os.path.exists', return_value=True)
     def test_mlx_vlm_run_happy_path_no_draft_model(self, mock_os_exists):

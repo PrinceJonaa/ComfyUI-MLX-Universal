@@ -7,27 +7,28 @@ from ..runtime.registry import get_or_load_draft_model, make_key
 
 class MLXLMGenerateText:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "mlx_model": ("MLX_MODEL",),
+                "mlx_model": ("MLX_MODEL", {"tooltip": "The loaded MLX model"}),
                 "prompt": (
                     "STRING",
                     {
                         "multiline": True,
                         "default": "Explain quantum computing in simple terms.",
+                        "tooltip": "The text prompt to generate from",
                     },
                 ),
-                "max_tokens": ("INT", {"default": 256, "min": 1, "max": 16384}),
+                "max_tokens": ("INT", {"default": 256, "min": 1, "max": 16384, "tooltip": "Maximum number of tokens to generate"}),
                 "temperature": (
                     "FLOAT",
-                    {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.05},
+                    {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.05, "tooltip": "Sampling temperature. Higher values make output more random."},
                 ),
                 "top_p": (
                     "FLOAT",
-                    {"default": 0.9, "min": 0.0, "max": 1.0, "step": 0.05},
+                    {"default": 0.9, "min": 0.0, "max": 1.0, "step": 0.05, "tooltip": "Top-p sampling. Lower values make output more focused."},
                 ),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1, "tooltip": "Random seed for reproducibility"}),
             }
         }
 
@@ -40,7 +41,7 @@ class MLXLMGenerateText:
         self, mlx_model: LoadedMLXModel, prompt, max_tokens, temperature, top_p, seed
     ):
         if mlx_model.family != "mlx-lm":
-            raise ValueError(f"Expected family='mlx-lm', got {mlx_model.family}")
+            raise ValueError(f"Expected a text model (mlx-lm) but got '{mlx_model.family}'. This usually happens if you connect a Vision or SAM model to a text generation node. Please connect a model loaded with type 'mlx-lm'.")
 
         mx.random.seed(seed)
         import mlx_lm
@@ -55,6 +56,7 @@ class MLXLMGenerateText:
 
         sampler = make_sampler(temp=temperature, top_p=top_p)
 
+        print(f"Generating text for prompt: {prompt[:50]}...")
         response = mlx_lm.generate(
             mlx_model.model,
             tokenizer,
@@ -63,33 +65,34 @@ class MLXLMGenerateText:
             max_tokens=max_tokens,
             verbose=False,
         )
+        print("Text generation completed.")
         return (response,)
 
 
 class MLXVLMDescribeImage:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "mlx_model": ("MLX_MODEL",),
+                "mlx_model": ("MLX_MODEL", {"tooltip": "The loaded MLX vision model"}),
                 "prompt": (
                     "STRING",
-                    {"multiline": True, "default": "Describe this image in detail."},
+                    {"multiline": True, "default": "Describe this image in detail.", "tooltip": "The text prompt to generate from"},
                 ),
-                "max_tokens": ("INT", {"default": 256, "min": 1, "max": 16384}),
+                "max_tokens": ("INT", {"default": 256, "min": 1, "max": 16384, "tooltip": "Maximum number of tokens to generate"}),
                 "temperature": (
                     "FLOAT",
-                    {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.05},
+                    {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.05, "tooltip": "Sampling temperature. Higher values make output more random."},
                 ),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
-                "enable_thinking": ("BOOLEAN", {"default": False}),
-                "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1, "tooltip": "Random seed for reproducibility"}),
+                "enable_thinking": ("BOOLEAN", {"default": False, "tooltip": "Enable thinking tokens for advanced models"}),
+                "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192, "tooltip": "Maximum number of thinking tokens"}),
             },
             "optional": {
-                "image": ("IMAGE",),
-                "audio_path": ("STRING", {"default": ""}),
-                "draft_model_path": ("STRING", {"default": ""}),
-                "draft_kind": (["dflash", "eagle3", "mtp"], {"default": "dflash"}),
+                "image": ("IMAGE", {"tooltip": "Optional input image to describe"}),
+                "audio_path": ("STRING", {"default": "", "tooltip": "Optional path to an audio file"}),
+                "draft_model_path": ("STRING", {"default": "", "tooltip": "Optional path to a draft model for speculative decoding"}),
+                "draft_kind": (["dflash", "eagle3", "mtp"], {"default": "dflash", "tooltip": "Speculative decoding draft kind"}),
             },
         }
 
@@ -114,7 +117,7 @@ class MLXVLMDescribeImage:
     ):
 
         if mlx_model.family != "mlx-vlm":
-            raise ValueError(f"Expected family='mlx-vlm', got {mlx_model.family}")
+            raise ValueError(f"Expected a vision model (mlx-vlm) but got '{mlx_model.family}'. This usually happens if you connect a Text or SAM model to a vision generation node. Please connect a model loaded with type 'mlx-vlm'.")
 
         mx.random.seed(seed)
         import mlx_vlm
@@ -154,6 +157,7 @@ class MLXVLMDescribeImage:
             gen_kwargs["draft_model"] = draft_model
             gen_kwargs["draft_kind"] = draft_kind_res
 
+        print(f"Generating description for prompt: {prompt[:50]}...")
         response = mlx_vlm.generate(
             mlx_model.model,
             mlx_model.processor,
@@ -162,6 +166,7 @@ class MLXVLMDescribeImage:
             audio=audios if audios else None,
             **gen_kwargs,
         )
+        print("Vision generation completed.")
         return (response,)
 
 

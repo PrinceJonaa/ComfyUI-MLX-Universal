@@ -13,34 +13,35 @@ from ..runtime.bridge import tensor_to_pil
 
 class MLXVideoGenerator:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "model_repo_or_dir": (
                     "STRING",
-                    {"default": "mlx-community/LTX-2-dev-bf16"},
+                    {"default": "mlx-community/LTX-2-dev-bf16", "tooltip": "HuggingFace repo ID or local path to the video model"},
                 ),
                 "prompt": (
                     "STRING",
                     {
                         "multiline": True,
                         "default": "Two dogs sitting on a beach wearing sunglasses, close up, cinematic, sunset",
+                        "tooltip": "The text prompt describing the video to generate",
                     },
                 ),
-                "negative_prompt": ("STRING", {"default": "blurry, low quality"}),
-                "width": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
-                "height": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
-                "num_frames": ("INT", {"default": 81, "min": 1, "max": 500}),
-                "steps": ("INT", {"default": 30, "min": 1, "max": 200}),
+                "negative_prompt": ("STRING", {"default": "blurry, low quality", "tooltip": "What to avoid in the generated video"}),
+                "width": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64, "tooltip": "Width of the generated video"}),
+                "height": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64, "tooltip": "Height of the generated video"}),
+                "num_frames": ("INT", {"default": 17, "min": 1, "max": 500, "tooltip": "Number of frames to generate. Lower values use less memory."}),
+                "steps": ("INT", {"default": 30, "min": 1, "max": 200, "tooltip": "Number of diffusion steps. Higher values take longer but improve quality."}),
                 "guide_scale": (
                     "FLOAT",
-                    {"default": 5.0, "min": 0.0, "max": 50.0, "step": 0.5},
+                    {"default": 5.0, "min": 0.0, "max": 50.0, "step": 0.5, "tooltip": "CFG / Guidance scale. How closely to follow the prompt."},
                 ),
-                "seed": ("INT", {"default": 42, "min": -1, "max": 2**32 - 1}),
+                "seed": ("INT", {"default": 42, "min": -1, "max": 2**32 - 1, "tooltip": "Random seed for reproducibility"}),
             },
             "optional": {
-                "image": ("IMAGE",),
-                "audio_path": ("STRING", {"default": ""}),
+                "image": ("IMAGE", {"tooltip": "Optional starting image frame"}),
+                "audio_path": ("STRING", {"default": "", "tooltip": "Optional path to audio track"}),
             },
         }
 
@@ -199,8 +200,8 @@ class MLXVideoGenerator:
             pbar.update_absolute(steps)
 
             rc = process.poll()
-            if rc != 0: raise RuntimeError(f"Video generation process failed with exit code {rc}")
-            if not os.path.exists(output_path): raise FileNotFoundError(f"Generation completed but output video was not found at: {output_path}")
+            if rc != 0: raise RuntimeError(f"Expected video generation to succeed, but the process failed with exit code {rc}. Check the ComfyUI terminal log above for the exact error, which is often an Out of Memory (OOM) issue. Try lowering 'num_frames' or 'width'/'height'.")
+            if not os.path.exists(output_path): raise FileNotFoundError(f"Expected a generated video file at '{output_path}', but it was not found. The generation CLI might have crashed silently. Check your terminal logs.")
 
             import cv2
             cap = cv2.VideoCapture(output_path)
@@ -212,7 +213,7 @@ class MLXVideoGenerator:
                 frames.append(frame.astype(np.float32) / 255.0)
             cap.release()
 
-            if len(frames) == 0: raise ValueError("No frames could be extracted from generated video.")
+            if len(frames) == 0: raise ValueError(f"Expected frames to be written to the video, but extraction failed. The file at '{output_path}' might be corrupt. Try changing parameters and regenerating.")
             return (output_path, torch.from_numpy(np.stack(frames, axis=0)))
         finally:
             if process.poll() is None:

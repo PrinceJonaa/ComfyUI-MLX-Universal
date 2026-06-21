@@ -14,18 +14,23 @@ from ..diffusionkit.mlx.constants import T5_MAX_LENGTH
 
 class MLXDecoder:
     @classmethod
-    def INPUT_TYPES(s):
-        return {"required": {"latent_image": ("LATENT",), "mlx_vae": ("mlx_vae",)}}
+    def INPUT_TYPES(s) -> dict:
+        return {"required": {
+            "latent_image": ("LATENT", {"tooltip": "The generated latents to decode"}),
+            "mlx_vae": ("mlx_vae", {"tooltip": "The loaded VAE to use for decoding"})
+        }}
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "decode"
     CATEGORY = "MLX Universal/Diffusion"
 
     def decode(self, latent_image, mlx_vae):
+        print("Starting VAE decode...")
         decoded = mlx_vae(latent_image["samples"])
         decoded = mx.clip(decoded / 2 + 0.5, 0, 1)
         # Force evaluation here to prevent passing uncomputed graphs to the bridging layer, avoiding deadlocks
         mx.eval(decoded)
+        print("VAE decode completed.")
 
         # Use bridge to convert to PyTorch efficiently
         from ..runtime.bridge import mlx_to_torch
@@ -36,12 +41,12 @@ class MLXDecoder:
 
 class MLXSampler:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "mlx_model": ("mlx_model",),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
-                "steps": ("INT", {"default": 4, "min": 1, "max": 10000}),
+                "mlx_model": ("mlx_model", {"tooltip": "The MLX diffusion model"}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1, "tooltip": "Random seed for reproducibility"}),
+                "steps": ("INT", {"default": 4, "min": 1, "max": 10000, "tooltip": "Number of sampling steps. Lower means faster but less detailed."}),
                 "cfg": (
                     "FLOAT",
                     {
@@ -50,13 +55,14 @@ class MLXSampler:
                         "max": 100.0,
                         "step": 0.1,
                         "round": 0.01,
+                        "tooltip": "Classifier-Free Guidance. Higher means strict prompt adherence."
                     },
                 ),
-                "mlx_positive_conditioning": ("mlx_conditioning",),
-                "latent_image": ("LATENT",),
+                "mlx_positive_conditioning": ("mlx_conditioning", {"tooltip": "The encoded text prompt"}),
+                "latent_image": ("LATENT", {"tooltip": "The empty latent image specifying generation dimensions"}),
                 "denoise": (
                     "FLOAT",
-                    {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01},
+                    {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01, "tooltip": "Amount to denoise. 1.0 is full generation."},
                 ),
             }
         }
@@ -81,6 +87,7 @@ class MLXSampler:
         batch, channels, height, width = latent_image["samples"].shape
         latent_size = (height, width)
 
+        print(f"Starting MLX image generation ({steps} steps)...")
         latents, iter_time = mlx_model.denoise_latents(
             conditioning,
             pooled_conditioning,
@@ -94,12 +101,13 @@ class MLXSampler:
 
         mx.eval(latents)
         latents = latents.astype(mlx_model.activation_dtype)
+        print("MLX image generation completed.")
         return (latents,)
 
 
 class MLXLoadFlux:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "model_version": (
@@ -108,6 +116,7 @@ class MLXLoadFlux:
                         "argmaxinc/mlx-FLUX.1-schnell",
                         "argmaxinc/mlx-FLUX.1-dev",
                     ],
+                    {"tooltip": "The Flux model version to load"}
                 )
             }
         }
@@ -151,11 +160,11 @@ class MLXLoadFlux:
 
 class MLXClipTextEncoder:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "text": ("STRING", {"multiline": True, "dynamicPrompts": True}),
-                "mlx_conditioning": ("mlx_conditioning", {"forceInput": True}),
+                "text": ("STRING", {"multiline": True, "dynamicPrompts": True, "tooltip": "The text prompt to encode"}),
+                "mlx_conditioning": ("mlx_conditioning", {"forceInput": True, "tooltip": "The CLIP model to use"}),
             }
         }
 
