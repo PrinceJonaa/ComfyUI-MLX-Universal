@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-06-19 at commit 281d862
+> Last curated: 2026-06-19 at commit e157412
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -8,11 +8,6 @@
 ## In Progress
 
 ## Planned
-
-### [RM-001] Add Speculative Decoding and Thinking Tokens to LLM Node
-- Status: Planned
-- Evidence: `README.md` claims `mlx-lm` has "speculative decoding, thinking tokens", but `nodes/generate_nodes.py`'s `MLXLMGenerateText` lacks parameters for them, whereas `MLXVLMDescribeImage` has them.
-- Why it matters: Keeps text generation capabilities on par with visual capabilities and fulfills the advertised feature set.
 
 ### [RM-002] Implement IS_CHANGED for System Nodes
 - Status: Planned
@@ -37,6 +32,10 @@
 ## Blocked
 
 ## Recently Completed
+
+### [RM-001] Add Speculative Decoding and Thinking Tokens to LLM Node
+- Status: Completed
+- Evidence: Added `draft_model_path`, `enable_thinking`, and `thinking_budget` to `MLXLMGenerateText` node schema in `nodes/generate_nodes.py`, routing draft model requests to `mlx_lm.generate()`.
 
 ### [RM-006] Registry Tracking and Tensor Bridge Conversions
 - Status: Completed

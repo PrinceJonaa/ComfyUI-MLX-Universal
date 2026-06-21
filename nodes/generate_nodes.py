@@ -28,7 +28,12 @@ class MLXLMGenerateText:
                     {"default": 0.9, "min": 0.0, "max": 1.0, "step": 0.05},
                 ),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
-            }
+            },
+            "optional": {
+                "draft_model_path": ("STRING", {"default": ""}),
+                "enable_thinking": ("BOOLEAN", {"default": False}),
+                "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192}),
+            },
         }
 
     RETURN_TYPES = ("STRING",)
@@ -37,7 +42,16 @@ class MLXLMGenerateText:
     CATEGORY = "MLX Universal/LM"
 
     def generate(
-        self, mlx_model: LoadedMLXModel, prompt, max_tokens, temperature, top_p, seed
+        self,
+        mlx_model: LoadedMLXModel,
+        prompt,
+        max_tokens,
+        temperature,
+        top_p,
+        seed,
+        draft_model_path="",
+        enable_thinking=False,
+        thinking_budget=512,
     ):
         if mlx_model.family != "mlx-lm":
             raise ValueError(f"Expected family='mlx-lm', got {mlx_model.family}")
@@ -55,13 +69,28 @@ class MLXLMGenerateText:
 
         sampler = make_sampler(temp=temperature, top_p=top_p)
 
+        gen_kwargs = {
+            "sampler": sampler,
+            "max_tokens": max_tokens,
+            "verbose": False,
+        }
+
+        if draft_model_path:
+            draft_key = make_key(draft_model_path, "draft")
+
+            def _load_draft():
+                print(f"Loading draft model '{draft_model_path}'...")
+                model, _ = mlx_lm.load(draft_model_path)
+                return model
+
+            draft_model = get_or_load_draft_model(draft_key, _load_draft)
+            gen_kwargs["draft_model"] = draft_model
+
         response = mlx_lm.generate(
             mlx_model.model,
             tokenizer,
             prompt=formatted_prompt,
-            sampler=sampler,
-            max_tokens=max_tokens,
-            verbose=False,
+            **gen_kwargs,
         )
         return (response,)
 
