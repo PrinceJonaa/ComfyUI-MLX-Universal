@@ -63,11 +63,17 @@ def detect_model_type(model_path_or_id):
 
 class MLXModelLoaderUnified:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "model_path": ("STRING", {"default": "mlx-community/Qwen3.5-4B-OptiQ-4bit"}),
-                "model_type": (["auto", "mlx-lm", "mlx-vlm", "sam3"], {"default": "auto"}),
+                "model_path": (
+                    "STRING",
+                    {"default": "mlx-community/Qwen3.5-4B-OptiQ-4bit"},
+                ),
+                "model_type": (
+                    ["auto", "mlx-lm", "mlx-vlm", "sam3"],
+                    {"default": "auto"},
+                ),
                 "trust_remote_code": ("BOOLEAN", {"default": False}),
                 "quantize_activations": ("BOOLEAN", {"default": False}),
             },
@@ -112,7 +118,9 @@ class MLXModelLoaderUnified:
                 if os.path.exists(adapter_path):
                     print(f"Applying LoRA adapter from local path: {adapter_path}")
                 else:
-                    print(f"adapter_path '{adapter_path}' not found locally. Assuming remote Hugging Face Hub repo.")
+                    print(
+                        f"adapter_path '{adapter_path}' not found locally. Assuming remote Hugging Face Hub repo."
+                    )
             if resolved_type == "mlx-lm":
                 import mlx_lm
 
@@ -149,7 +157,7 @@ class MLXModelLoaderUnified:
 
 class MLXApplyLoRA:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
@@ -185,7 +193,9 @@ class MLXApplyLoRA:
             if adapter_path:
                 kwargs["adapter_path"] = adapter_path
                 if not os.path.exists(adapter_path):
-                    print(f"adapter_path '{adapter_path}' not found locally. Assuming remote Hugging Face Hub repo.")
+                    print(
+                        f"adapter_path '{adapter_path}' not found locally. Assuming remote Hugging Face Hub repo."
+                    )
             if resolved_type == "mlx-lm":
                 import mlx_lm
 

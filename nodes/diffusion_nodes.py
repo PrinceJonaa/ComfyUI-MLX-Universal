@@ -1,6 +1,4 @@
-import numpy as np
 import mlx.core as mx
-import torch
 import os
 from typing import Optional
 
@@ -14,7 +12,7 @@ from ..diffusionkit.mlx.constants import T5_MAX_LENGTH
 
 class MLXDecoder:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {"required": {"latent_image": ("LATENT",), "mlx_vae": ("mlx_vae",)}}
 
     RETURN_TYPES = ("IMAGE",)
@@ -29,14 +27,14 @@ class MLXDecoder:
 
         # Use bridge to convert to PyTorch efficiently
         from ..runtime.bridge import mlx_to_torch
-        
+
         decoded_torch = mlx_to_torch(decoded.astype(mx.float32))
         return (decoded_torch,)
 
 
 class MLXSampler:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "mlx_model": ("mlx_model",),
@@ -99,7 +97,7 @@ class MLXSampler:
 
 class MLXLoadFlux:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "model_version": (
@@ -131,10 +129,12 @@ class MLXLoadFlux:
     def load_flux_model(self, model_version):
         self.check_model_folder(model_version)
         from ..runtime.registry import get_or_load_model
-        
+
         def _loader():
-            return FluxPipeline(model_version=model_version, low_memory_mode=False, w16=True, a16=True)
-            
+            return FluxPipeline(
+                model_version=model_version, low_memory_mode=False, w16=True, a16=True
+            )
+
         model = get_or_load_model(f"flux_{model_version}", _loader)
 
         clip = {
@@ -151,7 +151,7 @@ class MLXLoadFlux:
 
 class MLXClipTextEncoder:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "text": ("STRING", {"multiline": True, "dynamicPrompts": True}),

@@ -13,7 +13,7 @@ from ..runtime.bridge import tensor_to_pil
 
 class MLXVideoGenerator:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "model_repo_or_dir": (
@@ -168,8 +168,10 @@ class MLXVideoGenerator:
                 cmd += ["--audio-file", audio_path]
 
         print(f"Running video generation CLI command: {' '.join(cmd)}")
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-        
+        process = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
+        )
+
         try:
             pbar = comfy.utils.ProgressBar(steps)
             last_step = 0
@@ -179,40 +181,50 @@ class MLXVideoGenerator:
                 # Required for long-running subprocesses so user interruption doesn't leave orphaned generator processes
                 comfy.model_management.throw_exception_if_processing_interrupted()
                 char = process.stdout.read(1)
-                if not char and process.poll() is not None: break
+                if not char and process.poll() is not None:
+                    break
                 if char:
                     sys.stdout.write(char)
                     sys.stdout.flush()
                     buf += char
-                    if char in ('\r', '\n'):
-                        match = re.search(r'(\d+)/' + str(steps), buf)
+                    if char in ("\r", "\n"):
+                        match = re.search(r"(\d+)/" + str(steps), buf)
                         if match:
                             try:
                                 step_val = int(match.group(1))
                                 if step_val > last_step:
                                     pbar.update(step_val - last_step)
                                     last_step = step_val
-                            except:
+                            except Exception:
                                 pass
                         buf = ""
 
             pbar.update_absolute(steps)
 
             rc = process.poll()
-            if rc != 0: raise RuntimeError(f"Video generation process failed with exit code {rc}")
-            if not os.path.exists(output_path): raise FileNotFoundError(f"Generation completed but output video was not found at: {output_path}")
+            if rc != 0:
+                raise RuntimeError(
+                    f"Video generation process failed with exit code {rc}"
+                )
+            if not os.path.exists(output_path):
+                raise FileNotFoundError(
+                    f"Generation completed but output video was not found at: {output_path}"
+                )
 
             import cv2
+
             cap = cv2.VideoCapture(output_path)
             frames = []
             while cap.isOpened():
                 ret, frame = cap.read()
-                if not ret: break
+                if not ret:
+                    break
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 frames.append(frame.astype(np.float32) / 255.0)
             cap.release()
 
-            if len(frames) == 0: raise ValueError("No frames could be extracted from generated video.")
+            if len(frames) == 0:
+                raise ValueError("No frames could be extracted from generated video.")
             return (output_path, torch.from_numpy(np.stack(frames, axis=0)))
         finally:
             if process.poll() is None:

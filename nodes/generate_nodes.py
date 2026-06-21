@@ -7,7 +7,7 @@ from ..runtime.registry import get_or_load_draft_model, make_key
 
 class MLXLMGenerateText:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
@@ -49,7 +49,9 @@ class MLXLMGenerateText:
         tokenizer = mlx_model.processor
         if hasattr(tokenizer, "chat_template") and tokenizer.chat_template is not None:
             messages = [{"role": "user", "content": prompt}]
-            formatted_prompt = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            formatted_prompt = tokenizer.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True
+            )
         else:
             formatted_prompt = prompt
 
@@ -68,7 +70,7 @@ class MLXLMGenerateText:
 
 class MLXVLMDescribeImage:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
