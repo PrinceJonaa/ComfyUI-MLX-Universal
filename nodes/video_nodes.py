@@ -1,11 +1,11 @@
 import os
 import sys
 import re
-import tempfile
+import uuid
 import subprocess
-import shutil
 import numpy as np
 import torch
+import folder_paths
 import comfy.utils
 import comfy.model_management
 from ..runtime.bridge import tensor_to_pil
@@ -72,8 +72,9 @@ class MLXVideoGenerator:
         else:
             cmd_family = "ltx_2"
 
-        temp_dir = tempfile.mkdtemp()
-        output_path = os.path.join(temp_dir, "output.mp4")
+        temp_dir = folder_paths.get_temp_directory()
+        output_name = f"mlx_video_output_{uuid.uuid4().hex}.mp4"
+        output_path = os.path.join(temp_dir, output_name)
 
         if cmd_family == "wan":
             cmd = [
@@ -218,7 +219,6 @@ class MLXVideoGenerator:
             if process.poll() is None:
                 process.terminate()
                 process.wait()
-            shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 NODE_CLASS_MAPPINGS = {

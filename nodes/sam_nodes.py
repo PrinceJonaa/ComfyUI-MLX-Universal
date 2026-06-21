@@ -42,7 +42,12 @@ class MLXSAM3Predictor:
         predictor = Sam3Predictor(
             mlx_model.model, mlx_model.processor, score_threshold=score_threshold
         )
+        import mlx.core as mx
+        print("MLX Segmenting image... this may take a moment.")
         result = predictor.predict(pil_img, text_prompt=text_prompt)
+
+        # Force evaluation before conversion to prevent massive delays when NumPy accesses lazy arrays
+        mx.eval(result.masks, result.scores, result.boxes)
 
         overlay = pil_img.copy()
         draw_width = max(2, int(min(W, H) * 0.005))

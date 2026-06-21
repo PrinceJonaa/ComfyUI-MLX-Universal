@@ -28,6 +28,21 @@ def pil_to_tensor(pil_image: Image.Image) -> torch.Tensor:
         tensor = tensor.unsqueeze(0)
     return tensor
 
+def torch_to_mlx(torch_tensor: torch.Tensor):
+    """Convert a PyTorch tensor to an MLX array."""
+    import mlx.core as mx
+    return mx.array(torch_tensor.cpu().detach().numpy())
+
+def latent_to_mlx(latent_dict: dict):
+    """Extract and convert a ComfyUI latent dictionary's 'samples' to an MLX array."""
+    samples = latent_dict["samples"]
+    return torch_to_mlx(samples)
+
+def mlx_to_latent(mlx_tensor) -> dict:
+    """Convert an MLX array to a ComfyUI latent dictionary format."""
+    torch_tensor = mlx_to_torch(mlx_tensor)
+    return {"samples": torch_tensor}
+
 def mlx_to_torch(mlx_tensor) -> torch.Tensor:
     """Convert an MLX array to a ComfyUI IMAGE tensor (B, H, W, C)."""
     import mlx.core as mx

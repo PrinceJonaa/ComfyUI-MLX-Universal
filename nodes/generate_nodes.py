@@ -55,6 +55,7 @@ class MLXLMGenerateText:
 
         sampler = make_sampler(temp=temperature, top_p=top_p)
 
+        print(f"MLX Generating text... this may take a moment.")
         response = mlx_lm.generate(
             mlx_model.model,
             tokenizer,
@@ -154,6 +155,7 @@ class MLXVLMDescribeImage:
             gen_kwargs["draft_model"] = draft_model
             gen_kwargs["draft_kind"] = draft_kind_res
 
+        print(f"MLX Processing vision response... this may take a moment.")
         response = mlx_vlm.generate(
             mlx_model.model,
             mlx_model.processor,
