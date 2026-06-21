@@ -22,14 +22,16 @@ class MLXDecoder:
     CATEGORY = "MLX Universal/Diffusion"
 
     def decode(self, latent_image, mlx_vae):
-        decoded = mlx_vae(latent_image["samples"])
+        from ..runtime.bridge import mlx_to_torch, latent_to_mlx
+
+        mlx_latent = latent_to_mlx(latent_image)
+
+        decoded = mlx_vae(mlx_latent)
         decoded = mx.clip(decoded / 2 + 0.5, 0, 1)
         # Force evaluation here to prevent passing uncomputed graphs to the bridging layer, avoiding deadlocks
         mx.eval(decoded)
 
         # Use bridge to convert to PyTorch efficiently
-        from ..runtime.bridge import mlx_to_torch
-        
         decoded_torch = mlx_to_torch(decoded.astype(mx.float32))
         return (decoded_torch,)
 
@@ -75,6 +77,8 @@ class MLXSampler:
         latent_image,
         denoise,
     ):
+        from ..runtime.bridge import mlx_to_latent
+
         conditioning = mlx_positive_conditioning["conditioning"]
         pooled_conditioning = mlx_positive_conditioning["pooled_conditioning"]
 
@@ -95,7 +99,7 @@ class MLXSampler:
         # Evaluates the latent graph lazily accumulated during sampling loops before returning to ComfyUI to prevent upstream deadlock.
         mx.eval(latents)
         latents = latents.astype(mlx_model.activation_dtype)
-        return (latents,)
+        return (mlx_to_latent(latents),)
 
 
 class MLXLoadFlux:
