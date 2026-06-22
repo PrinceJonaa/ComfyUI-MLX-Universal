@@ -55,12 +55,14 @@ def torch_to_mlx(torch_tensor: torch.Tensor):
 def mlx_to_latent(mlx_tensor) -> dict:
     """Convert an MLX latent array into a ComfyUI-compliant latent dictionary."""
     import mlx.core as mx
+    # Explicit evaluation prevents latent structures from retaining uncomputed graphs that deadlock the PyTorch backend.
     mx.eval(mlx_tensor)
     if mlx_tensor.dtype == mx.bfloat16:
         np_arr = np.array(mlx_tensor.astype(mx.float32))
     else:
         np_arr = np.array(mlx_tensor)
     torch_tensor = torch.from_numpy(np_arr)
+    # ComfyUI natively expects latents to be packaged as a dictionary with a 'samples' key rather than a raw tensor.
     return {"samples": torch_tensor}
 
 def latent_to_mlx(latent_dict: dict):
