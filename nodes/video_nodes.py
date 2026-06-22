@@ -1,11 +1,11 @@
 import os
 import sys
 import re
-import tempfile
+import uuid
 import subprocess
-import shutil
 import numpy as np
 import torch
+import folder_paths
 import comfy.utils
 import comfy.model_management
 from ..runtime.bridge import tensor_to_pil
@@ -13,7 +13,7 @@ from ..runtime.bridge import tensor_to_pil
 
 class MLXVideoGenerator:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "model_repo_or_dir": (
@@ -72,8 +72,10 @@ class MLXVideoGenerator:
         else:
             cmd_family = "ltx_2"
 
-        temp_dir = tempfile.mkdtemp()
-        output_path = os.path.join(temp_dir, "output.mp4")
+        temp_dir = folder_paths.get_temp_directory()
+        uid = uuid.uuid4().hex
+        output_path = os.path.join(temp_dir, f"output_{uid}.mp4")
+        temp_img_path = os.path.join(temp_dir, f"input_frame_{uid}.png")
 
         if cmd_family == "wan":
             cmd = [
@@ -103,7 +105,6 @@ class MLXVideoGenerator:
                 cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
-                temp_img_path = os.path.join(temp_dir, "input_frame.png")
                 pil_imgs[0].save(temp_img_path)
                 cmd += ["--image", temp_img_path]
         elif cmd_family == "cogvideo":
@@ -132,7 +133,6 @@ class MLXVideoGenerator:
                 cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
-                temp_img_path = os.path.join(temp_dir, "input_frame.png")
                 pil_imgs[0].save(temp_img_path)
                 cmd += ["--image", temp_img_path]
         else:
@@ -161,7 +161,6 @@ class MLXVideoGenerator:
                 cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
-                temp_img_path = os.path.join(temp_dir, "input_frame.png")
                 pil_imgs[0].save(temp_img_path)
                 cmd += ["--image", temp_img_path]
             if audio_path and os.path.exists(audio_path):
@@ -199,8 +198,8 @@ class MLXVideoGenerator:
             pbar.update_absolute(steps)
 
             rc = process.poll()
-            if rc != 0: raise RuntimeError(f"Video generation process failed with exit code {rc}")
-            if not os.path.exists(output_path): raise FileNotFoundError(f"Generation completed but output video was not found at: {output_path}")
+            if rc != 0: raise RuntimeError(f"Expected generation process to succeed (rc=0). + Video generation process failed with exit code {rc}. + Please check your ComfyUI console logs for specific MLX error outputs.")
+            if not os.path.exists(output_path): raise FileNotFoundError(f"Expected generated output video at {output_path}. + Generation completed but output video was not found. + Please verify write permissions to your ComfyUI temp directory or check the CLI logs.")
 
             import cv2
             cap = cv2.VideoCapture(output_path)
@@ -212,13 +211,12 @@ class MLXVideoGenerator:
                 frames.append(frame.astype(np.float32) / 255.0)
             cap.release()
 
-            if len(frames) == 0: raise ValueError("No frames could be extracted from generated video.")
+            if len(frames) == 0: raise ValueError(f"Expected at least 1 extracted frame from video at {output_path}. + No frames could be extracted from generated video. + Please check if the generated video is corrupted or empty.")
             return (output_path, torch.from_numpy(np.stack(frames, axis=0)))
         finally:
             if process.poll() is None:
                 process.terminate()
                 process.wait()
-            shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 NODE_CLASS_MAPPINGS = {

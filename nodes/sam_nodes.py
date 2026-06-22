@@ -8,7 +8,7 @@ from ..runtime.bridge import tensor_to_pil, pil_to_tensor
 
 class MLXSAM3Predictor:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
@@ -28,13 +28,13 @@ class MLXSAM3Predictor:
 
     def predict(self, mlx_model: LoadedMLXModel, image, text_prompt, score_threshold):
         if mlx_model.family != "sam3":
-            raise ValueError(f"Expected family='sam3', got {mlx_model.family}")
+            raise ValueError(f"Expected model family to be 'sam3'. + Got model family '{mlx_model.family}'. + Please use a SAM3 model and ensure the correct model type is selected in the MLX Load Model node.")
 
         from mlx_vlm.models.sam3.generate import Sam3Predictor
 
         pil_images = tensor_to_pil(image)
         if not pil_images:
-            raise ValueError("Empty image batch provided.")
+            raise ValueError(f"Expected a valid image batch. + Got empty image batch. + Please connect a valid image to the node input.")
 
         pil_img = pil_images[0]
         W, H = pil_img.size

@@ -3,7 +3,7 @@ from ..runtime.registry import clear_all_caches, cache_stats
 
 class MLXClearCache:
     @classmethod
-    def INPUT_TYPES(cls):
+    def INPUT_TYPES(cls) -> dict:
         return {"required": {}}
 
     @classmethod
@@ -26,7 +26,7 @@ class MLXClearCache:
 
 class MLXCacheStats:
     @classmethod
-    def INPUT_TYPES(cls):
+    def INPUT_TYPES(cls) -> dict:
         return {"required": {}}
 
     @classmethod
