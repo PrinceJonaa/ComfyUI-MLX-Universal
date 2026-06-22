@@ -8,7 +8,7 @@ from ..runtime.bridge import tensor_to_pil, pil_to_tensor
 
 class MLXSAM3Predictor:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
