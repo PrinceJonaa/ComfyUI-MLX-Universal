@@ -9,4 +9,6 @@ sentencepiece
 mlx-lm
 mlx-vlm
 mlx-video @ git+https://github.com/Blaizzy/mlx-video.git
+mlx-whisper
+soundfile
 beartype
