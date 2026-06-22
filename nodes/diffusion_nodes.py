@@ -26,10 +26,12 @@ class MLXDecoder:
 
         mlx_latent = latent_to_mlx(latent_image)
 
+        print("Decoding latent image with MLX VAE...")
         decoded = mlx_vae(mlx_latent)
         decoded = mx.clip(decoded / 2 + 0.5, 0, 1)
         # Force evaluation here to prevent passing uncomputed graphs to the bridging layer, avoiding deadlocks
         mx.eval(decoded)
+        print("VAE decoding complete.")
 
         # Use bridge to convert to PyTorch efficiently
         decoded_torch = mlx_to_torch(decoded.astype(mx.float32))
@@ -52,13 +54,14 @@ class MLXSampler:
                         "max": 100.0,
                         "step": 0.1,
                         "round": 0.01,
+                        "tooltip": "Classifier-Free Guidance. Base Flux models often use 0, while Schnell/Dev vary.",
                     },
                 ),
                 "mlx_positive_conditioning": ("mlx_conditioning",),
                 "latent_image": ("LATENT",),
                 "denoise": (
                     "FLOAT",
-                    {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01},
+                    {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01, "tooltip": "Amount of noise to add. 1.0 is full generation from scratch, lower values are for img2img."},
                 ),
             }
         }
@@ -85,6 +88,7 @@ class MLXSampler:
         batch, channels, height, width = latent_image["samples"].shape
         latent_size = (height, width)
 
+        print(f"Generating image latents ({steps} steps)...")
         latents, iter_time = mlx_model.denoise_latents(
             conditioning,
             pooled_conditioning,
@@ -98,6 +102,7 @@ class MLXSampler:
 
         # Evaluates the latent graph lazily accumulated during sampling loops before returning to ComfyUI to prevent upstream deadlock.
         mx.eval(latents)
+        print("Latent generation complete.")
         latents = latents.astype(mlx_model.activation_dtype)
         return (mlx_to_latent(latents),)
 

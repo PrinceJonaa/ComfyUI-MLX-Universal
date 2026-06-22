@@ -68,11 +68,11 @@ class MLXModelLoaderUnified:
             "required": {
                 "model_path": ("STRING", {"default": "mlx-community/Qwen3.5-4B-OptiQ-4bit"}),
                 "model_type": (["auto", "mlx-lm", "mlx-vlm", "sam3"], {"default": "auto"}),
-                "trust_remote_code": ("BOOLEAN", {"default": False}),
-                "quantize_activations": ("BOOLEAN", {"default": False}),
+                "trust_remote_code": ("BOOLEAN", {"default": False, "tooltip": "Required for certain models with custom Python code in their Hugging Face repo."}),
+                "quantize_activations": ("BOOLEAN", {"default": False, "tooltip": "Compresses memory during generation. May slightly reduce quality."}),
             },
             "optional": {
-                "adapter_path": ("STRING", {"default": ""}),
+                "adapter_path": ("STRING", {"default": "", "tooltip": "Optional path to a LoRA adapter directory or Hugging Face repo ID."}),
             },
         }
 
@@ -141,7 +141,7 @@ class MLXModelLoaderUnified:
                     processor=processor,
                 )
             else:
-                raise ValueError(f"Unknown resolved model type: {resolved_type}")
+                raise ValueError(f"Unknown resolved model type: '{resolved_type}'. Expected one of 'mlx-lm', 'mlx-vlm', or 'sam3'. Check your model_path or explicitly set the model_type in the node parameters.")
 
         loaded = get_or_load_model(cache_key, _load)
         return (loaded,)
@@ -153,7 +153,7 @@ class MLXApplyLoRA:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
-                "adapter_path": ("STRING", {"default": ""}),
+                "adapter_path": ("STRING", {"default": "", "tooltip": "Path to a LoRA adapter directory or Hugging Face repo ID to fuse into the model."}),
             }
         }
 
@@ -215,7 +215,7 @@ class MLXApplyLoRA:
                     processor=processor,
                 )
             else:
-                raise ValueError(f"Unknown resolved model type: {resolved_type}")
+                raise ValueError(f"Unknown resolved model type: '{resolved_type}'. Expected one of 'mlx-lm', 'mlx-vlm', or 'sam3'. Check your model_path or explicitly set the model_type in the node parameters.")
 
         loaded = get_or_load_model(cache_key, _load)
         return (loaded,)

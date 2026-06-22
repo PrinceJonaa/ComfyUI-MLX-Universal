@@ -77,8 +77,12 @@ graph TD
         UI_VLM[MLX Understand Image]
         UI_SAM[MLX Segment Image]
         UI_Vid[MLX Generate Video]
+        UI_LoadFlux[MLX Load Flux Model from HF]
+        UI_ClipEnc[MLX CLIP Text Encoder]
         UI_Diff[MLX Generate Image]
+        UI_Decode[MLX VAE Decode]
         UI_Sys[MLX Clear Cache]
+        UI_Stats[MLX Cache Stats]
     end
 
     subgraph nodes/ [Frontend Nodes]
@@ -88,8 +92,12 @@ graph TD
         UI_VLM --> GN
         UI_SAM --> SN[sam_nodes.py]
         UI_Vid --> VN[video_nodes.py]
-        UI_Diff --> DN[diffusion_nodes.py]
+        UI_LoadFlux --> DN[diffusion_nodes.py]
+        UI_ClipEnc --> DN
+        UI_Diff --> DN
+        UI_Decode --> DN
         UI_Sys --> SysN[system_nodes.py]
+        UI_Stats --> SysN
     end
 
     subgraph runtime/ [Execution Substrate]

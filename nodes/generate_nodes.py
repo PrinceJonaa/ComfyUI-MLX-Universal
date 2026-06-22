@@ -21,11 +21,11 @@ class MLXLMGenerateText:
                 "max_tokens": ("INT", {"default": 256, "min": 1, "max": 16384}),
                 "temperature": (
                     "FLOAT",
-                    {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.05},
+                    {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.05, "tooltip": "Controls randomness. Lower values are more focused and deterministic, higher values are more creative."},
                 ),
                 "top_p": (
                     "FLOAT",
-                    {"default": 0.9, "min": 0.0, "max": 1.0, "step": 0.05},
+                    {"default": 0.9, "min": 0.0, "max": 1.0, "step": 0.05, "tooltip": "Nucleus sampling. Only tokens with a cumulative probability above this threshold are considered."},
                 ),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
             }
@@ -40,7 +40,7 @@ class MLXLMGenerateText:
         self, mlx_model: LoadedMLXModel, prompt, max_tokens, temperature, top_p, seed
     ):
         if mlx_model.family != "mlx-lm":
-            raise ValueError(f"Expected family='mlx-lm', got {mlx_model.family}")
+            raise ValueError(f"Expected model family 'mlx-lm', but found '{mlx_model.family}'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model.")
 
         mx.random.seed(seed)
         import mlx_lm
@@ -55,6 +55,7 @@ class MLXLMGenerateText:
 
         sampler = make_sampler(temp=temperature, top_p=top_p)
 
+        print(f"Generating text up to {max_tokens} tokens...")
         response = mlx_lm.generate(
             mlx_model.model,
             tokenizer,
@@ -63,6 +64,7 @@ class MLXLMGenerateText:
             max_tokens=max_tokens,
             verbose=False,
         )
+        print("Text generation complete.")
         return (response,)
 
 
@@ -79,16 +81,16 @@ class MLXVLMDescribeImage:
                 "max_tokens": ("INT", {"default": 256, "min": 1, "max": 16384}),
                 "temperature": (
                     "FLOAT",
-                    {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.05},
+                    {"default": 0.7, "min": 0.0, "max": 2.0, "step": 0.05, "tooltip": "Controls randomness. Lower values are more focused and deterministic, higher values are more creative."},
                 ),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
-                "enable_thinking": ("BOOLEAN", {"default": False}),
-                "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192}),
+                "enable_thinking": ("BOOLEAN", {"default": False, "tooltip": "Enable thinking tokens for advanced visual reasoning models like Qwen-VL or LLaVA."}),
+                "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192, "tooltip": "Maximum number of tokens allocated for the model's internal thinking process."}),
             },
             "optional": {
                 "image": ("IMAGE",),
                 "audio_path": ("STRING", {"default": ""}),
-                "draft_model_path": ("STRING", {"default": ""}),
+                "draft_model_path": ("STRING", {"default": "", "tooltip": "Path to a smaller draft model for speculative decoding speedups."}),
                 "draft_kind": (["dflash", "eagle3", "mtp"], {"default": "dflash"}),
             },
         }
@@ -114,7 +116,7 @@ class MLXVLMDescribeImage:
     ):
 
         if mlx_model.family != "mlx-vlm":
-            raise ValueError(f"Expected family='mlx-vlm', got {mlx_model.family}")
+            raise ValueError(f"Expected model family 'mlx-vlm', but found '{mlx_model.family}'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model.")
 
         mx.random.seed(seed)
         import mlx_vlm
@@ -154,6 +156,7 @@ class MLXVLMDescribeImage:
             gen_kwargs["draft_model"] = draft_model
             gen_kwargs["draft_kind"] = draft_kind_res
 
+        print(f"Describing image (max {max_tokens} tokens)...")
         response = mlx_vlm.generate(
             mlx_model.model,
             mlx_model.processor,
@@ -162,6 +165,7 @@ class MLXVLMDescribeImage:
             audio=audios if audios else None,
             **gen_kwargs,
         )
+        print("Image description complete.")
         return (response,)
 
 

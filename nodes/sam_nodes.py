@@ -16,7 +16,7 @@ class MLXSAM3Predictor:
                 "text_prompt": ("STRING", {"default": "a dog"}),
                 "score_threshold": (
                     "FLOAT",
-                    {"default": 0.3, "min": 0.0, "max": 1.0, "step": 0.05},
+                    {"default": 0.3, "min": 0.0, "max": 1.0, "step": 0.05, "tooltip": "Minimum confidence score for a prediction to be included. Lower values return more masks."},
                 ),
             }
         }
@@ -28,13 +28,13 @@ class MLXSAM3Predictor:
 
     def predict(self, mlx_model: LoadedMLXModel, image, text_prompt, score_threshold):
         if mlx_model.family != "sam3":
-            raise ValueError(f"Expected family='sam3', got {mlx_model.family}")
+            raise ValueError(f"Expected model family 'sam3', but found '{mlx_model.family}'. Please ensure you are passing a SAM model loaded via 'MLX Load Model'.")
 
         from mlx_vlm.models.sam3.generate import Sam3Predictor
 
         pil_images = tensor_to_pil(image)
         if not pil_images:
-            raise ValueError("Empty image batch provided.")
+            raise ValueError("Expected an image batch, but found empty input. Please connect a valid image to the node.")
 
         pil_img = pil_images[0]
         W, H = pil_img.size
@@ -42,7 +42,9 @@ class MLXSAM3Predictor:
         predictor = Sam3Predictor(
             mlx_model.model, mlx_model.processor, score_threshold=score_threshold
         )
+        print(f"Running SAM3 prediction for prompt: '{text_prompt}'...")
         result = predictor.predict(pil_img, text_prompt=text_prompt)
+        print(f"SAM3 prediction complete. Found {len(result.scores)} detections.")
 
         overlay = pil_img.copy()
         draw_width = max(2, int(min(W, H) * 0.005))
