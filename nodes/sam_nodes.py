@@ -1,3 +1,4 @@
+import mlx.core as mx
 import json
 import torch
 import numpy as np
@@ -8,7 +9,7 @@ from ..runtime.bridge import tensor_to_pil, pil_to_tensor
 
 class MLXSAM3Predictor:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
@@ -28,13 +29,13 @@ class MLXSAM3Predictor:
 
     def predict(self, mlx_model: LoadedMLXModel, image, text_prompt, score_threshold):
         if mlx_model.family != "sam3":
-            raise ValueError(f"Expected family='sam3', got {mlx_model.family}")
+            raise ValueError(f"Expected model family 'sam3'. Found '{mlx_model.family}'. Please load a sam3 model.")
 
         from mlx_vlm.models.sam3.generate import Sam3Predictor
 
         pil_images = tensor_to_pil(image)
         if not pil_images:
-            raise ValueError("Empty image batch provided.")
+            raise ValueError("Expected a non-empty image batch. Found an empty image batch. Please provide a valid input image.")
 
         pil_img = pil_images[0]
         W, H = pil_img.size
@@ -60,6 +61,7 @@ class MLXSAM3Predictor:
         masks_list = []
         boxes_data = []
         raw_masks = result.masks
+        mx.eval(raw_masks)
 
         mask_rgba = np.zeros((H, W, 4), dtype=np.uint8)
         draw = ImageDraw.Draw(overlay)

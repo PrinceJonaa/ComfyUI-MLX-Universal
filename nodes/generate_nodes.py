@@ -7,7 +7,7 @@ from ..runtime.registry import get_or_load_draft_model, make_key
 
 class MLXLMGenerateText:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
@@ -40,7 +40,7 @@ class MLXLMGenerateText:
         self, mlx_model: LoadedMLXModel, prompt, max_tokens, temperature, top_p, seed
     ):
         if mlx_model.family != "mlx-lm":
-            raise ValueError(f"Expected family='mlx-lm', got {mlx_model.family}")
+            raise ValueError(f"Expected model family 'mlx-lm'. Found '{mlx_model.family}'. Please load an mlx-lm model.")
 
         mx.random.seed(seed)
         import mlx_lm
@@ -68,7 +68,7 @@ class MLXLMGenerateText:
 
 class MLXVLMDescribeImage:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
@@ -114,7 +114,7 @@ class MLXVLMDescribeImage:
     ):
 
         if mlx_model.family != "mlx-vlm":
-            raise ValueError(f"Expected family='mlx-vlm', got {mlx_model.family}")
+            raise ValueError(f"Expected model family 'mlx-vlm'. Found '{mlx_model.family}'. Please load an mlx-vlm model.")
 
         mx.random.seed(seed)
         import mlx_vlm

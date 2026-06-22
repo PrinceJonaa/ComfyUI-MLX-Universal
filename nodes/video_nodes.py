@@ -2,6 +2,8 @@ import os
 import sys
 import re
 import tempfile
+import folder_paths
+import uuid
 import subprocess
 import shutil
 import numpy as np
@@ -13,7 +15,7 @@ from ..runtime.bridge import tensor_to_pil
 
 class MLXVideoGenerator:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "model_repo_or_dir": (
@@ -72,8 +74,8 @@ class MLXVideoGenerator:
         else:
             cmd_family = "ltx_2"
 
-        temp_dir = tempfile.mkdtemp()
-        output_path = os.path.join(temp_dir, "output.mp4")
+        temp_dir = folder_paths.get_temp_directory()
+        output_path = os.path.join(temp_dir, f"{uuid.uuid4().hex}.mp4")
 
         if cmd_family == "wan":
             cmd = [
@@ -199,8 +201,8 @@ class MLXVideoGenerator:
             pbar.update_absolute(steps)
 
             rc = process.poll()
-            if rc != 0: raise RuntimeError(f"Video generation process failed with exit code {rc}")
-            if not os.path.exists(output_path): raise FileNotFoundError(f"Generation completed but output video was not found at: {output_path}")
+            if rc != 0: raise RuntimeError(f"Expected video generation to succeed. Process failed with exit code {rc}. Please check your model path and inputs.")
+            if not os.path.exists(output_path): raise FileNotFoundError(f"Expected output video at {output_path}. File was not found. Please check generation logs for errors.")
 
             import cv2
             cap = cv2.VideoCapture(output_path)
@@ -212,13 +214,13 @@ class MLXVideoGenerator:
                 frames.append(frame.astype(np.float32) / 255.0)
             cap.release()
 
-            if len(frames) == 0: raise ValueError("No frames could be extracted from generated video.")
+            if len(frames) == 0: raise ValueError("Expected extracted frames from video. Found 0 frames. Please try generating with different parameters or a different model.")
             return (output_path, torch.from_numpy(np.stack(frames, axis=0)))
         finally:
             if process.poll() is None:
                 process.terminate()
                 process.wait()
-            shutil.rmtree(temp_dir, ignore_errors=True)
+
 
 
 NODE_CLASS_MAPPINGS = {

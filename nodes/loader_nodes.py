@@ -63,7 +63,7 @@ def detect_model_type(model_path_or_id):
 
 class MLXModelLoaderUnified:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "model_path": ("STRING", {"default": "mlx-community/Qwen3.5-4B-OptiQ-4bit"}),
@@ -141,7 +141,7 @@ class MLXModelLoaderUnified:
                     processor=processor,
                 )
             else:
-                raise ValueError(f"Unknown resolved model type: {resolved_type}")
+                raise ValueError(f"Expected a known model type (mlx-lm, mlx-vlm, sam3). Found {resolved_type}. Please check your model path or specify the type manually.")
 
         loaded = get_or_load_model(cache_key, _load)
         return (loaded,)
@@ -149,7 +149,7 @@ class MLXModelLoaderUnified:
 
 class MLXApplyLoRA:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
@@ -215,7 +215,7 @@ class MLXApplyLoRA:
                     processor=processor,
                 )
             else:
-                raise ValueError(f"Unknown resolved model type: {resolved_type}")
+                raise ValueError(f"Expected a known model type (mlx-lm, mlx-vlm, sam3). Found {resolved_type}. Please check your model path or specify the type manually.")
 
         loaded = get_or_load_model(cache_key, _load)
         return (loaded,)
