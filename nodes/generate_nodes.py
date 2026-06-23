@@ -63,12 +63,14 @@ class MLXLMGenerateText:
         tokenizer = mlx_model.processor
         if hasattr(tokenizer, "chat_template") and tokenizer.chat_template is not None:
             messages = [{"role": "user", "content": prompt}]
+            # tokenize=False ensures the template returns a formatted string instead of token IDs, which mlx_lm.generate expects.
             formatted_prompt = tokenizer.apply_chat_template(
                 messages, tokenize=False, add_generation_prompt=True
             )
         else:
             formatted_prompt = prompt
 
+        # mlx_lm.generate ignores individual kwargs; advanced parameters must be bundled into a sampler object.
         sampler = make_sampler(temp=temperature, top_p=top_p)
 
         gen_kwargs = {

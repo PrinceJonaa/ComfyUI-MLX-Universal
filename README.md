@@ -41,11 +41,26 @@ The **ComfyUI MLX Universal Node Architecture** serves as a foundational runtime
 **Our Ultimate Goal:** To be the definitive "One-Stop Shop" for everything MLX on ComfyUI. This architecture is explicitly built as a universal platform to support **all model modalities** (Text, Vision, Audio, Video, VAEs, Diffusion, and Segmentation) through a single, unified backend.
 
 ## 📋 Table of Contents
+- [🚀 Setup & Installation](#-setup--installation)
 - [⚡ Core Capabilities](#-core-capabilities)
 - [🏗️ Architecture Map](#️-architecture-map)
 - [🗺️ Development Roadmap](#️-development-roadmap)
 - [⚠️ Technical Edge Cases](#️-technical-considerations--known-edge-cases)
 - [🤝 Contribution Guidelines](#-contribution-guidelines)
+
+<!-- ─────────────────────── DIVIDER ─────────────────────────── -->
+<img width="100%" alt="" src="https://capsule-render.vercel.app/api?type=rect&color=gradient&customColorList=6,11,20&height=3" />
+
+## 🚀 Setup & Installation
+
+Clone the repository into your ComfyUI `custom_nodes` directory and install the required dependencies:
+
+```bash
+cd ComfyUI/custom_nodes/
+git clone https://github.com/PrinceJonaa/ComfyUI-MLX-Universal.git
+cd ComfyUI-MLX-Universal
+pip install -r requirements.txt
+```
 
 <!-- ─────────────────────── DIVIDER ─────────────────────────── -->
 <img width="100%" alt="" src="https://capsule-render.vercel.app/api?type=rect&color=gradient&customColorList=6,11,20&height=3" />
