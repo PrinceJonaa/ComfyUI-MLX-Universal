@@ -1,11 +1,11 @@
 import os
 import sys
 import re
-import tempfile
+import uuid
 import subprocess
-import shutil
 import numpy as np
 import torch
+import folder_paths
 import comfy.utils
 import comfy.model_management
 from ..runtime.bridge import tensor_to_pil
@@ -72,8 +72,10 @@ class MLXVideoGenerator:
         else:
             cmd_family = "ltx_2"
 
-        temp_dir = tempfile.mkdtemp()
-        output_path = os.path.join(temp_dir, "output.mp4")
+        temp_dir = folder_paths.get_temp_directory()
+        uid = uuid.uuid4().hex
+        output_path = os.path.join(temp_dir, f"output_{uid}.mp4")
+        temp_img_name = f"input_frame_{uid}.png"
 
         if cmd_family == "wan":
             cmd = [
@@ -103,7 +105,7 @@ class MLXVideoGenerator:
                 cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
-                temp_img_path = os.path.join(temp_dir, "input_frame.png")
+                temp_img_path = os.path.join(temp_dir, temp_img_name)
                 pil_imgs[0].save(temp_img_path)
                 cmd += ["--image", temp_img_path]
         elif cmd_family == "cogvideo":
@@ -132,7 +134,7 @@ class MLXVideoGenerator:
                 cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
-                temp_img_path = os.path.join(temp_dir, "input_frame.png")
+                temp_img_path = os.path.join(temp_dir, temp_img_name)
                 pil_imgs[0].save(temp_img_path)
                 cmd += ["--image", temp_img_path]
         else:
@@ -161,7 +163,7 @@ class MLXVideoGenerator:
                 cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
-                temp_img_path = os.path.join(temp_dir, "input_frame.png")
+                temp_img_path = os.path.join(temp_dir, temp_img_name)
                 pil_imgs[0].save(temp_img_path)
                 cmd += ["--image", temp_img_path]
             if audio_path and os.path.exists(audio_path):
@@ -218,7 +220,6 @@ class MLXVideoGenerator:
             if process.poll() is None:
                 process.terminate()
                 process.wait()
-            shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 NODE_CLASS_MAPPINGS = {
