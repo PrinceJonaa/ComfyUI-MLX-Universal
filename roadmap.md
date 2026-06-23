@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-06-22 at commit 3f23305
+> Last curated: 2026-06-22 at commit 3828ec3
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -8,6 +8,16 @@
 ## In Progress
 
 ## Planned
+
+### [RM-010] Native Kokoro Integration
+- Status: Planned
+- Evidence: `README.md` claimed Kokoro integration, but `nodes/audio_nodes.py` only implements `MLXWhisperTranscribe`.
+- Why it matters: Achieves full audio multimodal capabilities as promised in the documentation.
+
+### [RM-011] Refactor audio dimension reduction
+- Status: Planned
+- Evidence: `nodes/audio_nodes.py` uses `.squeeze(0)` which fails on batched audio inputs.
+- Why it matters: Ensures robust audio handling for inputs with a batch size greater than 1 without crashing the ComfyUI workflow.
 
 
 
