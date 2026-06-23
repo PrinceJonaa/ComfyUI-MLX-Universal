@@ -30,11 +30,11 @@ class MLXVideoGenerator:
                 "negative_prompt": ("STRING", {"default": "blurry, low quality"}),
                 "width": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
                 "height": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
-                "num_frames": ("INT", {"default": 81, "min": 1, "max": 500}),
+                "num_frames": ("INT", {"default": 33, "min": 1, "max": 500, "tooltip": "Number of frames to generate. Lower this if you run out of unified memory."}),
                 "steps": ("INT", {"default": 30, "min": 1, "max": 200}),
                 "guide_scale": (
                     "FLOAT",
-                    {"default": 5.0, "min": 0.0, "max": 50.0, "step": 0.5},
+                    {"default": 5.0, "min": 0.0, "max": 50.0, "step": 0.5, "tooltip": "Classifier-Free Guidance (CFG) scale. Higher values closely follow the prompt but may introduce artifacts."},
                 ),
                 "seed": ("INT", {"default": 42, "min": -1, "max": 2**32 - 1}),
             },
@@ -199,8 +199,8 @@ class MLXVideoGenerator:
             pbar.update_absolute(steps)
 
             rc = process.poll()
-            if rc != 0: raise RuntimeError(f"Video generation process failed with exit code {rc}")
-            if not os.path.exists(output_path): raise FileNotFoundError(f"Generation completed but output video was not found at: {output_path}")
+            if rc != 0: raise RuntimeError(f"Expected video generation to complete successfully, but the process failed with exit code {rc}. Check your terminal output for out-of-memory or dependency errors, and try lowering 'num_frames' or resolution.")
+            if not os.path.exists(output_path): raise FileNotFoundError(f"Expected output video at '{output_path}', but the file was not found. This usually means the generation failed silently. Check your terminal for errors.")
 
             import cv2
             cap = cv2.VideoCapture(output_path)
@@ -212,7 +212,7 @@ class MLXVideoGenerator:
                 frames.append(frame.astype(np.float32) / 255.0)
             cap.release()
 
-            if len(frames) == 0: raise ValueError("No frames could be extracted from generated video.")
+            if len(frames) == 0: raise ValueError("Expected extracted frames from the generated video, but none were found. Ensure the model successfully generated a valid video file.")
             return (output_path, torch.from_numpy(np.stack(frames, axis=0)))
         finally:
             if process.poll() is None:
