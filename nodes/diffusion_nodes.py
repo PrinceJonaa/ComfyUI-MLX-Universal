@@ -208,6 +208,7 @@ class MLXClipTextEncoder:
 
         t5_embeddings = t5_encoder(padded_tokens_t5)
 
+        mx.eval(t5_embeddings, clip_pooled_output)
         output = {
             "conditioning": t5_embeddings,
             "pooled_conditioning": clip_pooled_output,

@@ -52,7 +52,7 @@ class MLXWhisperTranscribe:
 
         if isinstance(waveform, torch.Tensor):
             # Take the first batch and mean across channels
-            audio_np = waveform.squeeze(0).mean(dim=0).cpu().numpy().astype(np.float32)
+            audio_np = waveform[0].mean(dim=0).cpu().numpy().astype(np.float32)
         else:
             audio_np = np.array(waveform).astype(np.float32)
 

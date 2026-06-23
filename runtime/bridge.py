@@ -35,7 +35,9 @@ def mlx_to_torch(mlx_tensor) -> torch.Tensor:
     # Prevents silent data corruption or performance bottlenecks when PyTorch accesses uncomputed lazy arrays
     mx.eval(mlx_tensor)
     if mlx_tensor.dtype == mx.bfloat16:
-        np_arr = np.array(mlx_tensor.astype(mx.float32))
+        mlx_tensor = mlx_tensor.astype(mx.float32)
+        mx.eval(mlx_tensor)
+        np_arr = np.array(mlx_tensor)
     else:
         np_arr = np.array(mlx_tensor)
     
@@ -48,7 +50,7 @@ def torch_to_mlx(torch_tensor: torch.Tensor):
     """Convert a PyTorch tensor to an MLX array."""
     import mlx.core as mx
     # Move to CPU and numpy before creating MLX array
-    np_arr = torch_tensor.detach().cpu().numpy()
+    np_arr = torch_tensor.cpu().detach().numpy()
     mlx_tensor = mx.array(np_arr)
     return mlx_tensor
 
@@ -58,7 +60,9 @@ def mlx_to_latent(mlx_tensor) -> dict:
     # Explicit evaluation prevents latent structures from retaining uncomputed graphs that deadlock the PyTorch backend.
     mx.eval(mlx_tensor)
     if mlx_tensor.dtype == mx.bfloat16:
-        np_arr = np.array(mlx_tensor.astype(mx.float32))
+        mlx_tensor = mlx_tensor.astype(mx.float32)
+        mx.eval(mlx_tensor)
+        np_arr = np.array(mlx_tensor)
     else:
         np_arr = np.array(mlx_tensor)
     torch_tensor = torch.from_numpy(np_arr)
