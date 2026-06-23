@@ -77,6 +77,8 @@ class MLXLMGenerateText:
             "sampler": sampler,
             "max_tokens": max_tokens,
             "verbose": False,
+            "enable_thinking": enable_thinking,
+            "thinking_budget": thinking_budget,
         }
 
         if draft_model_path:
@@ -183,11 +185,11 @@ class MLXVLMDescribeImage:
                 print(f"Loading draft model '{draft_model_path}'...")
                 return load_drafter(draft_model_path)
 
-            draft_model, draft_kind_res = get_or_load_draft_model(
+            draft_model = get_or_load_draft_model(
                 draft_key, _load_draft
             )
             gen_kwargs["draft_model"] = draft_model
-            gen_kwargs["draft_kind"] = draft_kind_res
+            gen_kwargs["draft_kind"] = draft_kind
 
         print(f"Describing image (max {max_tokens} tokens)...")
         response = mlx_vlm.generate(

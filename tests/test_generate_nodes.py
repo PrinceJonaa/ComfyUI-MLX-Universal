@@ -152,7 +152,9 @@ def make_key(*args, **kwargs):
             prompt="formatted_prompt",
             sampler="mocked_sampler",
             max_tokens=100,
-            verbose=False
+            verbose=False,
+            enable_thinking=False,
+            thinking_budget=512
         )
 
     @patch('mlx_lm.sample_utils.make_sampler')
@@ -187,7 +189,9 @@ def make_key(*args, **kwargs):
             prompt="Hello raw",
             sampler="mocked_sampler_2",
             max_tokens=50,
-            verbose=False
+            verbose=False,
+            enable_thinking=False,
+            thinking_budget=512
         )
 
     # --- MLXVLMDescribeImage Tests ---
@@ -297,8 +301,8 @@ def make_key(*args, **kwargs):
             verbose=False,
             enable_thinking=False,
             thinking_budget=0,
-            draft_model="mock_draft_model",
-            draft_kind="mock_draft_kind"
+            draft_model=("mock_draft_model", "mock_draft_kind"),
+            draft_kind="eagle3"
         )
 
 if __name__ == '__main__':
