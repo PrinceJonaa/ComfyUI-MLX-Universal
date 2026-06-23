@@ -109,7 +109,10 @@ def make_key(*args, **kwargs):
                 max_tokens=100,
                 temperature=0.7,
                 top_p=0.9,
-                seed=42
+                seed=42,
+                draft_model_path="",
+                enable_thinking=False,
+                thinking_budget=512
             )
 
         self.assertEqual(str(context.exception), "Expected family='mlx-lm', got unknown-family")
@@ -131,7 +134,10 @@ def make_key(*args, **kwargs):
             max_tokens=100,
             temperature=0.7,
             top_p=0.9,
-            seed=42
+            seed=42,
+            draft_model_path="",
+            enable_thinking=False,
+            thinking_budget=512
         )
 
         self.assertEqual(result, ("generated response",))
@@ -166,7 +172,10 @@ def make_key(*args, **kwargs):
             max_tokens=50,
             temperature=1.0,
             top_p=0.5,
-            seed=123
+            seed=123,
+            draft_model_path="",
+            enable_thinking=False,
+            thinking_budget=512
         )
 
         self.assertEqual(result, ("generated response no template",))

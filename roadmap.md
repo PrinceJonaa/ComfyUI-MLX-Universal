@@ -9,10 +9,7 @@
 
 ## Planned
 
-### [RM-001] Add Speculative Decoding and Thinking Tokens to LLM Node
-- Status: Planned
-- Evidence: `README.md` claims `mlx-lm` has "speculative decoding, thinking tokens", but `nodes/generate_nodes.py`'s `MLXLMGenerateText` lacks parameters for them, whereas `MLXVLMDescribeImage` has them.
-- Why it matters: Keeps text generation capabilities on par with visual capabilities and fulfills the advertised feature set.
+
 
 ### [RM-004] Native SDXL / ControlNet pipelines
 - Status: Planned
@@ -27,6 +24,10 @@
 ## Blocked
 
 ## Recently Completed
+
+### [RM-001] Add Speculative Decoding and Thinking Tokens to LLM Node
+- Status: Completed
+- Evidence: Added `draft_model_path`, `enable_thinking`, and `thinking_budget` to `MLXLMGenerateText` node schema in `nodes/generate_nodes.py`, routing draft model requests to `mlx_lm.generate()`.
 
 ### [RM-003] Integrate Whisper/Kokoro via `mlx-audio` — completed 2026-06-22
 - Evidence: `nodes/audio_nodes.py` now implements `MLXWhisperTranscribe` node utilizing `mlx-whisper`.
