@@ -6,7 +6,7 @@ from ..runtime.registry import get_or_load_model
 
 class MLXWhisperTranscribe:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "audio": ("AUDIO",),

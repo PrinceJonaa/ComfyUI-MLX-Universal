@@ -4,7 +4,7 @@ from ..runtime.model_loader import load_unified_mlx_model
 
 class MLXModelLoaderUnified:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "model_path": ("STRING", {"default": "mlx-community/Qwen3.5-4B-OptiQ-4bit"}),
@@ -42,7 +42,7 @@ class MLXModelLoaderUnified:
 
 class MLXApplyLoRA:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),

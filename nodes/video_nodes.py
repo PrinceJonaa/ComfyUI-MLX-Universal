@@ -13,7 +13,7 @@ from ..runtime.bridge import tensor_to_pil
 
 class MLXVideoGenerator:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "model_repo_or_dir": (
