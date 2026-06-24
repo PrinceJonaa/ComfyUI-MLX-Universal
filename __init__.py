@@ -1,3 +1,9 @@
+if __name__ == "__main__":
+    import sys
+    print("This file is a ComfyUI custom node package entry point and cannot be run directly as a script.")
+    print("To use these nodes, install this directory into your ComfyUI 'custom_nodes' directory and run ComfyUI.")
+    sys.exit(0)
+
 try:
     import sentry_sdk
     sentry_sdk.init(
@@ -9,6 +15,7 @@ try:
     )
 except Exception as e:
     print(f"[ComfyUI-MLX-Universal] Warning: Failed to initialize Sentry SDK: {e}")
+
 
 from .nodes.loader_nodes import NODE_CLASS_MAPPINGS as LOADER_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as LOADER_DISPLAY
 from .nodes.generate_nodes import NODE_CLASS_MAPPINGS as GENERATE_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as GENERATE_DISPLAY
