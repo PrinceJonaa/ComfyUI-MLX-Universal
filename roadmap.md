@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-06-22 at commit 3828ec3
+> Last curated: 2026-06-24 at commit cc8d82c
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -41,14 +41,12 @@
 - Evidence: `nodes/video_nodes.py` directly handles `subprocess.Popen`, temp file management, and `cv2` video reading inside the ComfyUI wrapper class.
 - Why it matters: Moves heavy background logic out of UI files into the runtime substrate.
 
-### [RM-009] Enforce dict return type hints for INPUT_TYPES
-- Status: Planned
-- Evidence: Multiple nodes in `nodes/` implement `INPUT_TYPES(s)` without a return type hint (e.g., `-> dict:`), causing static analysis drift.
-- Why it matters: Improves strict code cleanliness and static analysis verification for the API.
-
 ## Blocked
 
 ## Recently Completed
+
+### [RM-009] Enforce dict return type hints for INPUT_TYPES — completed 2026-06-24
+- Evidence: Added `-> dict:` to `INPUT_TYPES` methods in `nodes/video_nodes.py`, `nodes/loader_nodes.py`, and `nodes/audio_nodes.py`.
 
 ### [RM-001] Add Speculative Decoding and Thinking Tokens to LLM Node
 - Status: Completed
