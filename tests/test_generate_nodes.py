@@ -62,11 +62,8 @@ class LoadedMLXModel:
 def tensor_to_pil(*args, **kwargs):
     return ["mocked_pil_image"] if args[0] is not None else []
 
-def get_or_load_draft_model(key, loader):
+def load_draft_model(*args, **kwargs):
     return ("mock_draft_model", "mock_draft_kind")
-
-def make_key(*args, **kwargs):
-    return "mock_key"
 """
         new_code = dummy_classes + "\n".join(new_lines)
 

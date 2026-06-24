@@ -6,8 +6,8 @@ from typing import Optional
 from ..diffusionkit.mlx.tokenizer import Tokenizer, T5Tokenizer
 from ..diffusionkit.mlx.t5 import SD3T5Encoder
 from ..diffusionkit.mlx.clip import CLIPTextModel
-from ..diffusionkit.mlx import FluxPipeline
 from ..diffusionkit.mlx.constants import T5_MAX_LENGTH
+from ..runtime.model_loader import load_flux_model
 
 
 class MLXDecoder:
@@ -138,14 +138,7 @@ class MLXLoadFlux:
 
     def load_flux_model(self, model_version) -> tuple:
         self.check_model_folder(model_version)
-        from ..runtime.registry import get_or_load_model
-
-        def _loader():
-            return FluxPipeline(
-                model_version=model_version, low_memory_mode=False, w16=True, a16=True
-            )
-
-        model = get_or_load_model(f"flux_{model_version}", _loader)
+        model = load_flux_model(model_version)
 
         clip = {
             "model_name": model_version,

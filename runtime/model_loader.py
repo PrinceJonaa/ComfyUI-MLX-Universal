@@ -1,7 +1,8 @@
 import os
 import json
 from huggingface_hub import hf_hub_download
-from .registry import get_or_load_model, make_key
+from typing import Any
+from .registry import get_or_load_model, get_or_load_draft_model, make_key
 from .data_types import LoadedMLXModel
 
 
@@ -151,3 +152,50 @@ def load_unified_mlx_model(
             raise ValueError(f"Unknown resolved model type: {resolved_type}")
 
     return get_or_load_model(cache_key, _load)
+
+
+def load_draft_model(draft_model_path: str, is_vlm: bool = False) -> Any:
+    """
+    Loads a draft model for speculative decoding and routes through the draft cache.
+    """
+    draft_key = make_key(draft_model_path, "draft")
+
+    def _load_draft():
+        print(f"Loading draft model '{draft_model_path}'...")
+        if is_vlm:
+            from mlx_vlm.speculative.drafters import load_drafter
+            return load_drafter(draft_model_path)
+        else:
+            import mlx_lm
+            model, _ = mlx_lm.load(draft_model_path)
+            return model
+
+    return get_or_load_draft_model(draft_key, _load_draft)
+
+
+def load_flux_model(model_version: str) -> Any:
+    """
+    Loads a Flux pipeline model and routes it through the unified memory cache.
+    """
+    def _loader():
+        from ..diffusionkit.mlx import FluxPipeline
+        return FluxPipeline(
+            model_version=model_version, low_memory_mode=False, w16=True, a16=True
+        )
+
+    return get_or_load_model(f"flux_{model_version}", _loader)
+
+
+def track_audio_model(model_path: str) -> Any:
+    """
+    Tracks an audio model in the cache registry to trigger memory eviction if needed.
+    """
+    cache_key = make_key(model_path, "mlx-audio")
+
+    def _loader():
+        # mlx-whisper handles its own caching via `_MODEL_CACHE` internally.
+        # But to ensure our registry tracking works (which monitors `len(_MODEL_CACHE)` to evict unified memory),
+        # we track a placeholder to trigger evictions if needed.
+        return True
+
+    return get_or_load_model(cache_key, _loader)

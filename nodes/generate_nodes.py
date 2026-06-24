@@ -2,7 +2,7 @@ import os
 import mlx.core as mx
 from ..runtime.data_types import LoadedMLXModel
 from ..runtime.bridge import tensor_to_pil
-from ..runtime.registry import get_or_load_draft_model, make_key
+from ..runtime.model_loader import load_draft_model
 
 
 class MLXLMGenerateText:
@@ -96,15 +96,7 @@ class MLXLMGenerateText:
         }
 
         if draft_model_path:
-            draft_key = make_key(draft_model_path, "draft")
-
-            def _load_draft():
-                print(f"Loading draft model '{draft_model_path}'...")
-                model, _ = mlx_lm.load(draft_model_path)
-                return model
-
-            draft_model = get_or_load_draft_model(draft_key, _load_draft)
-            gen_kwargs["draft_model"] = draft_model
+            gen_kwargs["draft_model"] = load_draft_model(draft_model_path, is_vlm=False)
 
         print(f"Generating text up to {max_tokens} tokens...")
         response = mlx_lm.generate(
@@ -219,16 +211,7 @@ class MLXVLMDescribeImage:
         }
 
         if draft_model_path:
-            from mlx_vlm.speculative.drafters import load_drafter
-
-            draft_key = make_key(draft_model_path, "draft")
-
-            def _load_draft():
-                print(f"Loading draft model '{draft_model_path}'...")
-                return load_drafter(draft_model_path)
-
-            draft_model = get_or_load_draft_model(draft_key, _load_draft)
-            gen_kwargs["draft_model"] = draft_model
+            gen_kwargs["draft_model"] = load_draft_model(draft_model_path, is_vlm=True)
             gen_kwargs["draft_kind"] = draft_kind
 
         print(f"Describing image (max {max_tokens} tokens)...")
