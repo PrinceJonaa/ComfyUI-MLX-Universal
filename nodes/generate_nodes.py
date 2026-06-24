@@ -43,8 +43,22 @@ class MLXLMGenerateText:
             },
             "optional": {
                 "draft_model_path": ("STRING", {"default": ""}),
-                "enable_thinking": ("BOOLEAN", {"default": False}),
-                "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192}),
+                "enable_thinking": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": "Enable thinking tokens for advanced visual reasoning models like Qwen-VL or LLaVA.",
+                    },
+                ),
+                "thinking_budget": (
+                    "INT",
+                    {
+                        "default": 512,
+                        "min": 0,
+                        "max": 8192,
+                        "tooltip": "Maximum number of tokens allocated for the model's internal thinking process.",
+                    },
+                ),
             },
         }
 
@@ -166,7 +180,13 @@ class MLXVLMDescribeImage:
                         "tooltip": "Path to a smaller draft model for speculative decoding speedups.",
                     },
                 ),
-                "draft_kind": (["dflash", "eagle3", "mtp"], {"default": "dflash"}),
+                "draft_kind": (
+                    ["dflash", "eagle3", "mtp"],
+                    {
+                        "default": "dflash",
+                        "tooltip": "Specifies the architecture of the provided draft model for speculative decoding.",
+                    },
+                ),
             },
         }
 

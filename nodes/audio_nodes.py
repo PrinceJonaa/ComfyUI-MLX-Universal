@@ -29,7 +29,7 @@ class MLXWhisperTranscribe:
             or "sample_rate" not in audio
         ):
             raise ValueError(
-                "Expected ComfyUI AUDIO dict format + Invalid or missing audio input + Connect a valid audio source node"
+                "Expected ComfyUI AUDIO dict format with 'waveform' and 'sample_rate'. Found invalid or missing audio input. Please connect a valid audio source node."
             )
 
         # Lazy import of mlx-whisper

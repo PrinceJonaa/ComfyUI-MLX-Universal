@@ -33,7 +33,7 @@ class MLXVideoGenerator:
                 "num_frames": (
                     "INT",
                     {
-                        "default": 33,
+                        "default": 17,
                         "min": 1,
                         "max": 500,
                         "tooltip": "Number of frames to generate. Lower this if you run out of unified memory.",
@@ -119,6 +119,8 @@ class MLXVideoGenerator:
                 cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
+                if not pil_imgs:
+                    raise ValueError("Expected an image batch, but found empty input. Please connect a valid image to the node or remove the image connection.")
                 temp_img_path = os.path.join(temp_dir, temp_img_name)
                 pil_imgs[0].save(temp_img_path)
                 cmd += ["--image", temp_img_path]
@@ -148,6 +150,8 @@ class MLXVideoGenerator:
                 cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
+                if not pil_imgs:
+                    raise ValueError("Expected an image batch, but found empty input. Please connect a valid image to the node or remove the image connection.")
                 temp_img_path = os.path.join(temp_dir, temp_img_name)
                 pil_imgs[0].save(temp_img_path)
                 cmd += ["--image", temp_img_path]
@@ -177,6 +181,8 @@ class MLXVideoGenerator:
                 cmd += ["--seed", str(seed)]
             if image is not None:
                 pil_imgs = tensor_to_pil(image)
+                if not pil_imgs:
+                    raise ValueError("Expected an image batch, but found empty input. Please connect a valid image to the node or remove the image connection.")
                 temp_img_path = os.path.join(temp_dir, temp_img_name)
                 pil_imgs[0].save(temp_img_path)
                 cmd += ["--image", temp_img_path]
