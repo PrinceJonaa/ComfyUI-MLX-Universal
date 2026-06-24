@@ -1,9 +1,6 @@
-import json
-import torch
-import numpy as np
-from PIL import Image, ImageDraw
 from ..runtime.data_types import LoadedMLXModel
-from ..runtime.bridge import tensor_to_pil, pil_to_tensor
+from ..runtime.bridge import tensor_to_pil
+from ..runtime.sam_processing import process_sam3_result
 
 
 class MLXSAM3Predictor:
@@ -46,59 +43,9 @@ class MLXSAM3Predictor:
         result = predictor.predict(pil_img, text_prompt=text_prompt)
         print(f"SAM3 prediction complete. Found {len(result.scores)} detections.")
 
-        overlay = pil_img.copy()
-        draw_width = max(2, int(min(W, H) * 0.005))
+        out_image, combined_mask, individual_masks, json_data = process_sam3_result(result, pil_img)
 
-        colors = [
-            (255, 0, 0, 100),
-            (0, 255, 0, 100),
-            (0, 0, 255, 100),
-            (255, 255, 0, 100),
-            (255, 0, 255, 100),
-            (0, 255, 255, 100),
-        ]
-
-        num_detections = len(result.scores)
-        masks_list = []
-        boxes_data = []
-        raw_masks = result.masks
-
-        mask_rgba = np.zeros((H, W, 4), dtype=np.uint8)
-        draw = ImageDraw.Draw(overlay)
-
-        for i in range(num_detections):
-            score = float(result.scores[i])
-            box = result.boxes[i]
-            x1, y1, x2, y2 = map(float, box)
-            mask = np.array(raw_masks[i]).squeeze()
-            if mask.shape != (H, W):
-                mask_pil = Image.fromarray(mask.astype(np.uint8) * 255).resize((W, H))
-                mask = np.array(mask_pil) > 0
-            else:
-                mask = mask > 0
-
-            masks_list.append(mask)
-            color = colors[i % len(colors)]
-
-            mask_rgba[mask] = color
-            draw.rectangle([x1, y1, x2, y2], outline=color[:3], width=draw_width)
-            draw.text((x1 + 5, y1 + 5), f"{score:.2f}", fill=color[:3])
-
-            boxes_data.append({"box": [x1, y1, x2, y2], "score": score})
-
-        mask_overlay_pil = Image.fromarray(mask_rgba, mode="RGBA")
-        overlay.paste(mask_overlay_pil, (0, 0), mask_overlay_pil)
-        out_image = pil_to_tensor(overlay)
-
-        if masks_list:
-            combined_mask_np = np.logical_or.reduce(masks_list).astype(np.float32)
-            combined_mask = torch.from_numpy(combined_mask_np).unsqueeze(0)
-            individual_masks = torch.from_numpy(np.stack(masks_list).astype(np.float32))
-        else:
-            combined_mask = torch.zeros((1, H, W), dtype=torch.float32)
-            individual_masks = torch.zeros((1, H, W), dtype=torch.float32)
-
-        return (out_image, combined_mask, individual_masks, json.dumps(boxes_data))
+        return (out_image, combined_mask, individual_masks, json_data)
 
 
 NODE_CLASS_MAPPINGS = {

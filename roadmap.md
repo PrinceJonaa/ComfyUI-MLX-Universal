@@ -31,11 +31,6 @@
 - Evidence: `README.md` claims VAEs in Phase 2 Expansion.
 - Why it matters: Achieves the ultimate goal of being the definitive "One-Stop Shop" for all modalities.
 
-### [RM-007] Refactor SAM3 node to remove PIL/drawing logic
-- Status: Planned
-- Evidence: `nodes/sam_nodes.py` contains heavy array/PIL manipulation and drawing logic inside the UI node, violating the strict separation of concerns in `CONTRIBUTING.md`.
-- Why it matters: Maintains architecture boundaries and ensures UI wrappers stay thin.
-
 ### [RM-008] Extract video generation subprocess and CV2 logic
 - Status: Planned
 - Evidence: `nodes/video_nodes.py` directly handles `subprocess.Popen`, temp file management, and `cv2` video reading inside the ComfyUI wrapper class.
@@ -47,6 +42,9 @@
 
 ### [RM-009] Enforce dict return type hints for INPUT_TYPES — completed 2026-06-23
 - Evidence: Updated `nodes/video_nodes.py`, `nodes/loader_nodes.py`, and `nodes/audio_nodes.py` to use `def INPUT_TYPES(s) -> dict:`.
+### [RM-007] Refactor SAM3 node to remove PIL/drawing logic
+- Status: Completed
+- Evidence: `nodes/sam_nodes.py` now uses `process_sam3_result` from `runtime/sam_processing.py` to handle PIL and tensor operations.
 
 ### [RM-001] Add Speculative Decoding and Thinking Tokens to LLM Node
 - Status: Completed
