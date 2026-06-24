@@ -13,7 +13,7 @@ from ..runtime.bridge import tensor_to_pil
 
 class MLXVideoGenerator:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "model_repo_or_dir": (
@@ -30,11 +30,25 @@ class MLXVideoGenerator:
                 "negative_prompt": ("STRING", {"default": "blurry, low quality"}),
                 "width": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
                 "height": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
-                "num_frames": ("INT", {"default": 33, "min": 1, "max": 500, "tooltip": "Number of frames to generate. Lower this if you run out of unified memory."}),
+                "num_frames": (
+                    "INT",
+                    {
+                        "default": 33,
+                        "min": 1,
+                        "max": 500,
+                        "tooltip": "Number of frames to generate. Lower this if you run out of unified memory.",
+                    },
+                ),
                 "steps": ("INT", {"default": 30, "min": 1, "max": 200}),
                 "guide_scale": (
                     "FLOAT",
-                    {"default": 5.0, "min": 0.0, "max": 50.0, "step": 0.5, "tooltip": "Classifier-Free Guidance (CFG) scale. Higher values closely follow the prompt but may introduce artifacts."},
+                    {
+                        "default": 5.0,
+                        "min": 0.0,
+                        "max": 50.0,
+                        "step": 0.5,
+                        "tooltip": "Classifier-Free Guidance (CFG) scale. Higher values closely follow the prompt but may introduce artifacts.",
+                    },
                 ),
                 "seed": ("INT", {"default": 42, "min": -1, "max": 2**32 - 1}),
             },
@@ -170,8 +184,10 @@ class MLXVideoGenerator:
                 cmd += ["--audio-file", audio_path]
 
         print(f"Running video generation CLI command: {' '.join(cmd)}")
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-        
+        process = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
+        )
+
         try:
             pbar = comfy.utils.ProgressBar(steps)
             last_step = 0
@@ -181,40 +197,52 @@ class MLXVideoGenerator:
                 # Required for long-running subprocesses so user interruption doesn't leave orphaned generator processes
                 comfy.model_management.throw_exception_if_processing_interrupted()
                 char = process.stdout.read(1)
-                if not char and process.poll() is not None: break
+                if not char and process.poll() is not None:
+                    break
                 if char:
                     sys.stdout.write(char)
                     sys.stdout.flush()
                     buf += char
-                    if char in ('\r', '\n'):
-                        match = re.search(r'(\d+)/' + str(steps), buf)
+                    if char in ("\r", "\n"):
+                        match = re.search(r"(\d+)/" + str(steps), buf)
                         if match:
                             try:
                                 step_val = int(match.group(1))
                                 if step_val > last_step:
                                     pbar.update(step_val - last_step)
                                     last_step = step_val
-                            except:
+                            except Exception:
                                 pass
                         buf = ""
 
             pbar.update_absolute(steps)
 
             rc = process.poll()
-            if rc != 0: raise RuntimeError(f"Expected video generation to complete successfully, but the process failed with exit code {rc}. Check your terminal output for out-of-memory or dependency errors, and try lowering 'num_frames' or resolution.")
-            if not os.path.exists(output_path): raise FileNotFoundError(f"Expected output video at '{output_path}', but the file was not found. This usually means the generation failed silently. Check your terminal for errors.")
+            if rc != 0:
+                raise RuntimeError(
+                    f"Expected video generation to complete successfully, but the process failed with exit code {rc}. Check your terminal output for out-of-memory or dependency errors, and try lowering 'num_frames' or resolution."
+                )
+            if not os.path.exists(output_path):
+                raise FileNotFoundError(
+                    f"Expected output video at '{output_path}', but the file was not found. This usually means the generation failed silently. Check your terminal for errors."
+                )
 
             import cv2
+
             cap = cv2.VideoCapture(output_path)
             frames = []
             while cap.isOpened():
                 ret, frame = cap.read()
-                if not ret: break
+                if not ret:
+                    break
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 frames.append(frame.astype(np.float32) / 255.0)
             cap.release()
 
-            if len(frames) == 0: raise ValueError("Expected extracted frames from the generated video, but none were found. Ensure the model successfully generated a valid video file.")
+            if len(frames) == 0:
+                raise ValueError(
+                    "Expected extracted frames from the generated video, but none were found. Ensure the model successfully generated a valid video file."
+                )
             return (output_path, torch.from_numpy(np.stack(frames, axis=0)))
         finally:
             if process.poll() is None:

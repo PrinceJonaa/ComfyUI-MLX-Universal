@@ -4,7 +4,10 @@ import numpy as np
 from PIL import Image, ImageDraw
 from .bridge import pil_to_tensor
 
-def process_sam3_result(result, pil_img: Image.Image) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, str]:
+
+def process_sam3_result(
+    result, pil_img: Image.Image
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, str]:
     """
     Extracts SAM3 prediction results into ComfyUI-compatible tensors and JSON data.
 

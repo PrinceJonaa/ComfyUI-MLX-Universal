@@ -5,7 +5,7 @@
 
 import os
 import unittest
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 
 import coremltools as ct
 import torch
@@ -122,7 +122,7 @@ class TestSD3VAEDecoder(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCa
         super().tearDownClass()
 
 
-def get_test_inputs(config: 'Any') -> Dict[str, torch.Tensor]:
+def get_test_inputs(config: Any) -> Dict[str, torch.Tensor]:
     """Generate random inputs for the SD3 MMDiT model"""
     config_expected_latent_resolution = (
         config.resolution // 2 ** len(config.channel_multipliers) - 1

@@ -28,9 +28,11 @@ def pil_to_tensor(pil_image: Image.Image) -> torch.Tensor:
         tensor = tensor.unsqueeze(0)
     return tensor
 
+
 def mlx_to_torch(mlx_tensor) -> torch.Tensor:
     """Convert an MLX array to a ComfyUI IMAGE tensor (B, H, W, C)."""
     import mlx.core as mx
+
     # MLX is usually (B, H, W, C) but may have different types
     # Prevents silent data corruption or performance bottlenecks when PyTorch accesses uncomputed lazy arrays
     mx.eval(mlx_tensor)
@@ -40,23 +42,27 @@ def mlx_to_torch(mlx_tensor) -> torch.Tensor:
         np_arr = np.array(mlx_tensor)
     else:
         np_arr = np.array(mlx_tensor)
-    
+
     tensor = torch.from_numpy(np_arr)
     if tensor.dim() == 3:
         tensor = tensor.unsqueeze(0)
     return tensor
 
+
 def torch_to_mlx(torch_tensor: torch.Tensor):
     """Convert a PyTorch tensor to an MLX array."""
     import mlx.core as mx
+
     # Move to CPU and numpy before creating MLX array
     np_arr = torch_tensor.cpu().detach().numpy()
     mlx_tensor = mx.array(np_arr)
     return mlx_tensor
 
+
 def mlx_to_latent(mlx_tensor) -> dict:
     """Convert an MLX latent array into a ComfyUI-compliant latent dictionary."""
     import mlx.core as mx
+
     # Explicit evaluation prevents latent structures from retaining uncomputed graphs that deadlock the PyTorch backend.
     mx.eval(mlx_tensor)
     if mlx_tensor.dtype == mx.bfloat16:
@@ -68,6 +74,7 @@ def mlx_to_latent(mlx_tensor) -> dict:
     torch_tensor = torch.from_numpy(np_arr)
     # ComfyUI natively expects latents to be packaged as a dictionary with a 'samples' key rather than a raw tensor.
     return {"samples": torch_tensor}
+
 
 def latent_to_mlx(latent_dict: dict):
     """Safely unpack a ComfyUI latent dictionary and convert its PyTorch tensor back to an MLX array."""

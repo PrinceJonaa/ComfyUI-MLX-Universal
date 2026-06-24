@@ -15,8 +15,6 @@ sys.modules["comfyui_mlx_universal.runtime"] = MagicMock()
 sys.modules["comfyui_mlx_universal.runtime.registry"] = MagicMock()
 
 
-
-
 class TestMLXCacheStats(unittest.TestCase):
     def test_stats(self):
         # We need to dynamically load the module with a specific __package__

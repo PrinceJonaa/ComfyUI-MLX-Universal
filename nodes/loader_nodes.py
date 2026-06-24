@@ -4,16 +4,40 @@ from ..runtime.model_loader import load_unified_mlx_model
 
 class MLXModelLoaderUnified:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "model_path": ("STRING", {"default": "mlx-community/Qwen3.5-4B-OptiQ-4bit"}),
-                "model_type": (["auto", "mlx-lm", "mlx-vlm", "sam3"], {"default": "auto"}),
-                "trust_remote_code": ("BOOLEAN", {"default": False, "tooltip": "Required for certain models with custom Python code in their Hugging Face repo."}),
-                "quantize_activations": ("BOOLEAN", {"default": False, "tooltip": "Compresses memory during generation. May slightly reduce quality."}),
+                "model_path": (
+                    "STRING",
+                    {"default": "mlx-community/Qwen3.5-4B-OptiQ-4bit"},
+                ),
+                "model_type": (
+                    ["auto", "mlx-lm", "mlx-vlm", "sam3"],
+                    {"default": "auto"},
+                ),
+                "trust_remote_code": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": "Required for certain models with custom Python code in their Hugging Face repo.",
+                    },
+                ),
+                "quantize_activations": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": "Compresses memory during generation. May slightly reduce quality.",
+                    },
+                ),
             },
             "optional": {
-                "adapter_path": ("STRING", {"default": "", "tooltip": "Optional path to a LoRA adapter directory or Hugging Face repo ID."}),
+                "adapter_path": (
+                    "STRING",
+                    {
+                        "default": "",
+                        "tooltip": "Optional path to a LoRA adapter directory or Hugging Face repo ID.",
+                    },
+                ),
             },
         }
 
@@ -35,18 +59,24 @@ class MLXModelLoaderUnified:
             model_type=model_type,
             trust_remote_code=trust_remote_code,
             quantize_activations=quantize_activations,
-            adapter_path=adapter_path
+            adapter_path=adapter_path,
         )
         return (loaded,)
 
 
 class MLXApplyLoRA:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
-                "adapter_path": ("STRING", {"default": "", "tooltip": "Path to a LoRA adapter directory or Hugging Face repo ID to fuse into the model."}),
+                "adapter_path": (
+                    "STRING",
+                    {
+                        "default": "",
+                        "tooltip": "Path to a LoRA adapter directory or Hugging Face repo ID to fuse into the model.",
+                    },
+                ),
             }
         }
 
@@ -66,7 +96,7 @@ class MLXApplyLoRA:
             model_type=mlx_model.model_type,
             trust_remote_code=mlx_model.trust_remote_code,
             quantize_activations=mlx_model.quantize_activations,
-            adapter_path=adapter_path
+            adapter_path=adapter_path,
         )
         return (loaded,)
 

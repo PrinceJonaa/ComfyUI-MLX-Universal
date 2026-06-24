@@ -1,16 +1,19 @@
 import os
 import tempfile
 import soundfile as sf
-import mlx.core as mx
 from ..runtime.registry import get_or_load_model
+
 
 class MLXWhisperTranscribe:
     @classmethod
-    def INPUT_TYPES(s):
+    def INPUT_TYPES(s) -> dict:
         return {
             "required": {
                 "audio": ("AUDIO",),
-                "model_path": ("STRING", {"default": "mlx-community/whisper-large-v3-turbo"}),
+                "model_path": (
+                    "STRING",
+                    {"default": "mlx-community/whisper-large-v3-turbo"},
+                ),
             }
         }
 
@@ -20,8 +23,14 @@ class MLXWhisperTranscribe:
     CATEGORY = "MLX Universal/Audio"
 
     def transcribe(self, audio, model_path):
-        if not isinstance(audio, dict) or "waveform" not in audio or "sample_rate" not in audio:
-            raise ValueError("Expected ComfyUI AUDIO dict format + Invalid or missing audio input + Connect a valid audio source node")
+        if (
+            not isinstance(audio, dict)
+            or "waveform" not in audio
+            or "sample_rate" not in audio
+        ):
+            raise ValueError(
+                "Expected ComfyUI AUDIO dict format + Invalid or missing audio input + Connect a valid audio source node"
+            )
 
         # Lazy import of mlx-whisper
         import mlx_whisper
@@ -72,6 +81,7 @@ class MLXWhisperTranscribe:
 
         text = result.get("text", "").strip()
         return (text,)
+
 
 NODE_CLASS_MAPPINGS = {
     "MLXWhisperTranscribe": MLXWhisperTranscribe,
