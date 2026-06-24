@@ -24,6 +24,7 @@ class MLXWhisperTranscribe:
             raise ValueError("Expected ComfyUI AUDIO dict format + Invalid or missing audio input + Connect a valid audio source node")
 
         # Lazy import of mlx-whisper
+        # Prevents ComfyUI from crashing on startup in unsupported environments
         import mlx_whisper
         from ..runtime.registry import make_key
 

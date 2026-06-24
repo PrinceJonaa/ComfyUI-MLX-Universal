@@ -50,6 +50,7 @@ def torch_to_mlx(torch_tensor: torch.Tensor):
     """Convert a PyTorch tensor to an MLX array."""
     import mlx.core as mx
     # Move to CPU and numpy before creating MLX array
+    # Avoids conversion errors with tensors requiring gradients or residing on a GPU
     np_arr = torch_tensor.cpu().detach().numpy()
     mlx_tensor = mx.array(np_arr)
     return mlx_tensor
