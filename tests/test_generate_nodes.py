@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 # Create mock objects for the dependencies
 mock_mlx = MagicMock()
-sys.modules['mlx'] = mock_mlx
+sys.modules["mlx"] = mock_mlx
 
 # Note: mx is what generate_nodes.py imports directly via `import mlx.core as mx`
 # But if it wasn't mocked properly, let's inject it into the exec namespace directly
@@ -13,39 +13,40 @@ sys.modules['mlx'] = mock_mlx
 mock_mx = MagicMock()
 
 mock_mlx_lm = MagicMock()
-sys.modules['mlx_lm'] = mock_mlx_lm
+sys.modules["mlx_lm"] = mock_mlx_lm
 
 mock_mlx_lm_sample_utils = MagicMock()
-sys.modules['mlx_lm.sample_utils'] = mock_mlx_lm_sample_utils
+sys.modules["mlx_lm.sample_utils"] = mock_mlx_lm_sample_utils
 
 mock_mlx_vlm = MagicMock()
-sys.modules['mlx_vlm'] = mock_mlx_vlm
+sys.modules["mlx_vlm"] = mock_mlx_vlm
 
 mock_mlx_vlm_prompt_utils = MagicMock()
-sys.modules['mlx_vlm.prompt_utils'] = mock_mlx_vlm_prompt_utils
+sys.modules["mlx_vlm.prompt_utils"] = mock_mlx_vlm_prompt_utils
 
 mock_mlx_vlm_speculative = MagicMock()
-sys.modules['mlx_vlm.speculative'] = mock_mlx_vlm_speculative
+sys.modules["mlx_vlm.speculative"] = mock_mlx_vlm_speculative
 
 mock_mlx_vlm_speculative_drafters = MagicMock()
-sys.modules['mlx_vlm.speculative.drafters'] = mock_mlx_vlm_speculative_drafters
+sys.modules["mlx_vlm.speculative.drafters"] = mock_mlx_vlm_speculative_drafters
+
 
 class TestGenerateNodes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        file_path = os.path.join(root_dir, 'nodes', 'generate_nodes.py')
+        file_path = os.path.join(root_dir, "nodes", "generate_nodes.py")
 
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             code = f.read()
 
         # Strip out relative imports and inject mocks
-        lines = code.split('\n')
+        lines = code.split("\n")
         new_lines = []
         for line in lines:
-            if line.startswith('from ..runtime'):
+            if line.startswith("from ..runtime"):
                 continue
-            if line.startswith('import mlx.core as mx'):
+            if line.startswith("import mlx.core as mx"):
                 # We provide `mx` dynamically
                 continue
             new_lines.append(line)
@@ -67,17 +68,17 @@ def get_or_load_draft_model(key, loader):
 def make_key(*args, **kwargs):
     return "mock_key"
 """
-        new_code = dummy_classes + '\n'.join(new_lines)
+        new_code = dummy_classes + "\n".join(new_lines)
 
         namespace = {}
         # Make os and mx available in namespace
-        namespace['os'] = os
-        namespace['mx'] = mock_mx
+        namespace["os"] = os
+        namespace["mx"] = mock_mx
         exec(new_code, namespace)
 
-        cls.MLXLMGenerateText = namespace['MLXLMGenerateText']
-        cls.MLXVLMDescribeImage = namespace['MLXVLMDescribeImage']
-        cls.LoadedMLXModel = namespace['LoadedMLXModel']
+        cls.MLXLMGenerateText = namespace["MLXLMGenerateText"]
+        cls.MLXVLMDescribeImage = namespace["MLXVLMDescribeImage"]
+        cls.LoadedMLXModel = namespace["LoadedMLXModel"]
 
     def setUp(self):
         # Reset mocks before each test
@@ -112,12 +113,15 @@ def make_key(*args, **kwargs):
                 seed=42,
                 draft_model_path="",
                 enable_thinking=False,
-                thinking_budget=512
+                thinking_budget=512,
             )
 
-        self.assertEqual(str(context.exception), "Expected model family 'mlx-lm', but found 'unknown-family'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model.")
+        self.assertEqual(
+            str(context.exception),
+            "Expected model family 'mlx-lm', but found 'unknown-family'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model.",
+        )
 
-    @patch('mlx_lm.sample_utils.make_sampler')
+    @patch("mlx_lm.sample_utils.make_sampler")
     def test_mlx_lm_generate_happy_path_with_chat_template(self, mock_make_sampler):
         mock_make_sampler.return_value = "mocked_sampler"
         node = self.MLXLMGenerateText()
@@ -137,13 +141,15 @@ def make_key(*args, **kwargs):
             seed=42,
             draft_model_path="",
             enable_thinking=False,
-            thinking_budget=512
+            thinking_budget=512,
         )
 
         self.assertEqual(result, ("generated response",))
         mock_mx.random.seed.assert_called_once_with(42)
         mocked_model.processor.apply_chat_template.assert_called_once_with(
-            [{"role": "user", "content": "Hello"}], tokenize=False, add_generation_prompt=True
+            [{"role": "user", "content": "Hello"}],
+            tokenize=False,
+            add_generation_prompt=True,
         )
         mock_make_sampler.assert_called_once_with(temp=0.7, top_p=0.9)
         mock_mlx_lm.generate.assert_called_once_with(
@@ -154,10 +160,10 @@ def make_key(*args, **kwargs):
             max_tokens=100,
             verbose=False,
             enable_thinking=False,
-            thinking_budget=512
+            thinking_budget=512,
         )
 
-    @patch('mlx_lm.sample_utils.make_sampler')
+    @patch("mlx_lm.sample_utils.make_sampler")
     def test_mlx_lm_generate_happy_path_without_chat_template(self, mock_make_sampler):
         mock_make_sampler.return_value = "mocked_sampler_2"
         node = self.MLXLMGenerateText()
@@ -177,7 +183,7 @@ def make_key(*args, **kwargs):
             seed=123,
             draft_model_path="",
             enable_thinking=False,
-            thinking_budget=512
+            thinking_budget=512,
         )
 
         self.assertEqual(result, ("generated response no template",))
@@ -191,7 +197,7 @@ def make_key(*args, **kwargs):
             max_tokens=50,
             verbose=False,
             enable_thinking=False,
-            thinking_budget=512
+            thinking_budget=512,
         )
 
     # --- MLXVLMDescribeImage Tests ---
@@ -209,18 +215,23 @@ def make_key(*args, **kwargs):
                 temperature=0.7,
                 seed=42,
                 enable_thinking=False,
-                thinking_budget=100
+                thinking_budget=100,
             )
 
-        self.assertEqual(str(context.exception), "Expected model family 'mlx-vlm', but found 'unknown-family'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model.")
+        self.assertEqual(
+            str(context.exception),
+            "Expected model family 'mlx-vlm', but found 'unknown-family'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model.",
+        )
 
-    @patch('os.path.exists', return_value=True)
+    @patch("os.path.exists", return_value=True)
     def test_mlx_vlm_run_happy_path_no_draft_model(self, mock_os_exists):
         node = self.MLXVLMDescribeImage()
         mocked_model = self.get_mocked_model()
         mocked_model.family = "mlx-vlm"
 
-        mock_mlx_vlm_prompt_utils.apply_chat_template.return_value = "vlm_formatted_prompt"
+        mock_mlx_vlm_prompt_utils.apply_chat_template.return_value = (
+            "vlm_formatted_prompt"
+        )
         mock_mlx_vlm.generate.return_value = "image described"
 
         result = node.run(
@@ -233,7 +244,7 @@ def make_key(*args, **kwargs):
             thinking_budget=512,
             image="mock_tensor",
             audio_path="fake/path.mp3",
-            draft_model_path=""
+            draft_model_path="",
         )
 
         self.assertEqual(result, ("image described",))
@@ -242,8 +253,8 @@ def make_key(*args, **kwargs):
             mocked_model.processor,
             mocked_model.model.config,
             "Describe this",
-            num_images=1, # Since tensor_to_pil returns 1 mock item
-            num_audios=1
+            num_images=1,  # Since tensor_to_pil returns 1 mock item
+            num_audios=1,
         )
         mock_mlx_vlm.generate.assert_called_once_with(
             mocked_model.model,
@@ -255,16 +266,18 @@ def make_key(*args, **kwargs):
             max_tokens=256,
             verbose=False,
             enable_thinking=True,
-            thinking_budget=512
+            thinking_budget=512,
         )
 
-    @patch('os.path.exists', return_value=False)
+    @patch("os.path.exists", return_value=False)
     def test_mlx_vlm_run_happy_path_with_draft_model(self, mock_os_exists):
         node = self.MLXVLMDescribeImage()
         mocked_model = self.get_mocked_model()
         mocked_model.family = "mlx-vlm"
 
-        mock_mlx_vlm_prompt_utils.apply_chat_template.return_value = "vlm_formatted_prompt_draft"
+        mock_mlx_vlm_prompt_utils.apply_chat_template.return_value = (
+            "vlm_formatted_prompt_draft"
+        )
         mock_mlx_vlm.generate.return_value = "fast image described"
 
         result = node.run(
@@ -278,7 +291,7 @@ def make_key(*args, **kwargs):
             image=None,
             audio_path="",
             draft_model_path="path/to/draft",
-            draft_kind="eagle3"
+            draft_kind="eagle3",
         )
 
         self.assertEqual(result, ("fast image described",))
@@ -288,7 +301,7 @@ def make_key(*args, **kwargs):
             mocked_model.model.config,
             "Draft this",
             num_images=0,
-            num_audios=0
+            num_audios=0,
         )
         mock_mlx_vlm.generate.assert_called_once_with(
             mocked_model.model,
@@ -302,8 +315,9 @@ def make_key(*args, **kwargs):
             enable_thinking=False,
             thinking_budget=0,
             draft_model=("mock_draft_model", "mock_draft_kind"),
-            draft_kind="eagle3"
+            draft_kind="eagle3",
         )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

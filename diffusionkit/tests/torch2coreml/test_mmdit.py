@@ -5,7 +5,7 @@
 
 import os
 import unittest
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 
 import coremltools as ct
 import torch
@@ -106,7 +106,7 @@ class TestSD3MMDiT(argmaxtools_test_utils.CoreMLTestsMixin, unittest.TestCase):
         super().tearDownClass()
 
 
-def get_test_inputs(cfg: 'Any') -> Dict[str, torch.Tensor]:
+def get_test_inputs(cfg: Any) -> Dict[str, torch.Tensor]:
     """Generate random inputs for the SD3 MMDiT model"""
     batch_size = 2  # classifier-free guidance
     assert TEST_LATENT_HEIGHT <= cfg.max_latent_resolution

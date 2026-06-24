@@ -4,6 +4,7 @@ from huggingface_hub import hf_hub_download
 from .registry import get_or_load_model, make_key
 from .data_types import LoadedMLXModel
 
+
 def get_model_config(model_path_or_id: str) -> dict:
     """
     Fetches the `config.json` for a given MLX model path or remote Hugging Face Hub repository.
@@ -77,7 +78,7 @@ def load_unified_mlx_model(
     model_type: str,
     trust_remote_code: bool,
     quantize_activations: bool,
-    adapter_path: str = ""
+    adapter_path: str = "",
 ) -> LoadedMLXModel:
     """
     Instantiates an MLX model, dynamically loading via mlx-lm or mlx-vlm based on detected type.
@@ -103,7 +104,9 @@ def load_unified_mlx_model(
     def _load():
         if adapter_path:
             # LoRA weights are fused at load-time rather than dynamically applied to existing instances to ensure safe tracking within the MLX unified memory cache.
-            print(f"Loading base model '{model_path}' WITH adapter '{adapter_path}' using type mode '{resolved_type}'...")
+            print(
+                f"Loading base model '{model_path}' WITH adapter '{adapter_path}' using type mode '{resolved_type}'..."
+            )
         else:
             print(f"Loading model '{model_path}' using type mode '{resolved_type}'...")
 
@@ -113,10 +116,13 @@ def load_unified_mlx_model(
             if os.path.exists(adapter_path):
                 print(f"Applying LoRA adapter from local path: {adapter_path}")
             else:
-                print(f"adapter_path '{adapter_path}' not found locally. Assuming remote Hugging Face Hub repo.")
+                print(
+                    f"adapter_path '{adapter_path}' not found locally. Assuming remote Hugging Face Hub repo."
+                )
 
         if resolved_type == "mlx-lm":
             import mlx_lm
+
             model, processor = mlx_lm.load(model_path, **kwargs)
             return LoadedMLXModel(
                 family=resolved_type,
@@ -129,6 +135,7 @@ def load_unified_mlx_model(
             )
         elif resolved_type in ("mlx-vlm", "sam3"):
             import mlx_vlm
+
             kwargs["quantize_activations"] = quantize_activations
             model, processor = mlx_vlm.load(model_path, **kwargs)
             return LoadedMLXModel(
