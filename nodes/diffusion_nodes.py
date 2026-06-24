@@ -78,13 +78,18 @@ class MLXSampler:
         latent_image,
         denoise,
     ) -> tuple:
-        from ..runtime.bridge import mlx_to_latent
+        from ..runtime.bridge import mlx_to_latent, latent_to_mlx
 
         conditioning = mlx_positive_conditioning["conditioning"]
         pooled_conditioning = mlx_positive_conditioning["pooled_conditioning"]
 
         batch, channels, height, width = latent_image["samples"].shape
         latent_size = (height, width)
+
+        input_latents = None
+        if denoise < 1.0:
+            print("Denoise < 1.0, extracting input latents for img2img...")
+            input_latents = latent_to_mlx(latent_image)
 
         print(f"Generating image latents ({steps} steps)...")
         latents, iter_time = mlx_model.denoise_latents(
@@ -96,6 +101,7 @@ class MLXSampler:
             seed=seed,
             image_path=None,
             denoise=denoise,
+            input_latents=input_latents,
         )
 
         # Evaluates the latent graph lazily accumulated during sampling loops before returning to ComfyUI to prevent upstream deadlock.

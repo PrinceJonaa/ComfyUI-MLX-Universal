@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-06-24 at commit 4b089e6
+> Last curated: 2026-06-24 at commit e1ee695
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -40,6 +40,9 @@
 ## Blocked
 
 ## Recently Completed
+
+### [RM-012] Implement img2img support in MLXSampler — completed 2026-06-24
+- Evidence: `nodes/diffusion_nodes.py` now extracts `input_latents` when `denoise < 1.0` and `diffusionkit/mlx/__init__.py` accepts it for img2img workflows.
 
 ### [RM-011] Refactor audio dimension reduction — completed 2026-06-24
 - Evidence: `nodes/audio_nodes.py` now uses `waveform[0]` instead of `.squeeze(0)` for batch dimension reduction.
