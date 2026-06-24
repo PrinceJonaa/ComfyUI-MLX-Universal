@@ -95,9 +95,9 @@ graph TD
         UI_Vid[MLX Generate Video]
         UI_LoadFlux[MLX Load Flux Model from HF]
         UI_ClipEnc[MLX CLIP Text Encoder]
-        UI_Diff[MLX Generate Image]
-        UI_Audio[MLX Transcribe Audio]
-        UI_Decode[MLX VAE Decode]
+        UI_Diff[MLX Generate Image (Flux)]
+        UI_Audio[MLX Transcribe Audio (Whisper)]
+        UI_Decode[MLX VAE Decode (Flux)]
         UI_Sys[MLX Clear Cache]
         UI_Stats[MLX Cache Stats]
     end

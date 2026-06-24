@@ -8,6 +8,7 @@ class MLXClearCache:
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):
+        # Prevents the workflow execution engine from aggressively caching nodes with no required inputs
         return float("NaN")
 
     CATEGORY = "MLX Universal/System"
@@ -31,6 +32,7 @@ class MLXCacheStats:
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):
+        # Prevents the workflow execution engine from aggressively caching nodes with no required inputs
         return float("NaN")
 
     CATEGORY = "MLX Universal/System"
