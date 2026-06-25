@@ -124,28 +124,10 @@ class MLXLoadFlux:
     FUNCTION = "load_flux_model"
     CATEGORY = "MLX Universal/Loaders"
 
-    def check_model_folder(self, filename) -> None:
-        home_dir = os.path.expanduser("~")
-        formatted_filename = filename.replace("/", "--")
-        folder_path = os.path.join(
-            home_dir, ".cache/huggingface/hub/models--" + formatted_filename
-        )
-
-        if os.path.exists(folder_path):
-            print("Found existing model folder, verifying download...")
-        else:
-            print("Model folder not found, downloading from HuggingFace... 🤗")
-
     def load_flux_model(self, model_version) -> tuple:
-        self.check_model_folder(model_version)
-        from ..runtime.registry import get_or_load_model
+        from ..runtime.model_loader import load_flux_pipeline
 
-        def _loader():
-            return FluxPipeline(
-                model_version=model_version, low_memory_mode=False, w16=True, a16=True
-            )
-
-        model = get_or_load_model(f"flux_{model_version}", _loader)
+        model = load_flux_pipeline(model_version)
 
         clip = {
             "model_name": model_version,

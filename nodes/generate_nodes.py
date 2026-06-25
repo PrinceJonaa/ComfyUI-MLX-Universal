@@ -96,14 +96,9 @@ class MLXLMGenerateText:
         }
 
         if draft_model_path:
-            draft_key = make_key(draft_model_path, "draft")
+            from ..runtime.model_loader import load_draft_model
 
-            def _load_draft():
-                print(f"Loading draft model '{draft_model_path}'...")
-                model, _ = mlx_lm.load(draft_model_path)
-                return model
-
-            draft_model = get_or_load_draft_model(draft_key, _load_draft)
+            draft_model = load_draft_model(draft_model_path, "mlx-lm")
             gen_kwargs["draft_model"] = draft_model
 
         print(f"Generating text up to {max_tokens} tokens...")
@@ -219,15 +214,9 @@ class MLXVLMDescribeImage:
         }
 
         if draft_model_path:
-            from mlx_vlm.speculative.drafters import load_drafter
+            from ..runtime.model_loader import load_draft_model
 
-            draft_key = make_key(draft_model_path, "draft")
-
-            def _load_draft():
-                print(f"Loading draft model '{draft_model_path}'...")
-                return load_drafter(draft_model_path)
-
-            draft_model = get_or_load_draft_model(draft_key, _load_draft)
+            draft_model = load_draft_model(draft_model_path, "mlx-vlm")
             gen_kwargs["draft_model"] = draft_model
             gen_kwargs["draft_kind"] = draft_kind
 
