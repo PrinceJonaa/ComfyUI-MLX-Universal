@@ -248,6 +248,7 @@ class DiffusionPipeline:
         seed=None,
         image_path: Optional[str] = None,
         denoise: float = 1.0,
+        input_latents=None,
     ):
         # Set the PRNG state
         seed = int(time.time()) if seed is None else seed
@@ -255,11 +256,13 @@ class DiffusionPipeline:
         mx.random.seed(seed)
 
         x_T = self.get_empty_latent(*latent_size)
-        if image_path is None:
-            denoise = 1.0
-        else:
+        if input_latents is not None:
+            x_T = self.latent_format.process_in(input_latents)
+        elif image_path is not None:
             x_T = self.encode_image_to_latents(image_path, seed=seed)
             x_T = self.latent_format.process_in(x_T)
+        else:
+            denoise = 1.0
         noise = self.get_noise(seed, x_T)
         sigmas = self.get_sigmas(self.sampler, num_steps)
         sigmas = sigmas[int(num_steps * (1 - denoise)) :]
