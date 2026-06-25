@@ -80,10 +80,15 @@ class MLXSampler:
     ) -> tuple:
         from ..runtime.bridge import mlx_to_latent
 
-        conditioning = mlx_positive_conditioning["conditioning"]
-        pooled_conditioning = mlx_positive_conditioning["pooled_conditioning"]
+        try:
+            conditioning = mlx_positive_conditioning["conditioning"]
+            pooled_conditioning = mlx_positive_conditioning["pooled_conditioning"]
+            batch, channels, height, width = latent_image["samples"].shape
+        except (KeyError, TypeError, AttributeError):
+            raise ValueError(
+                "Expected a valid MLX conditioning dictionary and latent image dict + Missing required keys or invalid type found + Ensure you have connected the 'mlx_positive_conditioning' and 'latent_image' inputs correctly."
+            )
 
-        batch, channels, height, width = latent_image["samples"].shape
         latent_size = (height, width)
 
         print(f"Generating image latents ({steps} steps)...")
@@ -116,6 +121,7 @@ class MLXLoadFlux:
                         "argmaxinc/mlx-FLUX.1-schnell",
                         "argmaxinc/mlx-FLUX.1-dev",
                     ],
+                    {"tooltip": "Hugging Face model repository ID to load the Flux architecture from."},
                 )
             }
         }
@@ -141,6 +147,7 @@ class MLXLoadFlux:
         from ..runtime.registry import get_or_load_model
 
         def _loader():
+            print(f"Loading base Flux weights into Unified Memory for {model_version}...")
             return FluxPipeline(
                 model_version=model_version, low_memory_mode=False, w16=True, a16=True
             )
@@ -190,11 +197,16 @@ class MLXClipTextEncoder:
         return mx.array(tokens)
 
     def encode(self, mlx_conditioning, text) -> tuple:
-        model_name = mlx_conditioning["model_name"]
-        clip_l_encoder: CLIPTextModel = mlx_conditioning["clip_l_model"]
-        clip_l_tokenizer: Tokenizer = mlx_conditioning["clip_l_tokenizer"]
-        t5_encoder: SD3T5Encoder = mlx_conditioning["t5_model"]
-        t5_tokenizer: T5Tokenizer = mlx_conditioning["t5_tokenizer"]
+        try:
+            model_name = mlx_conditioning["model_name"]
+            clip_l_encoder: CLIPTextModel = mlx_conditioning["clip_l_model"]
+            clip_l_tokenizer: Tokenizer = mlx_conditioning["clip_l_tokenizer"]
+            t5_encoder: SD3T5Encoder = mlx_conditioning["t5_model"]
+            t5_tokenizer: T5Tokenizer = mlx_conditioning["t5_tokenizer"]
+        except (KeyError, TypeError, AttributeError):
+            raise ValueError(
+                "Expected a valid MLX conditioning dictionary + Missing required model or tokenizer keys found + Ensure you have connected the 'mlx_conditioning' input from a valid loader node."
+            )
 
         clip_tokens = self._tokenize(tokenizer=clip_l_tokenizer, text=text)
         clip_l_embeddings = clip_l_encoder(clip_tokens[[0], :])

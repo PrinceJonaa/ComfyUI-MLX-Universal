@@ -148,6 +148,6 @@ def load_unified_mlx_model(
                 processor=processor,
             )
         else:
-            raise ValueError(f"Unknown resolved model type: {resolved_type}")
+            raise ValueError(f"Expected model type 'mlx-lm', 'mlx-vlm', or 'sam3' + Found unknown resolved model type '{resolved_type}' + Check the model path or specify the correct model type.")
 
     return get_or_load_model(cache_key, _load)

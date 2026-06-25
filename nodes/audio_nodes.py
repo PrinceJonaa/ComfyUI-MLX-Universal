@@ -12,7 +12,10 @@ class MLXWhisperTranscribe:
                 "audio": ("AUDIO",),
                 "model_path": (
                     "STRING",
-                    {"default": "mlx-community/whisper-large-v3-turbo"},
+                    {
+                        "default": "mlx-community/whisper-large-v3-turbo",
+                        "tooltip": "Hugging Face model repository ID or local path to load the Whisper model from.",
+                    },
                 ),
             }
         }
@@ -29,7 +32,7 @@ class MLXWhisperTranscribe:
             or "sample_rate" not in audio
         ):
             raise ValueError(
-                "Expected ComfyUI AUDIO dict format + Invalid or missing audio input + Connect a valid audio source node"
+                "Expected a ComfyUI AUDIO dict format + Found invalid or missing audio input + Connect a valid audio source node"
             )
 
         # Lazy import of mlx-whisper

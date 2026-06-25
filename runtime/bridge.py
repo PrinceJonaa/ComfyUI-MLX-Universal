@@ -80,5 +80,5 @@ def mlx_to_latent(mlx_tensor) -> dict:
 def latent_to_mlx(latent_dict: dict):
     """Safely unpack a ComfyUI latent dictionary and convert its PyTorch tensor back to an MLX array."""
     if not isinstance(latent_dict, dict) or "samples" not in latent_dict:
-        raise ValueError("Expected a ComfyUI latent dictionary with a 'samples' key.")
+        raise ValueError("Expected a ComfyUI latent dictionary + Found missing 'samples' key or invalid format + Ensure the latent image is generated correctly by a previous node.")
     return torch_to_mlx(latent_dict["samples"])

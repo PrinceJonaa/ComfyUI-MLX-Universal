@@ -118,7 +118,7 @@ def make_key(*args, **kwargs):
 
         self.assertEqual(
             str(context.exception),
-            "Expected model family 'mlx-lm', but found 'unknown-family'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model.",
+            "Expected model family 'mlx-lm' + Found 'unknown-family' + Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model.",
         )
 
     @patch("mlx_lm.sample_utils.make_sampler")
@@ -220,7 +220,7 @@ def make_key(*args, **kwargs):
 
         self.assertEqual(
             str(context.exception),
-            "Expected model family 'mlx-vlm', but found 'unknown-family'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model.",
+            "Expected model family 'mlx-vlm' + Found 'unknown-family' + Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model.",
         )
 
     @patch("os.path.exists", return_value=True)
