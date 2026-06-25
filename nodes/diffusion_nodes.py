@@ -10,6 +10,37 @@ from ..diffusionkit.mlx import FluxPipeline
 from ..diffusionkit.mlx.constants import T5_MAX_LENGTH
 
 
+class MLXEncoder:
+    @classmethod
+    def INPUT_TYPES(s) -> dict:
+        return {"required": {"pixels": ("IMAGE",), "mlx_model": ("mlx_model",)}}
+
+    RETURN_TYPES = ("LATENT",)
+    FUNCTION = "encode"
+    CATEGORY = "MLX Universal/Diffusion"
+
+    def encode(self, pixels, mlx_model) -> tuple:
+        from ..runtime.bridge import torch_to_mlx, mlx_to_latent
+
+        print("Encoding image with MLX VAE...")
+
+        # Scale ComfyUI's PyTorch image tensors from [0, 1] to [-1, 1]
+        scaled_pixels = pixels * 2.0 - 1.0
+
+        mlx_image = torch_to_mlx(scaled_pixels)
+
+        hidden = mlx_model.encoder(mlx_image)
+        mean, logvar = hidden.split(2, axis=-1)
+
+        latent = mlx_model.latent_format.process_in(mean)
+
+        # Explicit evaluation prevents uncomputed graphs from passing to the bridge
+        mx.eval(latent)
+        print("VAE encoding complete.")
+
+        return (mlx_to_latent(latent),)
+
+
 class MLXDecoder:
     @classmethod
     def INPUT_TYPES(s) -> dict:
@@ -221,6 +252,7 @@ NODE_CLASS_MAPPINGS = {
     "MLXLoadFlux": MLXLoadFlux,
     "MLXSampler": MLXSampler,
     "MLXDecoder": MLXDecoder,
+    "MLXEncoder": MLXEncoder,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -228,4 +260,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "MLXLoadFlux": "MLX Load Flux Model from HF",
     "MLXSampler": "MLX Generate Image (Flux)",
     "MLXDecoder": "MLX VAE Decode (Flux)",
+    "MLXEncoder": "MLX VAE Encode (Flux)",
 }
