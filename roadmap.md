@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-06-24 at commit 4b089e6
+> Last curated: 2026-06-26 at commit e1ee695
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -14,17 +14,9 @@
 - Evidence: `README.md` claimed Kokoro integration, but `nodes/audio_nodes.py` only implements `MLXWhisperTranscribe`.
 - Why it matters: Achieves full audio multimodal capabilities as promised in the documentation.
 
-
-
-
 ### [RM-004] Native SDXL / ControlNet pipelines
 - Status: Planned
 - Evidence: `README.md` claims SDXL / ControlNet in Phase 2 Expansion.
-- Why it matters: Achieves the ultimate goal of being the definitive "One-Stop Shop" for all modalities.
-
-### [RM-005] Standalone Causal Video and Image VAE encode/decode nodes
-- Status: Planned
-- Evidence: `README.md` claims VAEs in Phase 2 Expansion.
 - Why it matters: Achieves the ultimate goal of being the definitive "One-Stop Shop" for all modalities.
 
 ### [RM-008] Extract video generation subprocess and CV2 logic
@@ -40,6 +32,9 @@
 ## Blocked
 
 ## Recently Completed
+
+### [RM-005] Standalone Causal Video and Image VAE encode/decode nodes — completed 2026-06-26
+- Evidence: Added MLXEncoder to `nodes/diffusion_nodes.py`.
 
 ### [RM-011] Refactor audio dimension reduction — completed 2026-06-24
 - Evidence: `nodes/audio_nodes.py` now uses `waveform[0]` instead of `.squeeze(0)` for batch dimension reduction.

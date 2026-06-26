@@ -216,7 +216,38 @@ class MLXClipTextEncoder:
         return (output,)
 
 
+
+class MLXEncoder:
+    @classmethod
+    def INPUT_TYPES(s) -> dict:
+        return {"required": {"image": ("IMAGE",), "mlx_model": ("mlx_model",)}}
+
+    RETURN_TYPES = ("LATENT",)
+    RETURN_NAMES = ("latent_image",)
+    FUNCTION = "encode"
+    CATEGORY = "MLX Universal/Diffusion"
+
+    def encode(self, image, mlx_model) -> tuple:
+        from ..runtime.bridge import torch_to_mlx, mlx_to_latent
+        import mlx.core as mx
+
+        print("Encoding image to latents with MLX VAE...")
+
+        mlx_image = torch_to_mlx(image)
+        # Scale ComfyUI PyTorch image tensors from [0, 1] to [-1, 1]
+        mlx_image = (mlx_image * 2) - 1.0
+
+        hidden = mlx_model.encoder(mlx_image)
+        mean, _ = hidden.split(2, axis=-1)
+        latents = mlx_model.latent_format.process_in(mean)
+
+        mx.eval(latents)
+        print("VAE encoding complete.")
+
+        return (mlx_to_latent(latents),)
+
 NODE_CLASS_MAPPINGS = {
+    "MLXEncoder": MLXEncoder,
     "MLXClipTextEncoder": MLXClipTextEncoder,
     "MLXLoadFlux": MLXLoadFlux,
     "MLXSampler": MLXSampler,
@@ -224,6 +255,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "MLXEncoder": "MLX VAE Encode (Flux)",
     "MLXClipTextEncoder": "MLX CLIP Text Encoder",
     "MLXLoadFlux": "MLX Load Flux Model from HF",
     "MLXSampler": "MLX Generate Image (Flux)",
