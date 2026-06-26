@@ -29,7 +29,13 @@ class MLXSAM3Predictor:
     FUNCTION = "predict"
     CATEGORY = "MLX Universal/SAM"
 
-    def predict(self, mlx_model: LoadedMLXModel, image, text_prompt, score_threshold):
+    def predict(
+        self,
+        mlx_model: LoadedMLXModel,
+        image: dict,
+        text_prompt: str,
+        score_threshold: float,
+    ) -> tuple:
         if mlx_model.family != "sam3":
             raise ValueError(
                 f"Expected model family 'sam3', but found '{mlx_model.family}'. Please ensure you are passing a SAM model loaded via 'MLX Load Model'."

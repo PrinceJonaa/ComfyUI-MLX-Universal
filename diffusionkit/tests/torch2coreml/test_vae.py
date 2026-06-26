@@ -11,9 +11,11 @@ import coremltools as ct
 import torch
 from argmaxtools import test_utils as argmaxtools_test_utils
 from argmaxtools.utils import get_fastest_device, get_logger
+
 try:
     from diffusionkit.torch import vae
     from diffusionkit.torch.model_io import _load_vae_decoder_weights
+
     HAS_TORCH_DEPS = True
 except ImportError:
     HAS_TORCH_DEPS = False
@@ -149,7 +151,12 @@ def convert_vae_to_mlpackage(
     Returns:
         `str`: path to the converted model.
     """
-    global TEST_SD3_CKPT_PATH, TEST_SD3_HF_REPO, TEST_LATENT_WIDTH, TEST_LATENT_HEIGHT, TEST_CACHE_DIR
+    global \
+        TEST_SD3_CKPT_PATH, \
+        TEST_SD3_HF_REPO, \
+        TEST_LATENT_WIDTH, \
+        TEST_LATENT_HEIGHT, \
+        TEST_CACHE_DIR
 
     # Convert to CoreML
     TEST_SD3_HF_REPO = model_version

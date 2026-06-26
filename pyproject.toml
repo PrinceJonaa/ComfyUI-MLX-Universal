@@ -12,3 +12,7 @@ Repository = "https://github.com/PrinceJonaa/ComfyUI-MLX-Universal"
 PublisherId = "princejona"
 DisplayName = "ComfyUI MLX Universal"
 Icon = ""
+
+[tool.mypy]
+ignore_missing_imports = true
+explicit_package_bases = true

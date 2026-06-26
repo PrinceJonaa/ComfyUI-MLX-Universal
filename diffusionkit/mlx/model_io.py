@@ -204,11 +204,11 @@ def flux_state_dict_adjustments(state_dict, prefix="", hidden_size=3072, mlp_rat
                 if name == "mlp.fc1":
                     state_dict_update[
                         k.replace(".linear1", f".transformer_block.{name}")
-                    ] = (weight if "weight" in k else weight)
+                    ] = weight if "weight" in k else weight
                 else:
                     state_dict_update[
                         k.replace(".linear1", f".transformer_block.{name}_proj")
-                    ] = (weight if "weight" in k else weight)
+                    ] = weight if "weight" in k else weight
 
     [state_dict.pop(k) for k in keys_to_pop]
     state_dict.update(state_dict_update)
@@ -238,11 +238,11 @@ def flux_state_dict_adjustments(state_dict, prefix="", hidden_size=3072, mlp_rat
                     if name == "mlp.fc2":
                         state_dict_update[
                             k.replace(".linear2", f".transformer_block.{name}")
-                        ] = (weight if "weight" in k else weight)
+                        ] = weight if "weight" in k else weight
                     else:
                         state_dict_update[
                             k.replace(".linear2", f".transformer_block.{name}_proj")
-                        ] = (weight if "weight" in k else weight)
+                        ] = weight if "weight" in k else weight
 
     [state_dict.pop(k) for k in keys_to_pop]
     state_dict.update(state_dict_update)
@@ -442,8 +442,7 @@ def vae_decoder_state_dict_adjustments(state_dict, prefix="decoder."):
 
     state_dict = {k.replace("up.", "up_blocks."): v for k, v in state_dict.items()}
     state_dict = {
-        k.replace(".upsample.conv.", ".upsample."): v
-        for k, v in state_dict.items()
+        k.replace(".upsample.conv.", ".upsample."): v for k, v in state_dict.items()
     }
 
     state_dict = _common_vae_adjustments(state_dict)

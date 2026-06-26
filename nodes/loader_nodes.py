@@ -48,12 +48,12 @@ class MLXModelLoaderUnified:
 
     def load_model(
         self,
-        model_path,
-        model_type,
-        trust_remote_code,
-        quantize_activations,
-        adapter_path="",
-    ):
+        model_path: str,
+        model_type: str,
+        trust_remote_code: bool,
+        quantize_activations: bool,
+        adapter_path: str = "",
+    ) -> tuple:
         loaded = load_unified_mlx_model(
             model_path=model_path,
             model_type=model_type,

@@ -65,18 +65,18 @@ class MLXVideoGenerator:
 
     def generate_video(
         self,
-        model_repo_or_dir,
-        prompt,
-        negative_prompt,
-        width,
-        height,
-        num_frames,
-        steps,
-        guide_scale,
-        seed,
-        image=None,
-        audio_path="",
-    ):
+        model_repo_or_dir: str,
+        prompt: str,
+        negative_prompt: str,
+        width: int,
+        height: int,
+        num_frames: int,
+        steps: int,
+        guide_scale: float,
+        seed: int,
+        image: dict | None = None,
+        audio_path: str = "",
+    ) -> tuple:
 
         name_lower = model_repo_or_dir.lower()
         if "wan" in name_lower:
@@ -196,7 +196,9 @@ class MLXVideoGenerator:
             while True:
                 # Required for long-running subprocesses so user interruption doesn't leave orphaned generator processes
                 comfy.model_management.throw_exception_if_processing_interrupted()
-                char = process.stdout.read(1)
+                char = ""
+                if process.stdout is not None:
+                    char = process.stdout.read(1)
                 if not char and process.poll() is not None:
                     break
                 if char:

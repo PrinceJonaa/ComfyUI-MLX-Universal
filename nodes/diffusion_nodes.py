@@ -1,6 +1,6 @@
 import mlx.core as mx
 import os
-from typing import Optional
+from typing import Optional, Any
 
 # DiffusionKit specific imports
 from ..diffusionkit.mlx.tokenizer import Tokenizer, T5Tokenizer
@@ -19,7 +19,7 @@ class MLXDecoder:
     FUNCTION = "decode"
     CATEGORY = "MLX Universal/Diffusion"
 
-    def decode(self, latent_image, mlx_vae) -> tuple:
+    def decode(self, latent_image: dict, mlx_vae: Any) -> tuple:
         from ..runtime.bridge import mlx_to_torch, latent_to_mlx
 
         mlx_latent = latent_to_mlx(latent_image)
@@ -59,7 +59,13 @@ class MLXSampler:
                 "latent_image": ("LATENT",),
                 "denoise": (
                     "FLOAT",
-                    {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01, "tooltip": "Amount of noise to add. 1.0 is full generation from scratch, lower values are for img2img."},
+                    {
+                        "default": 1.0,
+                        "min": 0.0,
+                        "max": 1.0,
+                        "step": 0.01,
+                        "tooltip": "Amount of noise to add. 1.0 is full generation from scratch, lower values are for img2img.",
+                    },
                 ),
             }
         }
@@ -70,13 +76,13 @@ class MLXSampler:
 
     def generate_image(
         self,
-        mlx_model,
-        seed,
-        steps,
-        cfg,
-        mlx_positive_conditioning,
-        latent_image,
-        denoise,
+        mlx_model: Any,
+        seed: int,
+        steps: int,
+        cfg: float,
+        mlx_positive_conditioning: dict,
+        latent_image: dict,
+        denoise: float,
     ) -> tuple:
         from ..runtime.bridge import mlx_to_latent
 
@@ -136,7 +142,7 @@ class MLXLoadFlux:
         else:
             print("Model folder not found, downloading from HuggingFace... 🤗")
 
-    def load_flux_model(self, model_version) -> tuple:
+    def load_flux_model(self, model_version: str) -> tuple:
         self.check_model_folder(model_version)
         from ..runtime.registry import get_or_load_model
 
@@ -173,7 +179,9 @@ class MLXClipTextEncoder:
     FUNCTION = "encode"
     CATEGORY = "MLX Universal/Diffusion"
 
-    def _tokenize(self, tokenizer, text: str, negative_text: Optional[str] = None) -> mx.array:
+    def _tokenize(
+        self, tokenizer, text: str, negative_text: Optional[str] = None
+    ) -> mx.array:
         if negative_text is None:
             negative_text = ""
         pad_token = tokenizer.eos_token if tokenizer.pad_with_eos else 0
@@ -189,7 +197,7 @@ class MLXClipTextEncoder:
         tokens = [t + [pad_token] * (N - len(t)) for t in tokens]
         return mx.array(tokens)
 
-    def encode(self, mlx_conditioning, text) -> tuple:
+    def encode(self, mlx_conditioning: dict, text: str) -> tuple:
         model_name = mlx_conditioning["model_name"]
         clip_l_encoder: CLIPTextModel = mlx_conditioning["clip_l_model"]
         clip_l_tokenizer: Tokenizer = mlx_conditioning["clip_l_tokenizer"]
