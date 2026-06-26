@@ -89,6 +89,7 @@ class MLXApplyLoRA:
         if not adapter_path:
             return (mlx_model,)
 
+        # LoRA weights are fused at load-time rather than dynamically applied to existing instances to ensure safe tracking within the MLX unified memory cache
         print(f"Intercepting MLX Model payload to fuse LoRA adapter: {adapter_path}")
 
         loaded = load_unified_mlx_model(

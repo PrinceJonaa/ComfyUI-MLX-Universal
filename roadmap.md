@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-06-24 at commit 4b089e6
+> Last curated: 2026-06-26 at commit e1ee695
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -8,14 +8,6 @@
 ## In Progress
 
 ## Planned
-
-### [RM-010] Native Kokoro Integration
-- Status: Planned
-- Evidence: `README.md` claimed Kokoro integration, but `nodes/audio_nodes.py` only implements `MLXWhisperTranscribe`.
-- Why it matters: Achieves full audio multimodal capabilities as promised in the documentation.
-
-
-
 
 ### [RM-004] Native SDXL / ControlNet pipelines
 - Status: Planned
@@ -32,14 +24,12 @@
 - Evidence: `nodes/video_nodes.py` directly handles `subprocess.Popen`, temp file management, and `cv2` video reading inside the ComfyUI wrapper class.
 - Why it matters: Moves heavy background logic out of UI files into the runtime substrate.
 
-### [RM-009] Enforce dict return type hints for INPUT_TYPES
-- Status: Planned
-- Evidence: Multiple nodes in `nodes/` implement `INPUT_TYPES(s)` without a return type hint (e.g., `-> dict:`), causing static analysis drift.
-- Why it matters: Improves strict code cleanliness and static analysis verification for the API.
-
 ## Blocked
 
 ## Recently Completed
+
+### [RM-009] Enforce dict return type hints for INPUT_TYPES — completed 2026-06-26
+- Evidence: All nodes in `nodes/` directory now correctly include the `-> dict:` hint in their `INPUT_TYPES(s)` methods (e.g. `def INPUT_TYPES(s) -> dict:`).
 
 ### [RM-011] Refactor audio dimension reduction — completed 2026-06-24
 - Evidence: `nodes/audio_nodes.py` now uses `waveform[0]` instead of `.squeeze(0)` for batch dimension reduction.
@@ -59,5 +49,6 @@
 - Evidence: `nodes/system_nodes.py` now implements `IS_CHANGED` for `MLXClearCache` and `MLXCacheStats`.
 
 ## Deferred / Rejected
+- **[RM-010] Native Kokoro Integration** — removed 2026-06-26. Reason: README.md no longer claims Kokoro integration, gap no longer exists.
 - **[RM-001] Add Speculative Decoding and Thinking Tokens to LLM Node** — removed 2026-06-22. Reason: False premise; README correctly scopes these features to VLMs, not LLMs.
 - **[RM-006] Registry Tracking and Tensor Bridge Conversions** — removed 2026-06-20. Reason: already done in prior cycle.
