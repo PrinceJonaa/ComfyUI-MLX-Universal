@@ -78,15 +78,29 @@ class MLXSampler:
         latent_image,
         denoise,
     ) -> tuple:
-        from ..runtime.bridge import mlx_to_latent
+        from ..runtime.bridge import mlx_to_latent, latent_to_mlx
 
-        conditioning = mlx_positive_conditioning["conditioning"]
-        pooled_conditioning = mlx_positive_conditioning["pooled_conditioning"]
+        try:
+            conditioning = mlx_positive_conditioning["conditioning"]
+            pooled_conditioning = mlx_positive_conditioning["pooled_conditioning"]
+        except (KeyError, TypeError, AttributeError):
+            raise ValueError(
+                "Expected a valid MLX conditioning dictionary from an MLX CLIP Text Encoder + Invalid or missing conditioning input + Ensure the positive conditioning node is properly connected"
+            )
 
-        batch, channels, height, width = latent_image["samples"].shape
-        latent_size = (height, width)
+        try:
+            batch, channels, height, width = latent_image["samples"].shape
+            latent_size = (height, width)
+        except (KeyError, TypeError, AttributeError):
+            raise ValueError(
+                "Expected a valid ComfyUI latent dictionary with a 'samples' tensor + Invalid or missing latent input + Ensure an Empty Latent Image or VAE Encode node is properly connected"
+            )
 
         print(f"Generating image latents ({steps} steps)...")
+        input_latents = None
+        if denoise < 1.0:
+            input_latents = latent_to_mlx(latent_image)
+
         latents, iter_time = mlx_model.denoise_latents(
             conditioning,
             pooled_conditioning,
@@ -96,6 +110,7 @@ class MLXSampler:
             seed=seed,
             image_path=None,
             denoise=denoise,
+            input_latents=input_latents,
         )
 
         # Evaluates the latent graph lazily accumulated during sampling loops before returning to ComfyUI to prevent upstream deadlock.
@@ -190,11 +205,16 @@ class MLXClipTextEncoder:
         return mx.array(tokens)
 
     def encode(self, mlx_conditioning, text) -> tuple:
-        model_name = mlx_conditioning["model_name"]
-        clip_l_encoder: CLIPTextModel = mlx_conditioning["clip_l_model"]
-        clip_l_tokenizer: Tokenizer = mlx_conditioning["clip_l_tokenizer"]
-        t5_encoder: SD3T5Encoder = mlx_conditioning["t5_model"]
-        t5_tokenizer: T5Tokenizer = mlx_conditioning["t5_tokenizer"]
+        try:
+            model_name = mlx_conditioning["model_name"]
+            clip_l_encoder: CLIPTextModel = mlx_conditioning["clip_l_model"]
+            clip_l_tokenizer: Tokenizer = mlx_conditioning["clip_l_tokenizer"]
+            t5_encoder: SD3T5Encoder = mlx_conditioning["t5_model"]
+            t5_tokenizer: T5Tokenizer = mlx_conditioning["t5_tokenizer"]
+        except (KeyError, TypeError, AttributeError):
+            raise ValueError(
+                "Expected a valid MLX conditioning dictionary from an MLX Load Flux Model node + Invalid or missing conditioning input + Ensure the MLX Load Flux Model node is properly connected"
+            )
 
         clip_tokens = self._tokenize(tokenizer=clip_l_tokenizer, text=text)
         clip_l_embeddings = clip_l_encoder(clip_tokens[[0], :])

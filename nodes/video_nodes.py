@@ -220,11 +220,11 @@ class MLXVideoGenerator:
             rc = process.poll()
             if rc != 0:
                 raise RuntimeError(
-                    f"Expected video generation to complete successfully, but the process failed with exit code {rc}. Check your terminal output for out-of-memory or dependency errors, and try lowering 'num_frames' or resolution."
+                    f"Expected video generation to complete successfully + Process failed with exit code {rc} + Check your terminal output for out-of-memory or dependency errors, and try lowering 'num_frames' or resolution"
                 )
             if not os.path.exists(output_path):
                 raise FileNotFoundError(
-                    f"Expected output video at '{output_path}', but the file was not found. This usually means the generation failed silently. Check your terminal for errors."
+                    f"Expected output video at '{output_path}' + File was not found + Check your terminal for silent generation failures or errors"
                 )
 
             import cv2
@@ -241,7 +241,7 @@ class MLXVideoGenerator:
 
             if len(frames) == 0:
                 raise ValueError(
-                    "Expected extracted frames from the generated video, but none were found. Ensure the model successfully generated a valid video file."
+                    "Expected extracted frames from the generated video + None were found + Ensure the model successfully generated a valid video file"
                 )
             return (output_path, torch.from_numpy(np.stack(frames, axis=0)))
         finally:
