@@ -28,7 +28,7 @@ class MLXVideoGenerator:
                 "num_frames": (
                     "INT",
                     {
-                        "default": 33,
+                        "default": 16,
                         "min": 1,
                         "max": 500,
                         "tooltip": "Number of frames to generate. Lower this if you run out of unified memory.",
