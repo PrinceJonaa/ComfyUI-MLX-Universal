@@ -22,7 +22,7 @@ class MLXWhisperTranscribe:
     FUNCTION = "transcribe"
     CATEGORY = "MLX Universal/Audio"
 
-    def transcribe(self, audio, model_path):
+    def transcribe(self, audio: dict, model_path: str) -> tuple:
         if (
             not isinstance(audio, dict)
             or "waveform" not in audio

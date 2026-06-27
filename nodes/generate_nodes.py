@@ -1,3 +1,4 @@
+from typing import Any
 import os
 import mlx.core as mx
 from ..runtime.data_types import LoadedMLXModel
@@ -56,15 +57,15 @@ class MLXLMGenerateText:
     def generate(
         self,
         mlx_model: LoadedMLXModel,
-        prompt,
-        max_tokens,
-        temperature,
-        top_p,
-        seed,
-        draft_model_path="",
-        enable_thinking=False,
-        thinking_budget=512,
-    ):
+        prompt: str,
+        max_tokens: int,
+        temperature: float,
+        top_p: float,
+        seed: int,
+        draft_model_path: str = "",
+        enable_thinking: bool = False,
+        thinking_budget: int = 512,
+    ) -> tuple:
         if mlx_model.family != "mlx-lm":
             raise ValueError(
                 f"Expected model family 'mlx-lm' + Found '{mlx_model.family}' + Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model"
@@ -87,7 +88,7 @@ class MLXLMGenerateText:
         # mlx_lm.generate ignores individual kwargs; advanced parameters must be bundled into a sampler object.
         sampler = make_sampler(temp=temperature, top_p=top_p)
 
-        gen_kwargs = {
+        gen_kwargs: dict[str, Any] = {
             "sampler": sampler,
             "max_tokens": max_tokens,
             "verbose": False,
@@ -173,17 +174,17 @@ class MLXVLMDescribeImage:
     def run(
         self,
         mlx_model: LoadedMLXModel,
-        prompt,
-        max_tokens,
-        temperature,
-        seed,
-        enable_thinking,
-        thinking_budget,
-        image=None,
-        audio_path="",
-        draft_model_path="",
-        draft_kind="dflash",
-    ):
+        prompt: str,
+        max_tokens: int,
+        temperature: float,
+        seed: int,
+        enable_thinking: bool,
+        thinking_budget: int,
+        image: dict | None = None,
+        audio_path: str = "",
+        draft_model_path: str = "",
+        draft_kind: str = "dflash",
+    ) -> tuple:
 
         if mlx_model.family != "mlx-vlm":
             raise ValueError(
@@ -205,7 +206,7 @@ class MLXVLMDescribeImage:
             num_audios=len(audios),
         )
 
-        gen_kwargs = {
+        gen_kwargs: dict[str, Any] = {
             "temp": temperature,
             "max_tokens": max_tokens,
             "verbose": False,

@@ -146,7 +146,15 @@ class TestSD3Pipeline(unittest.TestCase):
 
 
 def main(args):
-    global LOW_MEMORY_MODE, SAVE_IMAGES, SKIP_CORRECTNESS, MODEL_VERSION, W16, A16, CACHE_SUBFOLDER, USE_T5
+    global \
+        LOW_MEMORY_MODE, \
+        SAVE_IMAGES, \
+        SKIP_CORRECTNESS, \
+        MODEL_VERSION, \
+        W16, \
+        A16, \
+        CACHE_SUBFOLDER, \
+        USE_T5
 
     LOW_MEMORY_MODE = args.low_memory_mode
     SAVE_IMAGES = args.save_images

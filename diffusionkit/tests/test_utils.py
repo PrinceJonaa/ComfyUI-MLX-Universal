@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from diffusionkit.utils import _load_weights, bytes2gigabytes
 
+
 class TestUtils(unittest.TestCase):
     def test_bytes2gigabytes(self):
         # 0 bytes should be 0 gigabytes
@@ -31,7 +32,10 @@ class TestLoadWeights(unittest.TestCase):
 
             with self.assertRaises(ValueError) as context:
                 _load_weights(module, "dummy.pt")
-            self.assertIn("Total number of parameters in state_dict (5) does not match the number of parameters in the module (10)", str(context.exception))
+            self.assertIn(
+                "Total number of parameters in state_dict (5) does not match the number of parameters in the module (10)",
+                str(context.exception),
+            )
 
     def test_load_weights_success(self):
         module = MagicMock(spec=nn.Module)
@@ -48,5 +52,5 @@ class TestLoadWeights(unittest.TestCase):
             module.load_state_dict.assert_called_with(mock_load.return_value)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

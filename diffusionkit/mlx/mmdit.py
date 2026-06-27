@@ -808,9 +808,9 @@ class Attention(nn.Module):
         # Configure dimensions for SDPA
         self.embed_dim = embed_dim
         self.n_heads = n_heads
-        assert (
-            self.embed_dim % self.n_heads == 0
-        ), "Embedding dimension must be divisible by number of heads"
+        assert self.embed_dim % self.n_heads == 0, (
+            "Embedding dimension must be divisible by number of heads"
+        )
 
         self._sdpa_implementation = mx.fast.scaled_dot_product_attention
 
@@ -874,9 +874,7 @@ class RoPE(nn.Module):
                 mx.repeat(mx.arange(w)[None, :], h, axis=0),
             ],
             axis=-1,
-        ).flatten(
-            0, 1
-        )  # (h * w, 3)
+        ).flatten(0, 1)  # (h * w, 3)
 
         text_and_image_positions = mx.concatenate(
             [
@@ -884,9 +882,7 @@ class RoPE(nn.Module):
                 image_positions,
             ],
             axis=0,
-        )[
-            None
-        ]  # (text_sequence_length + h * w, 3)
+        )[None]  # (text_sequence_length + h * w, 3)
 
         return text_and_image_positions
 

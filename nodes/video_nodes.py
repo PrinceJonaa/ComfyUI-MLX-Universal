@@ -60,18 +60,27 @@ class MLXVideoGenerator:
 
     def generate_video(
         self,
-        model_repo_or_dir,
-        prompt,
-        negative_prompt,
-        width,
-        height,
-        num_frames,
-        steps,
-        guide_scale,
-        seed,
-        image=None,
-        audio_path="",
-    ):
+        model_repo_or_dir: str,
+        prompt: str,
+        negative_prompt: str,
+        width: int,
+        height: int,
+        num_frames: int,
+        steps: int,
+        guide_scale: float,
+        seed: int,
+        image: dict | None = None,
+        audio_path: str = "",
+    ) -> tuple:
+
+        name_lower = model_repo_or_dir.lower()
+        if "wan" in name_lower:
+            cmd_family = "wan"
+        elif "cogvideo" in name_lower:
+            cmd_family = "cogvideo"
+        else:
+            cmd_family = "ltx_2"
+
         temp_dir = folder_paths.get_temp_directory()
         pbar = comfy.utils.ProgressBar(steps)
 
