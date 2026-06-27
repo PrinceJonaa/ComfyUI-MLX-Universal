@@ -9,6 +9,21 @@
 
 ## Planned
 
+### [RM-012] Fix static type hints for IMAGE inputs
+- Status: Planned
+- Evidence: `MLXVLMDescribeImage.run` in `nodes/generate_nodes.py` types the `image` argument as `dict | None = None`, but ComfyUI passes `IMAGE` as a `torch.Tensor`.
+- Why it matters: Prevents static analysis drift and misleading type documentation for frontend node developers.
+
+### [RM-013] Decouple Draft Model Loading from Generate Nodes
+- Status: Planned
+- Evidence: `MLXLMGenerateText` and `MLXVLMDescribeImage` both inline the loading of draft models using `draft_model_path`. 
+- Why it matters: UI generation nodes should not handle loading IO. Draft models should be loaded by a dedicated `MLXDraftModelLoader` node that outputs a `DRAFT_MODEL` to be passed into generation nodes, adhering to ComfyUI's explicit graph structure.
+
+### [RM-014] Refactor dynamic LoRA fusion in `MLXApplyLoRA`
+- Status: Planned
+- Evidence: `MLXApplyLoRA.apply_lora` in `nodes/loader_nodes.py` re-invokes `load_unified_mlx_model` from scratch to fuse an adapter, bypassing dynamic weight patching.
+- Why it matters: Reduces cache pressure and loading overhead when users swap LoRAs during live ComfyUI sessions.
+
 ### [RM-010] Native Kokoro Integration
 - Status: Planned
 - Evidence: `README.md` claimed Kokoro integration, but `nodes/audio_nodes.py` only implements `MLXWhisperTranscribe`.
