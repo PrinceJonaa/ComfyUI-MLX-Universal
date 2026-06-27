@@ -39,12 +39,16 @@ def compute_psnr(reference: np.array, proxy: np.array) -> float:
     mse = np.sqrt(np.mean((reference - proxy) ** 2))
     return 20 * np.log10((peak_signal + 1e-5) / (mse + 1e-10))
 
+
 def _load_weights(module, pt_path: str):
     import torch
+
     state_dict = torch.load(pt_path)
     total_params = sum(p.numel() for p in module.parameters())
     state_dict_params = sum(p.numel() for p in state_dict.values())
 
     if total_params != state_dict_params:
-        raise ValueError(f"Total number of parameters in state_dict ({state_dict_params}) does not match the number of parameters in the module ({total_params})")
+        raise ValueError(
+            f"Total number of parameters in state_dict ({state_dict_params}) does not match the number of parameters in the module ({total_params})"
+        )
     module.load_state_dict(state_dict)

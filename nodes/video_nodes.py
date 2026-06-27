@@ -1,5 +1,3 @@
-import os
-import sys
 import folder_paths
 import comfy.utils
 import comfy.model_management

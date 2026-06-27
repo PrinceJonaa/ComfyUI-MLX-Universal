@@ -148,25 +148,31 @@ def load_unified_mlx_model(
                 processor=processor,
             )
         else:
-            raise ValueError(f"Expected a known resolved model type (e.g. 'mlx-lm', 'mlx-vlm', 'sam3') + Found '{resolved_type}' + Check the model path or force the model type manually")
+            raise ValueError(
+                f"Expected a known resolved model type (e.g. 'mlx-lm', 'mlx-vlm', 'sam3') + Found '{resolved_type}' + Check the model path or force the model type manually"
+            )
 
     return get_or_load_model(cache_key, _load)
+
 
 def load_draft_model(draft_model_path: str, model_type: str):
     """
     Loads a draft model for speculative decoding and tracks it in the draft cache.
     """
     from .registry import get_or_load_draft_model, make_key
+
     draft_key = make_key(draft_model_path, "draft")
 
     def _load_draft():
         print(f"Loading draft model '{draft_model_path}'...")
         if model_type == "mlx-lm":
             import mlx_lm
+
             model, _ = mlx_lm.load(draft_model_path)
             return model
         elif model_type == "mlx-vlm":
             from mlx_vlm.speculative.drafters import load_drafter
+
             return load_drafter(draft_model_path)
         else:
             raise ValueError(f"Unsupported draft model type: {model_type}")
@@ -180,6 +186,7 @@ def track_audio_model(model_path: str):
     so that memory eviction is triggered correctly.
     """
     from .registry import get_or_load_model, make_key
+
     cache_key = make_key(model_path, "mlx-audio")
 
     def _loader():
@@ -193,6 +200,7 @@ def load_flux_pipeline(model_version: str):
     Loads a Flux Pipeline model, downloading it if necessary, and tracks it via the registry.
     """
     import os
+
     home_dir = os.path.expanduser("~")
     formatted_filename = model_version.replace("/", "--")
     folder_path = os.path.join(
@@ -205,6 +213,7 @@ def load_flux_pipeline(model_version: str):
         print("Model folder not found, downloading from HuggingFace... 🤗")
 
     from .registry import get_or_load_model
+
     # Lazy import to keep MLX separation
     from ..diffusionkit.mlx import FluxPipeline
 

@@ -1,7 +1,6 @@
 import os
 import tempfile
 import soundfile as sf
-from ..runtime.registry import get_or_load_model
 
 
 class MLXWhisperTranscribe:
