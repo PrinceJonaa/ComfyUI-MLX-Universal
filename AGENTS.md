@@ -23,13 +23,11 @@ To ensure that multiple agents working concurrently do not conflict or duplicate
     # Check for open/merged PRs related to the keyword/task ID
     gh pr list --state all --search "<keyword>"
     
-    # Check all local/remote branches and recent commit log for task references
+    # Check already-present branches and commit logs for task references
     git branch -a
     git log --all --oneline -30 --grep="<keyword>"
     ```
   * If an open PR or active branch already addresses the task, **abort immediately**. Do not duplicate or open a competing PR.
-* **Master Rebase Protocol**:
-  * Always fetch the latest changes from `origin/master` and rebase your working branch before writing any code to prevent file drifts and reduce merge conflicts.
 * **Branch Naming Standard**:
   * Use the convention: `agent/<persona>/<task-id-or-short-name>`
   * Example: `agent/backlog-executor/rm-015`
@@ -60,8 +58,7 @@ Jules is configured to run several scheduled tasks on this repository. Depending
 * **Scope:** Documentation accuracy and `roadmap.md` state management.
 * **Rules**:
   * Make **zero functional changes**. Only modify `.md` files (with the exception of adding short explanatory comments to non-obvious Python code blocks).
-  * Build a claim inventory from `README.md` and check it against the actual code.
-  * Correct discrepancies (docs lagging code) or translate aspirational claims into planned tasks in `roadmap.md` (docs ahead of code).
+  * Correct discrepancies (docs lagging code) or translate claims into planned tasks in `roadmap.md` (docs ahead of code).
   * Reconcile completed roadmap entries and update the header's `Last curated` date and commit SHA.
   * Deliver a PR with the title format: `[Docs] <Area>: <what got synced>`.
 
