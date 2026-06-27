@@ -151,3 +151,66 @@ def load_unified_mlx_model(
             raise ValueError(f"Expected a known resolved model type (e.g. 'mlx-lm', 'mlx-vlm', 'sam3') + Found '{resolved_type}' + Check the model path or force the model type manually")
 
     return get_or_load_model(cache_key, _load)
+
+def load_draft_model(draft_model_path: str, model_type: str):
+    """
+    Loads a draft model for speculative decoding and tracks it in the draft cache.
+    """
+    from .registry import get_or_load_draft_model, make_key
+    draft_key = make_key(draft_model_path, "draft")
+
+    def _load_draft():
+        print(f"Loading draft model '{draft_model_path}'...")
+        if model_type == "mlx-lm":
+            import mlx_lm
+            model, _ = mlx_lm.load(draft_model_path)
+            return model
+        elif model_type == "mlx-vlm":
+            from mlx_vlm.speculative.drafters import load_drafter
+            return load_drafter(draft_model_path)
+        else:
+            raise ValueError(f"Unsupported draft model type: {model_type}")
+
+    return get_or_load_draft_model(draft_key, _load_draft)
+
+
+def track_audio_model(model_path: str):
+    """
+    Dummy load function to ensure MLX Whisper models are tracked by the cache registry
+    so that memory eviction is triggered correctly.
+    """
+    from .registry import get_or_load_model, make_key
+    cache_key = make_key(model_path, "mlx-audio")
+
+    def _loader():
+        return True
+
+    return get_or_load_model(cache_key, _loader)
+
+
+def load_flux_pipeline(model_version: str):
+    """
+    Loads a Flux Pipeline model, downloading it if necessary, and tracks it via the registry.
+    """
+    import os
+    home_dir = os.path.expanduser("~")
+    formatted_filename = model_version.replace("/", "--")
+    folder_path = os.path.join(
+        home_dir, ".cache/huggingface/hub/models--" + formatted_filename
+    )
+
+    if os.path.exists(folder_path):
+        print("Found existing model folder, verifying download...")
+    else:
+        print("Model folder not found, downloading from HuggingFace... 🤗")
+
+    from .registry import get_or_load_model
+    # Lazy import to keep MLX separation
+    from ..diffusionkit.mlx import FluxPipeline
+
+    def _loader():
+        return FluxPipeline(
+            model_version=model_version, low_memory_mode=False, w16=True, a16=True
+        )
+
+    return get_or_load_model(f"flux_{model_version}", _loader)

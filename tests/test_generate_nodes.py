@@ -44,7 +44,7 @@ class TestGenerateNodes(unittest.TestCase):
         lines = code.split("\n")
         new_lines = []
         for line in lines:
-            if line.startswith("from ..runtime"):
+            if "from ..runtime" in line:
                 continue
             if line.startswith("import mlx.core as mx"):
                 # We provide `mx` dynamically
@@ -67,6 +67,9 @@ def get_or_load_draft_model(key, loader):
 
 def make_key(*args, **kwargs):
     return "mock_key"
+
+def load_draft_model(draft_model_path, model_type):
+    return "mock_draft_model"
 """
         new_code = dummy_classes + "\n".join(new_lines)
 
@@ -314,7 +317,7 @@ def make_key(*args, **kwargs):
             verbose=False,
             enable_thinking=False,
             thinking_budget=0,
-            draft_model=("mock_draft_model", "mock_draft_kind"),
+            draft_model="mock_draft_model",
             draft_kind="eagle3",
         )
 

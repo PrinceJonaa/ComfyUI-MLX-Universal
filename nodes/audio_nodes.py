@@ -35,22 +35,10 @@ class MLXWhisperTranscribe:
         # Lazy import of mlx-whisper
         # Prevents ComfyUI from crashing on startup in unsupported environments
         import mlx_whisper
-        from ..runtime.registry import make_key
-
-        cache_key = make_key(model_path, "mlx-audio")
-
-        def _loader():
-            # load_models() returns a tuple of (model, processor) in older versions or just model if we use mlx_whisper internal cache,
-            # but usually it's mlx_whisper.whisper.load_model.
-            # To be safe across versions and follow the registry pattern, we wrap it in a dummy loaded object or just load it.
-            # mlx-whisper does lazy loading inside `transcribe` but we can force it to be tracked
-            # However `mlx_whisper` doesn't expose a clean load function that is independent of transcribe out of the box in some versions.
-            # Wait, `mlx_whisper` handles its own caching via `_MODEL_CACHE` internally. But to ensure our registry tracking works
-            # (which monitors `len(_MODEL_CACHE)` to evict unified memory), we just track a placeholder to trigger evictions if needed.
-            return True
+        from ..runtime.model_loader import track_audio_model
 
         # Trigger registry tracking
-        get_or_load_model(cache_key, _loader)
+        track_audio_model(model_path)
 
         waveform = audio["waveform"]
         sample_rate = audio["sample_rate"]

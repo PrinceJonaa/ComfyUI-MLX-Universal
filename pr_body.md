@@ -1,31 +1,49 @@
 ## Architectural Thesis
 
-The MLXVideoGenerator node (`nodes/video_nodes.py`) was directly handling heavy MLX background logic, including raw subprocess execution (`subprocess.Popen`), temporary file management, and OpenCV (`cv2`) video reading. This violated the core architectural invariant of maintaining a strict separation between ComfyUI frontend wrappers and the runtime substrate. By extracting this logic into a dedicated `execute_video_generation` function within a new `runtime/video_processing.py` module, we retire this architectural debt. ComfyUI-specific interface objects (like `comfy.utils.ProgressBar`) are now cleanly passed as callbacks, improving fault isolation and enforcing UI independence.
+The previous architecture exhibited a "Leaking abstraction" and "Cache management scatter". UI-facing nodes (`MLXLoadFlux`, `MLXLMGenerateText`, `MLXVLMDescribeImage`, and `MLXWhisperTranscribe`) were tightly coupled with internal cache key generation (`make_key`), direct `registry.py` manipulation, and explicit loader closures. This scattered state tracking and created a fragile dependency surface where changes to MLX unified memory caching would require coordinated updates across disconnected frontend modules. By introducing `load_draft_model`, `track_audio_model`, and `load_flux_pipeline` to the `runtime/model_loader.py` boundary, we centralize this logic. This eliminates boilerplate and guarantees that all MLX initialization and caching remains encapsulated within the `runtime/` substrate, satisfying the core architectural invariant.
 
 ## Debt Location
 
-- `nodes/video_nodes.py`: The `MLXVideoGenerator.generate_video` method, specifically from the `cmd_family` branching down to the final `subprocess.Popen` lifecycle and `cv2` video extraction logic.
+- `nodes/diffusion_nodes.py`: Lines 127-149 (`check_model_folder` and inline registry calls in `MLXLoadFlux`).
+- `nodes/generate_nodes.py`: Lines 98-106 (inline draft loading in `MLXLMGenerateText`) and Lines 221-231 (inline draft loading in `MLXVLMDescribeImage`).
+- `nodes/audio_nodes.py`: Lines 38-48 (inline dummy loader and `make_key` in `MLXWhisperTranscribe`).
 
 ## What Changed
 
-- Created `runtime/video_processing.py` containing the `execute_video_generation` function, which orchestrates the subprocess command generation, output tracking, error handling, and video decoding.
-- Refactored `MLXVideoGenerator.generate_video` in `nodes/video_nodes.py` to offload execution to this new module, utilizing simple lambda callbacks (`progress_callback`, `progress_absolute_callback`, `interrupt_callback`) to map execution progress back to ComfyUI's internal tracking system without leaking those objects into the runtime layer.
+- **Extracted:** Added `load_draft_model`, `track_audio_model`, and `load_flux_pipeline` to `runtime/model_loader.py`.
+- **Consolidated:** Moved `check_model_folder` logic out of the `MLXLoadFlux` class and encapsulated it into `load_flux_pipeline`.
+- **Migrated:** Updated `MLXLoadFlux.load_flux_model`, `MLXLMGenerateText.generate`, `MLXVLMDescribeImage.run`, and `MLXWhisperTranscribe.transcribe` to call these new functions instead of importing `registry.py` internals, defining inline `_loader` closures, or computing `make_key` themselves.
+- **Example Before (generate_nodes.py):**
+  ```python
+  draft_key = make_key(draft_model_path, "draft")
+  def _load_draft():
+      print(f"Loading draft model '{draft_model_path}'...")
+      model, _ = mlx_lm.load(draft_model_path)
+      return model
+  draft_model = get_or_load_draft_model(draft_key, _load_draft)
+  ```
+- **Example After:**
+  ```python
+  from ..runtime.model_loader import load_draft_model
+  draft_model = load_draft_model(draft_model_path, "mlx-lm")
+  ```
 
 ## What Was Not Changed
 
-- The public node interface for `MLXVideoGenerator` remains strictly untouched. All `INPUT_TYPES`, `RETURN_TYPES`, parameter keys, types, and defaults are identical to ensure 100% backward compatibility with serialized user workflows.
-- The underlying subprocess generation logic and CLI flags remain completely functionally identical to the previous implementation.
+- **Public Interfaces:** All `INPUT_TYPES` and `RETURN_TYPES` remain entirely unmodified.
+- **Node Registries:** `NODE_CLASS_MAPPINGS` and `NODE_DISPLAY_NAME_MAPPINGS` across all files were untouched.
+- **Serialization:** Because the node schemas were preserved exactly, all existing ComfyUI saved workflows utilizing these nodes will continue to deserialize without any errors.
 
 ## Backward Compatibility
 
-- Ran syntax verification `py_compile` checks for both the newly created runtime module and the modified node file.
-- Ran the core testing suite (`unittest discover tests` and `unittest discover nodes/tests`) which confirmed no regressions were introduced.
-- Verified that all callbacks gracefully handle the execution lifecycle as designed.
+- Verified compatibility manually by reading node schemas and structurally confirming that `INPUT_TYPES` methods were not edited.
+- Executed `python3 -m unittest discover tests` successfully, which tests the mock invocation of these nodes using standard ComfyUI serialized formats.
+- Executed syntax verification (`py_compile.compile`) on modified modules to guarantee no import errors for Apple Silicon runtimes.
 
 ## Rejected Alternatives
 
-- Leaving the logic inside the node but separating it into a distinct class method was rejected because it still fails the fundamental separation of concerns invariant; runtime processing inherently belongs in the `runtime/` substrate to prevent `nodes/` from becoming a dumping ground for long-running execution logic.
+The next most viable alternative was to create a new module (e.g. `runtime/cache_utils.py`) exclusively for cache logic and keys, while leaving the inline closures in the nodes. This was rejected because it only resolves the "Cache management scatter" but still leaves the "Leaking abstraction" (the nodes still have to know *how* to load models, they just use a cleaner caching backend). Consolidating the full instantiation flow into `model_loader.py` retires both debts simultaneously.
 
 ## Follow-On Candidates
 
-- [RM-009] Enforce dict return type hints for INPUT_TYPES: Deferred to keep this PR strictly scoped to the video logic extraction.
+- **Tensor bridge inconsistency:** `mlx_to_torch` and explicit `mx.eval()` are currently peppered throughout `diffusion_nodes.py` decoding steps. This should be audited and moved strictly into `bridge.py` wrappers in the next cycle to ensure uniform evaluation.
