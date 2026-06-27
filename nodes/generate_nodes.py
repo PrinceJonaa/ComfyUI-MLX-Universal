@@ -67,7 +67,7 @@ class MLXLMGenerateText:
     ):
         if mlx_model.family != "mlx-lm":
             raise ValueError(
-                f"Expected model family 'mlx-lm', but found '{mlx_model.family}'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model."
+                f"Expected model family 'mlx-lm' + Found '{mlx_model.family}' + Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model"
             )
 
         mx.random.seed(seed)
@@ -192,7 +192,7 @@ class MLXVLMDescribeImage:
 
         if mlx_model.family != "mlx-vlm":
             raise ValueError(
-                f"Expected model family 'mlx-vlm', but found '{mlx_model.family}'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model."
+                f"Expected model family 'mlx-vlm' + Found '{mlx_model.family}' + Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model"
             )
 
         mx.random.seed(seed)
