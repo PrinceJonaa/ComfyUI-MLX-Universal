@@ -54,6 +54,7 @@ class MLXModelLoaderUnified:
         quantize_activations: bool,
         adapter_path: str = "",
     ) -> tuple:
+        print(f"Loading MLX model from {model_path}...")
         loaded = load_unified_mlx_model(
             model_path=model_path,
             model_type=model_type,
@@ -61,6 +62,7 @@ class MLXModelLoaderUnified:
             quantize_activations=quantize_activations,
             adapter_path=adapter_path,
         )
+        print("MLX model loading complete.")
         return (loaded,)
 
 
