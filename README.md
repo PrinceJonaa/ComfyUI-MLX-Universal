@@ -72,6 +72,7 @@ pip install -r requirements.txt
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **LLMs** | `mlx-lm` | Universal text generation. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **VLMs** | `mlx-vlm` | Multimodal visual reasoning, prompt alignment, speculative decoding, thinking tokens. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Diffusion** | `DiffusionKit` | Native MLX sampling/decoding for Flux architectures. |
+| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **VAEs** | `DiffusionKit` | Standalone causal video and image VAE encode/decode nodes. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Video** | `mlx_video` | CLI subprocess wrappers supporting Wan2.x, LTX-2, and CogVideoX. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Segmentation** | `SAM3` | Open-vocabulary semantic segmentation and object detection. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Audio** | `mlx-whisper` | Native Whisper integration. |
@@ -97,6 +98,7 @@ graph TD
         UI_ClipEnc[MLX CLIP Text Encoder]
         UI_Diff[MLX Generate Image (Flux)]
         UI_Audio[MLX Transcribe Audio (Whisper)]
+        UI_Encode[MLX VAE Encode (Flux)]
         UI_Decode[MLX VAE Decode (Flux)]
         UI_Sys[MLX Clear Cache]
         UI_Stats[MLX Cache Stats]
@@ -112,6 +114,7 @@ graph TD
         UI_LoadFlux --> DN[diffusion_nodes.py]
         UI_ClipEnc --> DN
         UI_Diff --> DN
+        UI_Encode --> DN
         UI_Decode --> DN
         UI_Audio --> AN[audio_nodes.py]
         UI_Sys --> SysN[system_nodes.py]
@@ -153,7 +156,6 @@ graph TD
 | Status | Target | Goal |
 |:---:|---|---|
 | ![WIP](https://img.shields.io/badge/○-WIP-555555?style=flat-square&labelColor=0d0d0d) | **SDXL / ControlNet** | Native image pipelines beyond base Flux. |
-| ![WIP](https://img.shields.io/badge/○-WIP-555555?style=flat-square&labelColor=0d0d0d) | **VAEs** | Standalone causal video and image VAE encode/decode nodes. |
 
 <!-- ─────────────────────── DIVIDER ─────────────────────────── -->
 <img width="100%" alt="" src="https://capsule-render.vercel.app/api?type=rect&color=gradient&customColorList=6,11,20&height=3" />
