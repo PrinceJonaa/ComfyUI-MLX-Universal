@@ -210,6 +210,7 @@ class MLXClipTextEncoder:
 
         t5_embeddings = t5_encoder(padded_tokens_t5)
 
+        # Forces simultaneous evaluation to avoid deferred computation slowing down the diffusion loop
         mx.eval(t5_embeddings, clip_pooled_output)
         output = {
             "conditioning": t5_embeddings,
