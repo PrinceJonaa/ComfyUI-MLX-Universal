@@ -1,28 +1,31 @@
-## Doc-Code Discrepancies Found
+## Architectural Thesis
 
-- The diagram in `README.md` claimed display names `MLX Generate Image`, `MLX Transcribe Audio`, and `MLX VAE Decode` but these lag behind code which are actually `MLX Generate Image (Flux)`, `MLX Transcribe Audio (Whisper)`, and `MLX VAE Decode (Flux)`. (Doc lagging)
-- The roadmap `[RM-011] Refactor audio dimension reduction` was marked as "Planned" while the codebase already correctly uses `waveform[0]` instead of `.squeeze(0)`. (Doc lagging)
+The MLXVideoGenerator node (`nodes/video_nodes.py`) was directly handling heavy MLX background logic, including raw subprocess execution (`subprocess.Popen`), temporary file management, and OpenCV (`cv2`) video reading. This violated the core architectural invariant of maintaining a strict separation between ComfyUI frontend wrappers and the runtime substrate. By extracting this logic into a dedicated `execute_video_generation` function within a new `runtime/video_processing.py` module, we retire this architectural debt. ComfyUI-specific interface objects (like `comfy.utils.ProgressBar`) are now cleanly passed as callbacks, improving fault isolation and enforcing UI independence.
 
-## Documentation Changes
+## Debt Location
 
-- Synced `README.md`'s Architecture Map by updating the orphaned UI nodes into the graph to use the exact names from `NODE_DISPLAY_NAME_MAPPINGS`.
+- `nodes/video_nodes.py`: The `MLXVideoGenerator.generate_video` method, specifically from the `cmd_family` branching down to the final `subprocess.Popen` lifecycle and `cv2` video extraction logic.
 
-## Roadmap Changes
+## What Changed
 
-Updated: [RM-011] Refactor audio dimension reduction -> Completed (Evidence: `nodes/audio_nodes.py` now uses `waveform[0]` instead of `.squeeze(0)` for batch dimension reduction.)
-Updated: The `Last curated` stamp in `roadmap.md` has been updated to the current date and commit HEAD `4b089e6`.
+- Created `runtime/video_processing.py` containing the `execute_video_generation` function, which orchestrates the subprocess command generation, output tracking, error handling, and video decoding.
+- Refactored `MLXVideoGenerator.generate_video` in `nodes/video_nodes.py` to offload execution to this new module, utilizing simple lambda callbacks (`progress_callback`, `progress_absolute_callback`, `interrupt_callback`) to map execution progress back to ComfyUI's internal tracking system without leaking those objects into the runtime layer.
 
-## Code Annotations Added
+## What Was Not Changed
 
-- `nodes/audio_nodes.py:27` — `# Prevents ComfyUI from crashing on startup in unsupported environments` — added to explain the lazy import of `mlx_whisper`.
-- `nodes/system_nodes.py:11` — `# Prevents the workflow execution engine from aggressively caching nodes with no required inputs` — added to explain why `IS_CHANGED` returns `NaN`.
-- `nodes/system_nodes.py:35` — `# Prevents the workflow execution engine from aggressively caching nodes with no required inputs` — added to explain why `IS_CHANGED` returns `NaN`.
-- `runtime/bridge.py:53` — `# Avoids conversion errors with tensors requiring gradients or residing on a GPU` — added to explain the `.cpu().detach().numpy()` conversion.
+- The public node interface for `MLXVideoGenerator` remains strictly untouched. All `INPUT_TYPES`, `RETURN_TYPES`, parameter keys, types, and defaults are identical to ensure 100% backward compatibility with serialized user workflows.
+- The underlying subprocess generation logic and CLI flags remain completely functionally identical to the previous implementation.
 
-## Open Questions
+## Backward Compatibility
 
-None.
+- Ran syntax verification `py_compile` checks for both the newly created runtime module and the modified node file.
+- Ran the core testing suite (`unittest discover tests` and `unittest discover nodes/tests`) which confirmed no regressions were introduced.
+- Verified that all callbacks gracefully handle the execution lifecycle as designed.
 
-## Verification
+## Rejected Alternatives
 
-Confirmed zero logic changes and zero parameter key changes. `roadmap.md` header stamp updated to current HEAD commit. Test suite ran and passed verifying the modules import and run successfully.
+- Leaving the logic inside the node but separating it into a distinct class method was rejected because it still fails the fundamental separation of concerns invariant; runtime processing inherently belongs in the `runtime/` substrate to prevent `nodes/` from becoming a dumping ground for long-running execution logic.
+
+## Follow-On Candidates
+
+- [RM-009] Enforce dict return type hints for INPUT_TYPES: Deferred to keep this PR strictly scoped to the video logic extraction.
