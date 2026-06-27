@@ -8,6 +8,13 @@ license = {file = "LICENSE"}
 Repository = "https://github.com/PrinceJonaa/ComfyUI-MLX-Universal"
 #  Used by Comfy Registry https://comfyregistry.org
 
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "radon",
+    "xenon",
+]
+
 [tool.comfy]
 PublisherId = "princejona"
 DisplayName = "ComfyUI MLX Universal"

@@ -1,4 +1,4 @@
-.PHONY: format test verify check
+.PHONY: format test verify check complexity
 
 # Formatting and linting via Ruff
 format:
@@ -14,8 +14,18 @@ test:
 	@echo "Running unit tests (Nodes)..."
 	python3 -m unittest discover nodes/tests
 
+# Complexity Gate
+complexity:
+	@echo "Checking Cyclomatic Complexity (McCabe)..."
+	xenon --max-absolute F --max-modules D --max-average B .
+	@echo "Complexity gate passed!"
+	@echo "Cyclomatic Complexity Analysis (C and below):"
+	radon cc . -a -nc
+	@echo "Maintainability Index (C and below):"
+	radon mi . -nc
+
 # The Mega Loop for agents
-verify: format test
+verify: format complexity test
 	@echo "Pre-flight verification passed! Safe to submit."
 
 # Alias for verify

@@ -67,6 +67,7 @@ Jules is configured to run several scheduled tasks on this repository. Depending
 * **Scope:** Architecture Review and Structural Refactor.
 * **Rules**:
   * Do not refactor for aesthetic reasons. Every change must pay off a specific structural debt (duplicated boilerplate, leaking abstraction, cache scatter, tensor bridge inconsistency, etc.).
+  * Use **`make complexity`** to scientifically measure codebase health with Radon. Target functions with McCabe complexity grades of C, D, or F for breakdown into modular pipelines.
   * Assign an Impact/Risk score and select the highest ratio.
   * Make internal-only changes first (introduce new abstraction without removing old paths), migrate callers incrementally, then remove old paths.
   * Confirm backward compatibility (existing workflows load correctly and nodes register).
