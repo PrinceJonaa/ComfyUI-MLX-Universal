@@ -7,6 +7,7 @@
 import argparse
 
 from argmaxtools.utils import get_logger
+
 from diffusionkit.mlx import MODEL_REPO_IDS, DiffusionPipeline, FluxPipeline
 
 logger = get_logger(__name__)

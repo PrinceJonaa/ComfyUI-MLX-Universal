@@ -1,7 +1,9 @@
 import json
-import torch
+
 import numpy as np
+import torch
 from PIL import Image, ImageDraw
+
 from .bridge import pil_to_tensor
 
 

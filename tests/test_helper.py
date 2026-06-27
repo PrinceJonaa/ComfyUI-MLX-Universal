@@ -1,6 +1,6 @@
-import sys
-import os
 import importlib.util
+import os
+import sys
 from unittest.mock import MagicMock
 
 # Add the project root to sys.path so relative files can be located
@@ -8,9 +8,11 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
+
 # Define a MockTensor class so isinstance(x, torch.Tensor) does not crash
 class MockTensor(MagicMock):
     pass
+
 
 # 1. Pre-mock all external dependencies that might not exist in the test environment
 # We also include intermediate parent packages so Python's import system resolves them correctly
@@ -83,6 +85,7 @@ for sub in diffusionkit_submodules:
     if fullname not in sys.modules:
         sys.modules[fullname] = MagicMock()
 
+
 def import_submodule(subfolder, name):
     """Dynamically registers a module from the subfolder inside the package namespace."""
     full_name = f"comfyui_mlx_universal.{subfolder}.{name}"
@@ -104,6 +107,7 @@ def import_submodule(subfolder, name):
         print(f"Warning: could not execute {full_name}: {e}")
     return module
 
+
 # Pre-import key runtime files so nodes can resolve them relative to their package parent
 try:
     import_submodule("runtime", "data_types")
@@ -115,6 +119,7 @@ try:
     import_submodule("runtime", "audio_processing")
 except Exception as e:
     print(f"Warning during pre-import: {e}")
+
 
 def import_node_module(node_file_basename):
     """

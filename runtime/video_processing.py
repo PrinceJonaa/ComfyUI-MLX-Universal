@@ -1,12 +1,15 @@
 import os
-import sys
 import re
-import uuid
 import subprocess
+import sys
+import uuid
+from typing import Callable, Optional
+
 import numpy as np
 import torch
+
 from .bridge import tensor_to_pil
-from typing import Callable, Optional
+
 
 def execute_video_generation(
     model_repo_or_dir: str,

@@ -1,9 +1,10 @@
-from typing import Any
 import os
+from typing import Any
+
 import mlx.core as mx
-from ..runtime.data_types import LoadedMLXModel
+
 from ..runtime.bridge import tensor_to_pil
-from ..runtime.registry import get_or_load_draft_model, make_key
+from ..runtime.data_types import LoadedMLXModel
 
 
 class MLXLMGenerateText:

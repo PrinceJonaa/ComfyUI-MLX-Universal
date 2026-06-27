@@ -1,8 +1,8 @@
-import sys
 import unittest
 from unittest.mock import MagicMock
 
 from tests.test_helper import import_node_module
+
 
 class TestVideoNodes(unittest.TestCase):
     @classmethod
@@ -29,14 +29,16 @@ class TestVideoNodes(unittest.TestCase):
             guide_scale=3.0,
             seed=42,
             image=None,
-            audio_path=""
+            audio_path="",
         )
 
         # Asserts
         self.video_nodes.execute_video_generation.assert_called_once()
         call_kwargs = self.video_nodes.execute_video_generation.call_args[1]
-        
-        self.assertEqual(call_kwargs["model_repo_or_dir"], "mlx-community/LTX-2-dev-bf16")
+
+        self.assertEqual(
+            call_kwargs["model_repo_or_dir"], "mlx-community/LTX-2-dev-bf16"
+        )
         self.assertEqual(call_kwargs["prompt"], "A happy dog running")
         self.assertEqual(call_kwargs["negative_prompt"], "blurry")
         self.assertEqual(call_kwargs["width"], 512)
@@ -47,7 +49,7 @@ class TestVideoNodes(unittest.TestCase):
         self.assertEqual(call_kwargs["seed"], 42)
         self.assertEqual(call_kwargs["image"], None)
         self.assertEqual(call_kwargs["audio_path"], "")
-        
+
         self.assertEqual(result, mock_output)
 
 

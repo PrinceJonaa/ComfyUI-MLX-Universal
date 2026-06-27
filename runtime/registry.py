@@ -1,5 +1,6 @@
-import mlx.core as mx
 from typing import Any, Callable
+
+import mlx.core as mx
 
 _MODEL_CACHE: dict[str, Any] = {}
 _DRAFT_CACHE: dict[str, Any] = {}

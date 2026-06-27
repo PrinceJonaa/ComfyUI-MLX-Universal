@@ -5,7 +5,7 @@
 
 import os
 import unittest
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 import coremltools as ct
 import torch

@@ -9,18 +9,18 @@ import gc
 import math
 import time
 from pprint import pprint
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Union
 
 import mlx.core as mx
 import mlx.nn as nn
 import numpy as np
 from argmaxtools.test_utils import AppleSiliconContextMixin, InferenceContextSpec
 from argmaxtools.utils import get_logger
-from typing import Any, Dict, Union
-from ..utils import bytes2gigabytes
 from PIL import Image
 
+from ..utils import bytes2gigabytes
 from . import model_io
+from .constants import MODEL_REPO_IDS, T5_MAX_LENGTH
 from .model_io import (
     _DEFAULT_MODEL,
     load_flux,
@@ -33,7 +33,6 @@ from .model_io import (
     load_vae_encoder,
 )
 from .sampler import FluxSampler, ModelSamplingDiscreteFlow
-from .constants import MODEL_REPO_IDS, T5_MAX_LENGTH
 
 logger = get_logger(__name__)
 

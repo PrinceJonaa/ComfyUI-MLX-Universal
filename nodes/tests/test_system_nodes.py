@@ -1,7 +1,7 @@
+import os
+import sys
 import unittest
 from unittest.mock import patch
-import sys
-import os
 
 # Add root directory to sys.path to find tests package
 root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -9,6 +9,7 @@ if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
 from tests.test_helper import import_node_module
+
 
 class TestMLXCacheStats(unittest.TestCase):
     def test_stats(self):

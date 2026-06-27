@@ -1,10 +1,10 @@
-import tracemalloc
 import timeit
+import tracemalloc
 
 
 def with_list_comp(n):
     keys_to_pop = [str(i) for i in range(n)]
-    state_dict = {k: 1 for k in keys_to_pop}
+    state_dict = dict.fromkeys(keys_to_pop, 1)
     tracemalloc.start()
     [state_dict.pop(k) for k in keys_to_pop]
     current, peak = tracemalloc.get_traced_memory()
@@ -14,7 +14,7 @@ def with_list_comp(n):
 
 def with_for_loop(n):
     keys_to_pop = [str(i) for i in range(n)]
-    state_dict = {k: 1 for k in keys_to_pop}
+    state_dict = dict.fromkeys(keys_to_pop, 1)
     tracemalloc.start()
     for k in keys_to_pop:
         state_dict.pop(k)

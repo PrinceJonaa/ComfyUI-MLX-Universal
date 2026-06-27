@@ -1,7 +1,9 @@
 import unittest
 from unittest.mock import MagicMock, patch
+
 import torch
 import torch.nn as nn
+
 from diffusionkit.utils import _load_weights, bytes2gigabytes
 
 

@@ -16,3 +16,28 @@ Icon = ""
 [tool.mypy]
 ignore_missing_imports = true
 explicit_package_bases = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+    "B905",  # zip without strict
+    "B904",  # raise from
+    "C408",  # unnecessary dict call
+    "F841",  # unused variable
+    "E402",  # module level import not at top of file
+    "B007",  # loop control variable not used
+]

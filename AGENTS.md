@@ -31,11 +31,12 @@ To ensure that multiple agents working concurrently do not conflict or duplicate
 * **Branch Naming Standard**:
   * Use the convention: `agent/<persona>/<task-id-or-short-name>`
   * Example: `agent/backlog-executor/rm-015`
-* **Local Test Verification**:
-  * Before opening any PR, you **must** run the unit tests to verify zero regressions:
+* **Local Pre-Flight Verification & Formatting**:
+  * Before calling your native `submit` action, you **must** run the local CI loop to auto-format your code and verify zero regressions:
     ```bash
-    python3 -m unittest discover tests && python3 -m unittest discover nodes/tests
+    make verify
     ```
+  * If `make verify` fails, you must fix the python tracebacks before submitting.
 * **Clear Task Claiming**:
   * Update the task status in `roadmap.md` to `In Progress` immediately upon starting, to prevent other agents from selecting it.
 
@@ -51,7 +52,7 @@ Jules is configured to run several scheduled tasks on this repository. Depending
   1. Scan for `TODO/FIXME/XXX` comments or `roadmap.md` entries.
   2. Pick **exactly one** unclaimed task that has clear evidence and low blast radius.
   3. Re-verify in the current codebase that the task is indeed unbuilt (ground-truth check).
-  4. Perform the implementation, remove the stale `TODO` comment (or update `roadmap.md` to "Recently Completed" with the commit SHA), and verify.
+  4. Perform the implementation, remove the stale `TODO` comment. If this completes a roadmap task, you MUST use `python scripts/roadmap.py complete RM-XXX` instead of manually editing the markdown file. Finally, verify your code with `make verify`.
   5. Deliver a PR with the title format: `[Task] <Source: TODO|Roadmap RM-###|Feature> — <specific name>`.
 
 ### 2. Autonomous AI Technical Writer & Curator (Weekly)

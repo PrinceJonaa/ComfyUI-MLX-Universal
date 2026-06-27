@@ -1,4 +1,4 @@
-from ..runtime.registry import clear_all_caches, cache_stats
+from ..runtime.registry import cache_stats, clear_all_caches
 
 
 class MLXClearCache:

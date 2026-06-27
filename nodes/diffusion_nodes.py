@@ -1,13 +1,13 @@
+from typing import Any, Optional
+
 import mlx.core as mx
-import os
-from typing import Optional, Any
+
+from ..diffusionkit.mlx.clip import CLIPTextModel
+from ..diffusionkit.mlx.constants import T5_MAX_LENGTH
+from ..diffusionkit.mlx.t5 import SD3T5Encoder
 
 # DiffusionKit specific imports
-from ..diffusionkit.mlx.tokenizer import Tokenizer, T5Tokenizer
-from ..diffusionkit.mlx.t5 import SD3T5Encoder
-from ..diffusionkit.mlx.clip import CLIPTextModel
-from ..diffusionkit.mlx import FluxPipeline
-from ..diffusionkit.mlx.constants import T5_MAX_LENGTH
+from ..diffusionkit.mlx.tokenizer import T5Tokenizer, Tokenizer
 
 
 class MLXDecoder:
@@ -20,7 +20,7 @@ class MLXDecoder:
     CATEGORY = "MLX Universal/Diffusion"
 
     def decode(self, latent_image: dict, mlx_vae: Any) -> tuple:
-        from ..runtime.bridge import mlx_to_torch, latent_to_mlx
+        from ..runtime.bridge import latent_to_mlx, mlx_to_torch
 
         mlx_latent = latent_to_mlx(latent_image)
 
@@ -84,7 +84,7 @@ class MLXSampler:
         latent_image: dict,
         denoise: float,
     ) -> tuple:
-        from ..runtime.bridge import mlx_to_latent, latent_to_mlx
+        from ..runtime.bridge import latent_to_mlx, mlx_to_latent
 
         try:
             conditioning = mlx_positive_conditioning["conditioning"]
@@ -225,7 +225,6 @@ class MLXClipTextEncoder:
         return (output,)
 
 
-
 class MLXEncoder:
     @classmethod
     def INPUT_TYPES(s) -> dict:
@@ -237,8 +236,9 @@ class MLXEncoder:
     CATEGORY = "MLX Universal/Diffusion"
 
     def encode(self, image, mlx_model) -> tuple:
-        from ..runtime.bridge import torch_to_mlx, mlx_to_latent
         import mlx.core as mx
+
+        from ..runtime.bridge import mlx_to_latent, torch_to_mlx
 
         print("Encoding image to latents with MLX VAE...")
 
@@ -254,6 +254,7 @@ class MLXEncoder:
         print("VAE encoding complete.")
 
         return (mlx_to_latent(latents),)
+
 
 NODE_CLASS_MAPPINGS = {
     "MLXEncoder": MLXEncoder,
