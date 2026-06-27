@@ -9,6 +9,11 @@
 
 ## Planned
 
+### [RM-015] Reduce cyclomatic complexity in IO and Runtime modules
+- Status: Planned
+- Evidence: `ruff check` flagged `C901` (too complex) for `t5_encoder_state_dict_adjustments`, `map_vae_weights` in `diffusionkit/mlx/model_io.py`, and `execute_video_generation` in `runtime/video_processing.py`.
+- Why it matters: High cyclomatic complexity creates monolithic, untestable functions. Breaking them down into modular mapping pipelines reduces the risk of regression during future updates.
+
 ### [RM-012] Fix static type hints for IMAGE inputs
 - Status: Planned
 - Evidence: `MLXVLMDescribeImage.run` in `nodes/generate_nodes.py` types the `image` argument as `dict | None = None`, but ComfyUI passes `IMAGE` as a `torch.Tensor`.
