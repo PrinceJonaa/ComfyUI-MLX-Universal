@@ -22,7 +22,12 @@ class MLXDecoder:
     def decode(self, latent_image: dict, mlx_vae: Any) -> tuple:
         from ..runtime.bridge import mlx_to_torch, latent_to_mlx
 
-        mlx_latent = latent_to_mlx(latent_image)
+        try:
+            mlx_latent = latent_to_mlx(latent_image)
+        except (KeyError, TypeError, AttributeError):
+            raise ValueError(
+                "Expected a valid ComfyUI latent dictionary. Invalid or missing latent input. Ensure an MLX Generate Image or VAE Encode node is properly connected."
+            )
 
         print("Decoding latent image with MLX VAE...")
         decoded = mlx_vae(mlx_latent)
@@ -148,6 +153,7 @@ class MLXLoadFlux:
     def load_flux_model(self, model_version: str) -> tuple:
         from ..runtime.model_loader import load_flux_pipeline
 
+        print(f"Loading MLX Flux model '{model_version}'...")
         model = load_flux_pipeline(model_version)
 
         clip = {
