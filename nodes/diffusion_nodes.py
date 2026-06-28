@@ -148,6 +148,8 @@ class MLXLoadFlux:
     def load_flux_model(self, model_version: str) -> tuple:
         from ..runtime.model_loader import load_flux_pipeline
 
+        print(f"Loading Flux model {model_version}...")
+
         model = load_flux_pipeline(model_version)
 
         clip = {

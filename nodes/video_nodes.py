@@ -23,18 +23,44 @@ class MLXVideoGenerator:
                     },
                 ),
                 "negative_prompt": ("STRING", {"default": "blurry, low quality"}),
-                "width": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
-                "height": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
+                "width": (
+                    "INT",
+                    {
+                        "default": 256,
+                        "min": 64,
+                        "max": 2048,
+                        "step": 64,
+                        "tooltip": "Resolution. Lower this if you run out of unified memory.",
+                    },
+                ),
+                "height": (
+                    "INT",
+                    {
+                        "default": 256,
+                        "min": 64,
+                        "max": 2048,
+                        "step": 64,
+                        "tooltip": "Resolution. Lower this if you run out of unified memory.",
+                    },
+                ),
                 "num_frames": (
                     "INT",
                     {
-                        "default": 16,
+                        "default": 8,
                         "min": 1,
                         "max": 500,
                         "tooltip": "Number of frames to generate. Lower this if you run out of unified memory.",
                     },
                 ),
-                "steps": ("INT", {"default": 30, "min": 1, "max": 200}),
+                "steps": (
+                    "INT",
+                    {
+                        "default": 10,
+                        "min": 1,
+                        "max": 200,
+                        "tooltip": "Number of diffusion steps. Higher values take longer but improve quality.",
+                    },
+                ),
                 "guide_scale": (
                     "FLOAT",
                     {

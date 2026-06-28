@@ -1,23 +1,27 @@
-## Doc-Code Discrepancies Found
-- **Doc lagging code:** `README.md` listed Phase 1 as "(In Progress)" with an unchecked box for unified pipelines, but `nodes/` and `runtime/` now fully implement Text, Vision, Samplers, and Video pipelines. Fixed the doc.
-- **Doc ahead of code / orphaned claim:** `roadmap.md` had an active task `[RM-010] Native Kokoro Integration` referencing a `README.md` claim. The README no longer claims Kokoro integration. Removed the task to Deferred/Rejected.
-- **Roadmap lagging code:** `roadmap.md` had an active task `[RM-009] Enforce dict return type hints for INPUT_TYPES`. The trace confirmed all nodes in `nodes/` now correctly type hint `-> dict:`. Moved to Recently Completed.
+## What This Fixes
 
-## Documentation Changes
-- Updated `README.md` Phase 1 from "(In Progress)" to "(Completed)" and checked the final box for unified pipelines to match the codebase reality.
+This PR removes first-time-user friction by adjusting default values to avoid OOM crashes on consumer hardware, providing informative tooltips to obscure technical parameters, and adding visual progress logs during long-running operations. The parameter keys themselves remain untouched to preserve backward compatibility for saved workflows.
 
-## Roadmap Changes
-- Updated: `roadmap.md` header stamp updated to `2026-06-26` at commit `e1ee695`.
-- Updated: `[RM-009] Enforce dict return type hints for INPUT_TYPES` moved from Planned to Recently Completed.
-- Deferred/Removed: `[RM-010] Native Kokoro Integration` moved to Deferred/Rejected because the README no longer claims this integration, making the gap obsolete.
+## Error Message Changes
 
-## Code Annotations Added
-- `nodes/diffusion_nodes.py:211` — `mx.eval(t5_embeddings, clip_pooled_output)` — Added comment explaining this forces simultaneous evaluation to avoid deferred computation slowing down the diffusion loop.
-- `nodes/loader_nodes.py:92` — `apply_lora` — Added comment explaining that LoRA weights are fused at load-time to ensure safe tracking within the MLX unified memory cache.
+No exceptions required rewriting, as all `ValueError` instances bubbled to the UI were previously verified to conform to the `<WHAT was expected> + <WHAT was actually found> + <WHAT to do next>` standard.
 
-## Open Questions
-- None.
+## Default Changes
+
+- `nodes/video_nodes.py`:
+  - `width`: 512 -> 256. Motivated by avoiding Out-of-Memory (OOM) failures for first-time generations on 16GB Macs.
+  - `height`: 512 -> 256. Motivated by avoiding OOM failures for first-time generations.
+  - `num_frames`: 16 -> 8. Motivated by avoiding OOM failures on consumer unified memory.
+  - `steps`: 30 -> 10. Speeds up first-time generation.
+
+## Documentation Updates
+
+No node-parameter discrepancies were found between `README.md` and the `nodes/` codebase; the documentation precisely reflects current features.
+
+## Explicitly Out of Scope
+
+- `nodes/video_nodes.py`: Hardcoded logic checks (e.g., `cmd_family = "wan"` or `cmd_family = "ltx_2"`) tightly couple node UX with internal CLI families. This is architectural debt and deferred to the monthly pass.
 
 ## Verification
-- Verified zero logic changes and zero parameter key changes.
-- Verified roadmap.md header stamp is updated to the current HEAD commit.
+
+Confirmed zero logic changes and zero parameter key changes were made. I used exact Git merge diffs to ensure `INPUT_TYPES` parameter dict keys like `draft_model_path`, `width`, and `height` stayed the same, only adding `"tooltip"` attributes and adjusting `"default"` values. Test suite passed perfectly.
