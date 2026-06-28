@@ -1,5 +1,4 @@
 import sys
-import os
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -21,7 +20,7 @@ class TestGenerateNodes(unittest.TestCase):
         cls.generate_nodes = import_node_module("generate_nodes")
         cls.MLXLMGenerateText = cls.generate_nodes.MLXLMGenerateText
         cls.MLXVLMDescribeImage = cls.generate_nodes.MLXVLMDescribeImage
-        
+
         # We need to mock runtime classes used in tests
         runtime_data_types = sys.modules["comfyui_mlx_universal.runtime.data_types"]
         cls.LoadedMLXModel = runtime_data_types.LoadedMLXModel
@@ -34,7 +33,7 @@ class TestGenerateNodes(unittest.TestCase):
         mock_mlx_vlm.generate.reset_mock()
         mock_mlx_vlm_prompt_utils.apply_chat_template.reset_mock()
         mock_mlx_vlm_speculative_drafters.load_drafter.reset_mock()
-        
+
         # Setup clean mock for tensor_to_pil in the generate_nodes module
         self.generate_nodes.tensor_to_pil = MagicMock(return_value=["mocked_pil_image"])
 
@@ -46,7 +45,7 @@ class TestGenerateNodes(unittest.TestCase):
             trust_remote_code=False,
             quantize_activations=False,
             model=MagicMock(),
-            processor=MagicMock()
+            processor=MagicMock(),
         )
         return model
 
@@ -77,7 +76,9 @@ class TestGenerateNodes(unittest.TestCase):
 
     @patch("comfyui_mlx_universal.runtime.model_loader.load_draft_model")
     @patch("mlx_lm.sample_utils.make_sampler")
-    def test_mlx_lm_generate_happy_path_with_chat_template(self, mock_make_sampler, mock_load_draft):
+    def test_mlx_lm_generate_happy_path_with_chat_template(
+        self, mock_make_sampler, mock_load_draft
+    ):
         mock_make_sampler.return_value = "mocked_sampler"
         node = self.MLXLMGenerateText()
         mocked_model = self.get_mocked_model()
@@ -120,7 +121,9 @@ class TestGenerateNodes(unittest.TestCase):
 
     @patch("comfyui_mlx_universal.runtime.model_loader.load_draft_model")
     @patch("mlx_lm.sample_utils.make_sampler")
-    def test_mlx_lm_generate_happy_path_without_chat_template(self, mock_make_sampler, mock_load_draft):
+    def test_mlx_lm_generate_happy_path_without_chat_template(
+        self, mock_make_sampler, mock_load_draft
+    ):
         mock_make_sampler.return_value = "mocked_sampler_2"
         node = self.MLXLMGenerateText()
         mocked_model = self.get_mocked_model()
@@ -181,7 +184,9 @@ class TestGenerateNodes(unittest.TestCase):
 
     @patch("comfyui_mlx_universal.runtime.model_loader.load_draft_model")
     @patch("os.path.exists", return_value=True)
-    def test_mlx_vlm_run_happy_path_no_draft_model(self, mock_os_exists, mock_load_draft):
+    def test_mlx_vlm_run_happy_path_no_draft_model(
+        self, mock_os_exists, mock_load_draft
+    ):
         node = self.MLXVLMDescribeImage()
         mocked_model = self.get_mocked_model()
         mocked_model.family = "mlx-vlm"
@@ -232,7 +237,9 @@ class TestGenerateNodes(unittest.TestCase):
 
     @patch("comfyui_mlx_universal.runtime.model_loader.load_draft_model")
     @patch("os.path.exists", return_value=False)
-    def test_mlx_vlm_run_happy_path_with_draft_model(self, mock_os_exists, mock_load_draft):
+    def test_mlx_vlm_run_happy_path_with_draft_model(
+        self, mock_os_exists, mock_load_draft
+    ):
         node = self.MLXVLMDescribeImage()
         mocked_model = self.get_mocked_model()
         mocked_model.family = "mlx-vlm"

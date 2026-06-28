@@ -1,12 +1,10 @@
 import mlx.core as mx
-import os
 from typing import Optional, Any
 
 # DiffusionKit specific imports
 from ..diffusionkit.mlx.tokenizer import Tokenizer, T5Tokenizer
 from ..diffusionkit.mlx.t5 import SD3T5Encoder
 from ..diffusionkit.mlx.clip import CLIPTextModel
-from ..diffusionkit.mlx import FluxPipeline
 from ..diffusionkit.mlx.constants import T5_MAX_LENGTH
 
 
@@ -227,7 +225,6 @@ class MLXClipTextEncoder:
         return (output,)
 
 
-
 class MLXEncoder:
     @classmethod
     def INPUT_TYPES(s) -> dict:
@@ -256,6 +253,7 @@ class MLXEncoder:
         print("VAE encoding complete.")
 
         return (mlx_to_latent(latents),)
+
 
 NODE_CLASS_MAPPINGS = {
     "MLXEncoder": MLXEncoder,

@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 from tests.test_helper import import_node_module
 
+
 class TestLoaderNodes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -28,7 +29,7 @@ class TestLoaderNodes(unittest.TestCase):
             model_type="mlx-lm",
             trust_remote_code=True,
             quantize_activations=True,
-            adapter_path="lora/path"
+            adapter_path="lora/path",
         )
 
         self.loader_nodes.load_unified_mlx_model.assert_called_once_with(
@@ -36,7 +37,7 @@ class TestLoaderNodes(unittest.TestCase):
             model_type="mlx-lm",
             trust_remote_code=True,
             quantize_activations=True,
-            adapter_path="lora/path"
+            adapter_path="lora/path",
         )
         self.assertEqual(result, ("mock_loaded_model",))
 
@@ -52,7 +53,7 @@ class TestLoaderNodes(unittest.TestCase):
     def test_mlx_apply_lora_fuses_via_load_time_fusion(self):
         self.loader_nodes.load_unified_mlx_model.return_value = "mock_fused_model"
         node = self.MLXApplyLoRA()
-        
+
         mock_model = self.LoadedMLXModel(
             family="mlx-lm",
             model_path="original/path",
@@ -60,7 +61,7 @@ class TestLoaderNodes(unittest.TestCase):
             trust_remote_code=False,
             quantize_activations=True,
             model=MagicMock(),
-            processor=MagicMock()
+            processor=MagicMock(),
         )
 
         result = node.apply_lora(mock_model, "lora/adapter")
@@ -70,7 +71,7 @@ class TestLoaderNodes(unittest.TestCase):
             model_type="mlx-lm",
             trust_remote_code=False,
             quantize_activations=True,
-            adapter_path="lora/adapter"
+            adapter_path="lora/adapter",
         )
         self.assertEqual(result, ("mock_fused_model",))
 

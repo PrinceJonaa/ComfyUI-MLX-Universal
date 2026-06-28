@@ -8,6 +8,7 @@ import torch
 from .bridge import tensor_to_pil
 from typing import Callable, Optional
 
+
 def execute_video_generation(
     model_repo_or_dir: str,
     prompt: str,
@@ -148,7 +149,10 @@ def execute_video_generation(
             if interrupt_callback:
                 interrupt_callback()
 
-            char = process.stdout.read(1)
+            if process.stdout is not None:
+                char = process.stdout.read(1)
+            else:
+                char = ""
             if not char and process.poll() is not None:
                 break
             if char:
