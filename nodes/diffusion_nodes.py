@@ -211,10 +211,8 @@ class MLXClipTextEncoder:
         clip_pooled_output = clip_l_embeddings.pooled_output
 
         t5_tokens = self._tokenize(tokenizer=t5_tokenizer, text=text)
-        padded_tokens_t5 = mx.zeros((1, T5_MAX_LENGTH[model_name])).astype(
-            t5_tokens.dtype
-        )
-        padded_tokens_t5[:, : t5_tokens.shape[1]] = t5_tokens[[0], :]
+        pad_len = T5_MAX_LENGTH[model_name] - t5_tokens.shape[1]
+        padded_tokens_t5 = mx.pad(t5_tokens[[0], :], [(0, 0), (0, pad_len)])
 
         t5_embeddings = t5_encoder(padded_tokens_t5)
 
