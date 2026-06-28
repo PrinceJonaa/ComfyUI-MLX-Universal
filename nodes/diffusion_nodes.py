@@ -251,6 +251,7 @@ class MLXEncoder:
         hidden = mlx_model.encoder(mlx_image)
         mean, _ = hidden.split(2, axis=-1)
         latents = mlx_model.latent_format.process_in(mean)
+        # evaluated eagerly here — deferring this past the bridging layer causes stale tensors when ComfyUI operates on the returned latents
 
         mx.eval(latents)
         print("VAE encoding complete.")
