@@ -7,12 +7,22 @@
 
 ## In Progress
 
+### [RM-015] Reduce cyclomatic complexity in IO and Runtime modules
+- Status: In Progress
+- Evidence: `execute_video_generation` in `runtime/video_processing.py` was successfully refactored (E -> D). `ruff check` / Xenon still flags `flux_state_dict_adjustments` (F), `_common_vae_adjustments` (D), and `mmdit_state_dict_adjustments` (D) in `diffusionkit/mlx/model_io.py`.
+- Why it matters: High cyclomatic complexity creates monolithic, untestable functions. Breaking them down into modular mapping pipelines reduces the risk of regression during future updates.
+
 ## Planned
 
-### [RM-015] Reduce cyclomatic complexity in IO and Runtime modules
+### [RM-016] Modularize model_io.py in diffusionkit
 - Status: Planned
-- Evidence: `ruff check` flagged `C901` (too complex) for `t5_encoder_state_dict_adjustments`, `map_vae_weights` in `diffusionkit/mlx/model_io.py`, and `execute_video_generation` in `runtime/video_processing.py`.
-- Why it matters: High cyclomatic complexity creates monolithic, untestable functions. Breaking them down into modular mapping pipelines reduces the risk of regression during future updates.
+- Evidence: MCP architecture analysis and `make complexity` highlight `diffusionkit/mlx/model_io.py` as a monolithic hotspot with `flux_state_dict_adjustments` scoring an F in cyclomatic complexity.
+- Why it matters: State dict adjustments are currently one massive function. Refactoring these into a Chain of Responsibility pattern or modular map dictionaries will drastically improve maintainability.
+
+### [RM-017] Increase Test Coverage for Runtime Extractions
+- Status: Planned
+- Evidence: PRs #73 and #80 successfully extracted logic to `runtime/audio_processing.py` and `runtime/diffusion_processing.py`, but tests still mock at the node layer instead of unit-testing the runtime functions directly.
+- Why it matters: Prevents silent regressions in the new runtime bridging logic.
 
 ### [RM-012] Fix static type hints for IMAGE inputs
 - Status: Planned
@@ -29,11 +39,6 @@
 - Evidence: `MLXApplyLoRA.apply_lora` in `nodes/loader_nodes.py` re-invokes `load_unified_mlx_model` from scratch to fuse an adapter, bypassing dynamic weight patching.
 - Why it matters: Reduces cache pressure and loading overhead when users swap LoRAs during live ComfyUI sessions.
 
-### [RM-010] Native Kokoro Integration
-- Status: Planned
-- Evidence: `README.md` claimed Kokoro integration, but `nodes/audio_nodes.py` only implements `MLXWhisperTranscribe`.
-- Why it matters: Achieves full audio multimodal capabilities as promised in the documentation.
-
 ### [RM-004] Native SDXL / ControlNet pipelines
 - Status: Planned
 - Evidence: `README.md` claims SDXL / ControlNet in Phase 2 Expansion.
@@ -42,6 +47,10 @@
 ## Blocked
 
 ## Recently Completed
+
+### [RM-010] Native Kokoro Integration
+- Status: Completed (PR #79)
+- Evidence: `MLXKokoroTTS` node implemented in `nodes/audio_nodes.py` returning properly scaled waveforms via `runtime.bridge`.
 
 ### [RM-008] Extract video generation subprocess and CV2 logic
 - Status: Completed
