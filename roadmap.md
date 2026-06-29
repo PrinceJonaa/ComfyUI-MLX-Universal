@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-06-27 at commit 348bcf7
+> Last curated: 2026-06-29 at commit 9d2c16a
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -29,11 +29,6 @@
 - Evidence: `MLXVLMDescribeImage.run` in `nodes/generate_nodes.py` types the `image` argument as `dict | None = None`, but ComfyUI passes `IMAGE` as a `torch.Tensor`.
 - Why it matters: Prevents static analysis drift and misleading type documentation for frontend node developers.
 
-### [RM-013] Decouple Draft Model Loading from Generate Nodes
-- Status: Planned
-- Evidence: `MLXLMGenerateText` and `MLXVLMDescribeImage` both inline the loading of draft models using `draft_model_path`. 
-- Why it matters: UI generation nodes should not handle loading IO. Draft models should be loaded by a dedicated `MLXDraftModelLoader` node that outputs a `DRAFT_MODEL` to be passed into generation nodes, adhering to ComfyUI's explicit graph structure.
-
 ### [RM-014] Refactor dynamic LoRA fusion in `MLXApplyLoRA`
 - Status: Planned
 - Evidence: `MLXApplyLoRA.apply_lora` in `nodes/loader_nodes.py` re-invokes `load_unified_mlx_model` from scratch to fuse an adapter, bypassing dynamic weight patching.
@@ -47,6 +42,11 @@
 ## Blocked
 
 ## Recently Completed
+
+### [RM-013] Decouple Draft Model Loading from Generate Nodes
+- Status: Completed
+- Evidence: `MLXLMGenerateText` and `MLXVLMDescribeImage` both inline the loading of draft models using `draft_model_path`. 
+- Why it matters: UI generation nodes should not handle loading IO. Draft models should be loaded by a dedicated `MLXDraftModelLoader` node that outputs a `DRAFT_MODEL` to be passed into generation nodes, adhering to ComfyUI's explicit graph structure.
 
 ### [RM-010] Native Kokoro Integration
 - Status: Completed (PR #79)

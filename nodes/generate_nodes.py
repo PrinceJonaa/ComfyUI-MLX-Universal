@@ -44,7 +44,7 @@ class MLXLMGenerateText:
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
             },
             "optional": {
-                "draft_model_path": ("STRING", {"default": ""}),
+                "draft_model": ("MLX_DRAFT_MODEL",),
                 "enable_thinking": ("BOOLEAN", {"default": False}),
                 "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192}),
             },
@@ -63,7 +63,7 @@ class MLXLMGenerateText:
         temperature: float,
         top_p: float,
         seed: int,
-        draft_model_path: str = "",
+        draft_model: Any = None,
         enable_thinking: bool = False,
         thinking_budget: int = 512,
     ) -> tuple:
@@ -97,10 +97,7 @@ class MLXLMGenerateText:
             "thinking_budget": thinking_budget,
         }
 
-        if draft_model_path:
-            from ..runtime.model_loader import load_draft_model
-
-            draft_model = load_draft_model(draft_model_path, "mlx-lm")
+        if draft_model is not None:
             gen_kwargs["draft_model"] = draft_model
 
         print(f"Generating text up to {max_tokens} tokens...")
@@ -156,13 +153,7 @@ class MLXVLMDescribeImage:
             "optional": {
                 "image": ("IMAGE",),
                 "audio_path": ("STRING", {"default": ""}),
-                "draft_model_path": (
-                    "STRING",
-                    {
-                        "default": "",
-                        "tooltip": "Path to a smaller draft model for speculative decoding speedups.",
-                    },
-                ),
+                "draft_model": ("MLX_DRAFT_MODEL",),
                 "draft_kind": (["dflash", "eagle3", "mtp"], {"default": "dflash"}),
             },
         }
@@ -183,7 +174,7 @@ class MLXVLMDescribeImage:
         thinking_budget: int,
         image: dict | None = None,
         audio_path: str = "",
-        draft_model_path: str = "",
+        draft_model: Any = None,
         draft_kind: str = "dflash",
     ) -> tuple:
 
@@ -215,10 +206,7 @@ class MLXVLMDescribeImage:
             "thinking_budget": thinking_budget,
         }
 
-        if draft_model_path:
-            from ..runtime.model_loader import load_draft_model
-
-            draft_model = load_draft_model(draft_model_path, "mlx-vlm")
+        if draft_model is not None:
             gen_kwargs["draft_model"] = draft_model
             gen_kwargs["draft_kind"] = draft_kind
 

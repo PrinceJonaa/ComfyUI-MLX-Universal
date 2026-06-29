@@ -75,6 +75,24 @@ class TestLoaderNodes(unittest.TestCase):
         )
         self.assertEqual(result, ("mock_fused_model",))
 
+    def test_mlx_draft_model_loader_calls_runtime_loader(self):
+        from unittest.mock import patch
+
+        with patch.object(self.loader_nodes, "load_draft_model") as mock_load:
+            mock_load.return_value = "mock_draft_model"
+            node = self.loader_nodes.MLXDraftModelLoader()
+
+            result = node.load_model(
+                model_path="mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+                model_family="mlx-lm",
+            )
+
+            mock_load.assert_called_once_with(
+                "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+                "mlx-lm",
+            )
+            self.assertEqual(result, ("mock_draft_model",))
+
 
 if __name__ == "__main__":
     unittest.main()

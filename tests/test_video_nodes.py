@@ -13,10 +13,19 @@ class TestVideoNodes(unittest.TestCase):
     def test_node_types_and_schema(self):
         # 1) Test INPUT_TYPES contains all required keys
         input_types = self.MLXVideoGenerator.INPUT_TYPES()
-        required_keys = ["model_repo_or_dir", "prompt", "width", "height", "num_frames", "steps", "guide_scale", "seed"]
+        required_keys = [
+            "model_repo_or_dir",
+            "prompt",
+            "width",
+            "height",
+            "num_frames",
+            "steps",
+            "guide_scale",
+            "seed",
+        ]
         for key in required_keys:
             self.assertIn(key, input_types["required"])
-            
+
         # 2) Test RETURN_TYPES equals ('STRING', 'IMAGE')
         self.assertEqual(self.MLXVideoGenerator.RETURN_TYPES, ("STRING", "IMAGE"))
 
@@ -25,10 +34,10 @@ class TestVideoNodes(unittest.TestCase):
             # Configure the mock to return fake tuple matching RETURN_TYPES
             mock_output = ("/tmp/fake_video.mp4", None)
             mock_execute.return_value = mock_output
-    
+
             # Setup mock node
             node = self.MLXVideoGenerator()
-    
+
             result = node.generate_video(
                 model_repo_or_dir="mlx-community/LTX-2-dev-bf16",
                 prompt="A happy dog running",
@@ -42,12 +51,14 @@ class TestVideoNodes(unittest.TestCase):
                 image=None,
                 audio_path="",
             )
-    
+
             # 3) Test that generate_video() calls execute_video_generation with the correct kwargs
             mock_execute.assert_called_once()
             call_kwargs = mock_execute.call_args[1]
-    
-            self.assertEqual(call_kwargs["model_repo_or_dir"], "mlx-community/LTX-2-dev-bf16")
+
+            self.assertEqual(
+                call_kwargs["model_repo_or_dir"], "mlx-community/LTX-2-dev-bf16"
+            )
             self.assertEqual(call_kwargs["prompt"], "A happy dog running")
             self.assertEqual(call_kwargs["negative_prompt"], "blurry")
             self.assertEqual(call_kwargs["width"], 512)
@@ -58,7 +69,7 @@ class TestVideoNodes(unittest.TestCase):
             self.assertEqual(call_kwargs["seed"], 42)
             self.assertEqual(call_kwargs["image"], None)
             self.assertEqual(call_kwargs["audio_path"], "")
-    
+
             # Verify output matches
             self.assertEqual(result, mock_output)
 

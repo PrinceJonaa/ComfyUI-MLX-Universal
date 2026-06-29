@@ -64,7 +64,7 @@ class TestGenerateNodes(unittest.TestCase):
                 temperature=0.7,
                 top_p=0.9,
                 seed=42,
-                draft_model_path="",
+                draft_model=None,
                 enable_thinking=False,
                 thinking_budget=512,
             )
@@ -74,11 +74,8 @@ class TestGenerateNodes(unittest.TestCase):
             "Expected model family 'mlx-lm' but found 'unknown-family'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model.",
         )
 
-    @patch("comfyui_mlx_universal.runtime.model_loader.load_draft_model")
     @patch("mlx_lm.sample_utils.make_sampler")
-    def test_mlx_lm_generate_happy_path_with_chat_template(
-        self, mock_make_sampler, mock_load_draft
-    ):
+    def test_mlx_lm_generate_happy_path_with_chat_template(self, mock_make_sampler):
         mock_make_sampler.return_value = "mocked_sampler"
         node = self.MLXLMGenerateText()
         mocked_model = self.get_mocked_model()
@@ -95,7 +92,7 @@ class TestGenerateNodes(unittest.TestCase):
             temperature=0.7,
             top_p=0.9,
             seed=42,
-            draft_model_path="",
+            draft_model=None,
             enable_thinking=False,
             thinking_budget=512,
         )
@@ -119,11 +116,8 @@ class TestGenerateNodes(unittest.TestCase):
             thinking_budget=512,
         )
 
-    @patch("comfyui_mlx_universal.runtime.model_loader.load_draft_model")
     @patch("mlx_lm.sample_utils.make_sampler")
-    def test_mlx_lm_generate_happy_path_without_chat_template(
-        self, mock_make_sampler, mock_load_draft
-    ):
+    def test_mlx_lm_generate_happy_path_without_chat_template(self, mock_make_sampler):
         mock_make_sampler.return_value = "mocked_sampler_2"
         node = self.MLXLMGenerateText()
         mocked_model = self.get_mocked_model()
@@ -140,7 +134,7 @@ class TestGenerateNodes(unittest.TestCase):
             temperature=1.0,
             top_p=0.5,
             seed=123,
-            draft_model_path="",
+            draft_model=None,
             enable_thinking=False,
             thinking_budget=512,
         )
@@ -182,11 +176,8 @@ class TestGenerateNodes(unittest.TestCase):
             "Expected model family 'mlx-vlm' but found 'unknown-family'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model.",
         )
 
-    @patch("comfyui_mlx_universal.runtime.model_loader.load_draft_model")
     @patch("os.path.exists", return_value=True)
-    def test_mlx_vlm_run_happy_path_no_draft_model(
-        self, mock_os_exists, mock_load_draft
-    ):
+    def test_mlx_vlm_run_happy_path_no_draft_model(self, mock_os_exists):
         node = self.MLXVLMDescribeImage()
         mocked_model = self.get_mocked_model()
         mocked_model.family = "mlx-vlm"
@@ -210,7 +201,7 @@ class TestGenerateNodes(unittest.TestCase):
             thinking_budget=512,
             image=mock_image,
             audio_path="fake/path.mp3",
-            draft_model_path="",
+            draft_model=None,
         )
 
         self.assertEqual(result, ("image described",))
@@ -235,15 +226,11 @@ class TestGenerateNodes(unittest.TestCase):
             thinking_budget=512,
         )
 
-    @patch("comfyui_mlx_universal.runtime.model_loader.load_draft_model")
     @patch("os.path.exists", return_value=False)
-    def test_mlx_vlm_run_happy_path_with_draft_model(
-        self, mock_os_exists, mock_load_draft
-    ):
+    def test_mlx_vlm_run_happy_path_with_draft_model(self, mock_os_exists):
         node = self.MLXVLMDescribeImage()
         mocked_model = self.get_mocked_model()
         mocked_model.family = "mlx-vlm"
-        mock_load_draft.return_value = "mock_draft_model"
 
         # Ensure tensor_to_pil returns empty when no image
         self.generate_nodes.tensor_to_pil.return_value = []
@@ -263,7 +250,7 @@ class TestGenerateNodes(unittest.TestCase):
             thinking_budget=0,
             image=None,
             audio_path="",
-            draft_model_path="path/to/draft",
+            draft_model="mock_draft_model",
             draft_kind="eagle3",
         )
 

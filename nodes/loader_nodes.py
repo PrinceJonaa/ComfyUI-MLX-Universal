@@ -1,5 +1,5 @@
 from ..runtime.data_types import LoadedMLXModel
-from ..runtime.model_loader import load_unified_mlx_model
+from ..runtime.model_loader import load_draft_model, load_unified_mlx_model
 
 
 class MLXModelLoaderUnified:
@@ -102,11 +102,42 @@ class MLXApplyLoRA:
         return (loaded,)
 
 
+class MLXDraftModelLoader:
+    @classmethod
+    def INPUT_TYPES(s) -> dict:
+        return {
+            "required": {
+                "model_path": (
+                    "STRING",
+                    {"default": "mlx-community/Qwen2.5-0.5B-Instruct-4bit"},
+                ),
+                "model_family": (
+                    ["mlx-lm", "mlx-vlm"],
+                    {"default": "mlx-lm"},
+                ),
+            }
+        }
+
+    RETURN_TYPES = ("MLX_DRAFT_MODEL",)
+    RETURN_NAMES = ("draft_model",)
+    FUNCTION = "load_model"
+    CATEGORY = "MLX Universal/Loaders"
+
+    def load_model(self, model_path: str, model_family: str) -> tuple:
+        if not model_path:
+            raise ValueError("Draft model path cannot be empty.")
+
+        loaded = load_draft_model(model_path, model_family)
+        return (loaded,)
+
+
 NODE_CLASS_MAPPINGS = {
     "MLXModelLoaderUnified": MLXModelLoaderUnified,
     "MLXApplyLoRA": MLXApplyLoRA,
+    "MLXDraftModelLoader": MLXDraftModelLoader,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "MLXModelLoaderUnified": "MLX Load Model",
     "MLXApplyLoRA": "MLX Apply LoRA",
+    "MLXDraftModelLoader": "MLX Load Draft Model",
 }
