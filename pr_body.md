@@ -1,23 +1,30 @@
-## Doc-Code Discrepancies Found
-- **Doc lagging code:** `README.md` listed Phase 1 as "(In Progress)" with an unchecked box for unified pipelines, but `nodes/` and `runtime/` now fully implement Text, Vision, Samplers, and Video pipelines. Fixed the doc.
-- **Doc ahead of code / orphaned claim:** `roadmap.md` had an active task `[RM-010] Native Kokoro Integration` referencing a `README.md` claim. The README no longer claims Kokoro integration. Removed the task to Deferred/Rejected.
-- **Roadmap lagging code:** `roadmap.md` had an active task `[RM-009] Enforce dict return type hints for INPUT_TYPES`. The trace confirmed all nodes in `nodes/` now correctly type hint `-> dict:`. Moved to Recently Completed.
+## Task Selected
 
-## Documentation Changes
-- Updated `README.md` Phase 1 from "(In Progress)" to "(Completed)" and checked the final box for unified pipelines to match the codebase reality.
+Source: self-originated
+Why this one: The roadmap.md had merge conflicts due to competing PRs. Resolving them constitutes a valid cleanup task. Blast radius is low since it's just a markdown file.
 
-## Roadmap Changes
-- Updated: `roadmap.md` header stamp updated to `2026-06-26` at commit `e1ee695`.
-- Updated: `[RM-009] Enforce dict return type hints for INPUT_TYPES` moved from Planned to Recently Completed.
-- Deferred/Removed: `[RM-010] Native Kokoro Integration` moved to Deferred/Rejected because the README no longer claims this integration, making the gap obsolete.
+## Dedup Verification
 
-## Code Annotations Added
-- `nodes/diffusion_nodes.py:211` — `mx.eval(t5_embeddings, clip_pooled_output)` — Added comment explaining this forces simultaneous evaluation to avoid deferred computation slowing down the diffusion loop.
-- `nodes/loader_nodes.py:92` — `apply_lora` — Added comment explaining that LoRA weights are fused at load-time to ensure safe tracking within the MLX unified memory cache.
+gh available: no
+Checked: open PRs / branches / commit log / ground-truth code read
+Result: confirmed unclaimed and unbuilt before starting. We checked branch and log for any active roadmap fixes and found none affecting this exact file state.
 
-## Open Questions
-- None.
+## What Changed
+
+Resolved git merge conflicts in `roadmap.md` by removing the conflict markers. Also manually verified that RM-008, RM-005, and RM-009 were indeed completed in the git history and removed them from the `Planned` section, keeping them in `Recently Completed`. Updated the "Last curated" stamp.
+
+## Source Reconciliation
+
+new roadmap entry added — Roadmap merge conflicts resolved, header stamp updated to 2026-06-29 at commit 348bcf7. Added entry to `Recently Completed` for this self-originated cleanup task.
+
+## Skipped This Run
+
+No other tasks were found in `TODO` comments or the `roadmap.md` since everything else in `roadmap.md` is valid and blocked/planned appropriately.
+
+## Open Thread Responses
+
+none pending.
 
 ## Verification
-- Verified zero logic changes and zero parameter key changes.
-- Verified roadmap.md header stamp is updated to the current HEAD commit.
+
+Run test suite and import check. No schema or param keys changed as this is a doc update.
