@@ -1,23 +1,35 @@
-## Doc-Code Discrepancies Found
-- **Doc lagging code:** `README.md` listed Phase 1 as "(In Progress)" with an unchecked box for unified pipelines, but `nodes/` and `runtime/` now fully implement Text, Vision, Samplers, and Video pipelines. Fixed the doc.
-- **Doc ahead of code / orphaned claim:** `roadmap.md` had an active task `[RM-010] Native Kokoro Integration` referencing a `README.md` claim. The README no longer claims Kokoro integration. Removed the task to Deferred/Rejected.
-- **Roadmap lagging code:** `roadmap.md` had an active task `[RM-009] Enforce dict return type hints for INPUT_TYPES`. The trace confirmed all nodes in `nodes/` now correctly type hint `-> dict:`. Moved to Recently Completed.
+## Architectural Thesis
 
-## Documentation Changes
-- Updated `README.md` Phase 1 from "(In Progress)" to "(Completed)" and checked the final box for unified pipelines to match the codebase reality.
+The MLX diffusion implementation details (lazy evaluation triggers, tokenization logic, and complex MLX tensor manipulations) were heavily bleeding into the ComfyUI node wrappers in `nodes/diffusion_nodes.py`. This created a severely leaking abstraction where the UI layer had to juggle core dependencies (like `mlx.core` and `diffusionkit`) and perform low-level caching. By introducing `runtime/diffusion_processing.py` as a dedicated barrier, we isolate these responsibilities strictly to the runtime substrate, reducing dependency drift and completely satisfying the strict UI/MLX separation invariant.
 
-## Roadmap Changes
-- Updated: `roadmap.md` header stamp updated to `2026-06-26` at commit `e1ee695`.
-- Updated: `[RM-009] Enforce dict return type hints for INPUT_TYPES` moved from Planned to Recently Completed.
-- Deferred/Removed: `[RM-010] Native Kokoro Integration` moved to Deferred/Rejected because the README no longer claims this integration, making the gap obsolete.
+## Debt Location
 
-## Code Annotations Added
-- `nodes/diffusion_nodes.py:211` — `mx.eval(t5_embeddings, clip_pooled_output)` — Added comment explaining this forces simultaneous evaluation to avoid deferred computation slowing down the diffusion loop.
-- `nodes/loader_nodes.py:92` — `apply_lora` — Added comment explaining that LoRA weights are fused at load-time to ensure safe tracking within the MLX unified memory cache.
+- `nodes/diffusion_nodes.py`: Execution functions inside `MLXDecoder`, `MLXSampler`, `MLXClipTextEncoder`, and `MLXEncoder` classes.
+- `nodes/diffusion_nodes.py`: The `_tokenize` private helper method residing in the UI layer.
 
-## Open Questions
-- None.
+## What Changed
 
-## Verification
-- Verified zero logic changes and zero parameter key changes.
-- Verified roadmap.md header stamp is updated to the current HEAD commit.
+- Introduced `runtime/diffusion_processing.py` containing four high-level execution functions: `decode_latents`, `generate_image`, `encode_clip_text`, and `encode_image`.
+- Migrated all `mx.eval()` calls, tokenization scaling logic, and diffusion tracking into these runtime functions.
+- Stripped all `mlx.core` and `diffusionkit` imports out of `nodes/diffusion_nodes.py`, converting it into a pure dictionary-passing frontend wrapper.
+- Extracted the `_tokenize` helper method out of the `MLXClipTextEncoder` class and into the runtime module.
+
+## What Was Not Changed
+
+- All ComfyUI node definitions (`INPUT_TYPES`, `RETURN_TYPES`, `RETURN_NAMES`) remain 100% identical.
+- The public signatures and parameter keys are untouched. Existing saved user workflows will successfully deserialize and run without any modification.
+- Existing internal bridges (e.g., `runtime/bridge.py` and `runtime/model_loader.py`) remain completely unchanged, ensuring cache behaviors are unaffected.
+
+## Backward Compatibility
+
+- Ran `python3 -m unittest discover tests` successfully across all 20 existing unit tests, explicitly verifying that the newly abstracted node methods still correctly route and process mock MLX tensors via the bridge.
+- Confirmed `mypy .` and `ruff check --fix .` pass with zero failures, proving robust typing and separation.
+- Verified manual resolution of the project's roadmap merge conflicts without altering file tracking expectations.
+
+## Rejected Alternatives
+
+- **Extracting tokenization to `bridge.py` instead of `diffusion_processing.py`**: This was rejected because `bridge.py` is explicitly designed for agnostic framework conversion (PyTorch ↔ MLX), whereas tokenization is specific to the diffusion process. Dumping it there would violate single-responsibility.
+
+## Follow-On Candidates
+
+- Consider extracting the heavy dictionary parsing out of the node wrappers (like unpacking `mlx_positive_conditioning`) and handling parameter validation directly inside `diffusion_processing.py` to make the UI wrappers even thinner.

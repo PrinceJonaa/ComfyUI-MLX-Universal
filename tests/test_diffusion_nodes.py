@@ -14,11 +14,16 @@ class TestDiffusionNodes(unittest.TestCase):
         cls.MLXClipTextEncoder = cls.diffusion_nodes.MLXClipTextEncoder
         cls.MLXEncoder = cls.diffusion_nodes.MLXEncoder
 
-        # Get the bridge module mock
+        # Get the diffusion_processing module mock
+        cls.diffusion_processing = sys.modules["comfyui_mlx_universal.runtime.diffusion_processing"]
         cls.bridge = sys.modules["comfyui_mlx_universal.runtime.bridge"]
 
     def setUp(self):
-        # Reset bridge mocks
+        # Reset diffusion_processing mocks
+        self.diffusion_processing.decode_latents = MagicMock()
+        self.diffusion_processing.encode_image = MagicMock()
+        self.diffusion_processing.generate_image = MagicMock()
+        self.diffusion_processing.encode_clip_text = MagicMock()
         self.bridge.latent_to_mlx = MagicMock()
         self.bridge.mlx_to_torch = MagicMock()
         self.bridge.torch_to_mlx = MagicMock()
@@ -27,44 +32,29 @@ class TestDiffusionNodes(unittest.TestCase):
     def test_mlx_decoder_happy_path(self):
         node = self.MLXDecoder()
         
-        # Configure mocks to support math operators
         mock_vae = MagicMock()
-        mock_decoded = MagicMock()
-        mock_vae.return_value = mock_decoded
-        
-        self.bridge.latent_to_mlx.return_value = "mock_latent"
-        self.bridge.mlx_to_torch.return_value = "torch_tensor"
+        self.diffusion_processing.decode_latents.return_value = ("torch_tensor",)
 
         result = node.decode({"samples": "mock_samples"}, mock_vae)
 
-        self.bridge.latent_to_mlx.assert_called_once_with({"samples": "mock_samples"})
-        mock_vae.assert_called_once_with("mock_latent")
-        self.bridge.mlx_to_torch.assert_called_once()
+        self.diffusion_processing.decode_latents.assert_called_once_with({"samples": "mock_samples"}, mock_vae)
         self.assertEqual(result, ("torch_tensor",))
 
     def test_mlx_encoder_happy_path(self):
         node = self.MLXEncoder()
 
-        # Configure mocks to support unpacking (mean, _) from split()
         mock_model = MagicMock()
-        mock_hidden = MagicMock()
-        mock_model.encoder.return_value = mock_hidden
-        mock_hidden.split.return_value = (MagicMock(), MagicMock())
-        
-        self.bridge.torch_to_mlx.return_value = MagicMock()
-        self.bridge.mlx_to_latent.return_value = "mock_latent_dict"
+        self.diffusion_processing.encode_image.return_value = ("mock_latent_dict",)
 
         result = node.encode("image_tensor", mock_model)
 
-        self.bridge.torch_to_mlx.assert_called_once_with("image_tensor")
-        mock_model.encoder.assert_called_once()
-        self.bridge.mlx_to_latent.assert_called_once()
+        self.diffusion_processing.encode_image.assert_called_once_with("image_tensor", mock_model)
         self.assertEqual(result, ("mock_latent_dict",))
 
     def test_mlx_sampler_validation_failures(self):
         node = self.MLXSampler()
 
-        # Validation: missing conditioning keys
+        self.diffusion_processing.generate_image.side_effect = ValueError("Expected a valid MLX conditioning dictionary")
         with self.assertRaises(ValueError) as context:
             node.generate_image(
                 mlx_model=MagicMock(),
@@ -77,7 +67,7 @@ class TestDiffusionNodes(unittest.TestCase):
             )
         self.assertIn("Expected a valid MLX conditioning dictionary", str(context.exception))
 
-        # Validation: missing latent samples
+        self.diffusion_processing.generate_image.side_effect = ValueError("Expected a valid ComfyUI latent dictionary")
         with self.assertRaises(ValueError) as context:
             node.generate_image(
                 mlx_model=MagicMock(),
@@ -93,16 +83,12 @@ class TestDiffusionNodes(unittest.TestCase):
     def test_mlx_sampler_happy_path(self):
         node = self.MLXSampler()
 
-        # Setup mock inputs
         mock_model = MagicMock()
-        mock_latents = MagicMock()
-        mock_model.denoise_latents.return_value = (mock_latents, 0.5)
-        
-        self.bridge.mlx_to_latent.return_value = "output_latent_dict"
-        self.bridge.latent_to_mlx.return_value = "mock_input_latents_mlx"
-
         mock_latent_samples = MagicMock()
         mock_latent_samples.shape = (1, 4, 64, 64)
+
+        self.diffusion_processing.generate_image.side_effect = None
+        self.diffusion_processing.generate_image.return_value = ("output_latent_dict",)
 
         result = node.generate_image(
             mlx_model=mock_model,
@@ -114,9 +100,15 @@ class TestDiffusionNodes(unittest.TestCase):
             denoise=0.8
         )
 
-        self.bridge.latent_to_mlx.assert_called_once_with({"samples": mock_latent_samples})
-        mock_model.denoise_latents.assert_called_once()
-        mock_latents.astype.assert_called_once_with(mock_model.activation_dtype)
+        self.diffusion_processing.generate_image.assert_called_once_with(
+            mlx_model=mock_model,
+            seed=42,
+            steps=4,
+            cfg=0.0,
+            mlx_positive_conditioning={"conditioning": "c", "pooled_conditioning": "pc"},
+            latent_image={"samples": mock_latent_samples},
+            denoise=0.8
+        )
         self.assertEqual(result, ("output_latent_dict",))
 
     @patch("comfyui_mlx_universal.runtime.model_loader.load_flux_pipeline")
@@ -134,7 +126,6 @@ class TestDiffusionNodes(unittest.TestCase):
     def test_mlx_clip_text_encoder_happy_path(self):
         node = self.MLXClipTextEncoder()
 
-        # Setup mock conditioning
         mock_conditioning = {
             "model_name": "argmaxinc/mlx-FLUX.1-schnell",
             "clip_l_model": MagicMock(),
@@ -143,23 +134,11 @@ class TestDiffusionNodes(unittest.TestCase):
             "t5_tokenizer": MagicMock(),
         }
 
-        # Mock tokenizer behaviors
-        mock_conditioning["clip_l_tokenizer"].tokenize.return_value = [1, 2, 3]
-        mock_conditioning["clip_l_tokenizer"].pad_with_eos = True
-        mock_conditioning["clip_l_tokenizer"].pad_to_max_length = False
-
-        mock_conditioning["t5_tokenizer"].tokenize.return_value = [4, 5]
-        mock_conditioning["t5_tokenizer"].pad_with_eos = True
-        mock_conditioning["t5_tokenizer"].pad_to_max_length = False
-
-        # Mock model forward passes
-        mock_clip_out = MagicMock()
-        mock_clip_out.pooled_output = "mock_pooled"
-        mock_conditioning["clip_l_model"].return_value = mock_clip_out
-        mock_conditioning["t5_model"].return_value = "mock_t5_out"
+        self.diffusion_processing.encode_clip_text.return_value = ({"pooled_conditioning": "mock_pooled", "conditioning": "mock_t5_out"},)
 
         result = node.encode(mock_conditioning, "A photo of a dog")
 
+        self.diffusion_processing.encode_clip_text.assert_called_once_with(mock_conditioning, "A photo of a dog")
         self.assertEqual(result[0]["pooled_conditioning"], "mock_pooled")
         self.assertEqual(result[0]["conditioning"], "mock_t5_out")
 

@@ -8,7 +8,7 @@ root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
-from tests.test_helper import import_node_module
+from tests.test_helper import import_node_module  # noqa: E402
 
 class TestMLXCacheStats(unittest.TestCase):
     def test_stats(self):
