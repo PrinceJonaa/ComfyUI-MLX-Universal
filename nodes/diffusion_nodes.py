@@ -14,6 +14,7 @@ class MLXDecoder:
 
     def decode(self, latent_image: dict, mlx_vae: Any) -> tuple:
         from ..runtime.diffusion_processing import decode_latents
+
         return decode_latents(latent_image, mlx_vae)
 
 
@@ -66,6 +67,7 @@ class MLXSampler:
         denoise: float,
     ) -> tuple:
         from ..runtime.diffusion_processing import generate_image
+
         return generate_image(
             mlx_model=mlx_model,
             seed=seed,
@@ -127,11 +129,10 @@ class MLXClipTextEncoder:
     FUNCTION = "encode"
     CATEGORY = "MLX Universal/Diffusion"
 
-
     def encode(self, mlx_conditioning: dict, text: str) -> tuple:
         from ..runtime.diffusion_processing import encode_clip_text
-        return encode_clip_text(mlx_conditioning, text)
 
+        return encode_clip_text(mlx_conditioning, text)
 
 
 class MLXEncoder:
@@ -146,7 +147,9 @@ class MLXEncoder:
 
     def encode(self, image, mlx_model) -> tuple:
         from ..runtime.diffusion_processing import encode_image
+
         return encode_image(image, mlx_model)
+
 
 NODE_CLASS_MAPPINGS = {
     "MLXEncoder": MLXEncoder,

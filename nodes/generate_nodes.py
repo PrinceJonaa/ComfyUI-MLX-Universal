@@ -1,8 +1,10 @@
-from typing import Any
 import os
+from typing import Any
+
 import mlx.core as mx
-from ..runtime.data_types import LoadedMLXModel
+
 from ..runtime.bridge import tensor_to_pil
+from ..runtime.data_types import LoadedMLXModel
 
 
 class MLXLMGenerateText:
@@ -67,7 +69,7 @@ class MLXLMGenerateText:
     ) -> tuple:
         if mlx_model.family != "mlx-lm":
             raise ValueError(
-                f"Expected model family 'mlx-lm' + Found '{mlx_model.family}' + Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model"
+                f"Expected model family 'mlx-lm' but found '{mlx_model.family}'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model."
             )
 
         mx.random.seed(seed)
@@ -187,7 +189,7 @@ class MLXVLMDescribeImage:
 
         if mlx_model.family != "mlx-vlm":
             raise ValueError(
-                f"Expected model family 'mlx-vlm' + Found '{mlx_model.family}' + Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model"
+                f"Expected model family 'mlx-vlm' but found '{mlx_model.family}'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model."
             )
 
         mx.random.seed(seed)

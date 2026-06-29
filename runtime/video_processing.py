@@ -11,6 +11,103 @@ import torch
 from .bridge import tensor_to_pil
 
 
+def _build_video_cmd(
+    cmd_family: str,
+    model_repo_or_dir: str,
+    prompt: str,
+    negative_prompt: str,
+    width: int,
+    height: int,
+    num_frames: int,
+    steps: int,
+    guide_scale: float,
+    seed: int,
+    output_path: str,
+    image,
+    temp_img_path: str,
+    audio_path: str,
+) -> list[str]:
+    if cmd_family == "wan":
+        cmd = [
+            sys.executable,
+            "-m",
+            "mlx_video.wan_2.generate",
+            "--model-dir",
+            model_repo_or_dir,
+            "--prompt",
+            prompt,
+            "--negative-prompt",
+            negative_prompt,
+            "--width",
+            str(width),
+            "--height",
+            str(height),
+            "--num-frames",
+            str(num_frames),
+            "--steps",
+            str(steps),
+            "--guide-scale",
+            str(guide_scale),
+            "--output-path",
+            output_path,
+        ]
+    elif cmd_family == "cogvideo":
+        cmd = [
+            sys.executable,
+            "-m",
+            "mlx_video.cogvideox.generate",
+            "--model-dir",
+            model_repo_or_dir,
+            "--prompt",
+            prompt,
+            "--width",
+            str(width),
+            "--height",
+            str(height),
+            "--num-frames",
+            str(num_frames),
+            "--steps",
+            str(steps),
+            "--guidance-scale",
+            str(guide_scale),
+            "--output-path",
+            output_path,
+        ]
+    else:
+        cmd = [
+            sys.executable,
+            "-m",
+            "mlx_video.ltx_2.generate",
+            "--model-repo",
+            model_repo_or_dir,
+            "--prompt",
+            prompt,
+            "--width",
+            str(width),
+            "--height",
+            str(height),
+            "--num-frames",
+            str(num_frames),
+            "--steps",
+            str(steps),
+            "--cfg-scale",
+            str(guide_scale),
+            "--output",
+            output_path,
+        ]
+
+    if seed != -1:
+        cmd += ["--seed", str(seed)]
+    if image is not None:
+        pil_imgs = tensor_to_pil(image)
+        pil_imgs[0].save(temp_img_path)
+        cmd += ["--image", temp_img_path]
+    if cmd_family == "ltx_2" and audio_path and os.path.exists(audio_path):
+        cmd += ["--audio-file", audio_path]
+
+    return cmd
+
+
 def execute_video_generation(
     model_repo_or_dir: str,
     prompt: str,
@@ -44,98 +141,24 @@ def execute_video_generation(
     uid = uuid.uuid4().hex
     output_path = os.path.join(temp_dir, f"output_{uid}.mp4")
     temp_img_name = f"input_frame_{uid}.png"
+    temp_img_path = os.path.join(temp_dir, temp_img_name)
 
-    if cmd_family == "wan":
-        cmd = [
-            sys.executable,
-            "-m",
-            "mlx_video.wan_2.generate",
-            "--model-dir",
-            model_repo_or_dir,
-            "--prompt",
-            prompt,
-            "--negative-prompt",
-            negative_prompt,
-            "--width",
-            str(width),
-            "--height",
-            str(height),
-            "--num-frames",
-            str(num_frames),
-            "--steps",
-            str(steps),
-            "--guide-scale",
-            str(guide_scale),
-            "--output-path",
-            output_path,
-        ]
-        if seed != -1:
-            cmd += ["--seed", str(seed)]
-        if image is not None:
-            pil_imgs = tensor_to_pil(image)
-            temp_img_path = os.path.join(temp_dir, temp_img_name)
-            pil_imgs[0].save(temp_img_path)
-            cmd += ["--image", temp_img_path]
-    elif cmd_family == "cogvideo":
-        cmd = [
-            sys.executable,
-            "-m",
-            "mlx_video.cogvideox.generate",
-            "--model-dir",
-            model_repo_or_dir,
-            "--prompt",
-            prompt,
-            "--width",
-            str(width),
-            "--height",
-            str(height),
-            "--num-frames",
-            str(num_frames),
-            "--steps",
-            str(steps),
-            "--guidance-scale",
-            str(guide_scale),
-            "--output-path",
-            output_path,
-        ]
-        if seed != -1:
-            cmd += ["--seed", str(seed)]
-        if image is not None:
-            pil_imgs = tensor_to_pil(image)
-            temp_img_path = os.path.join(temp_dir, temp_img_name)
-            pil_imgs[0].save(temp_img_path)
-            cmd += ["--image", temp_img_path]
-    else:
-        cmd = [
-            sys.executable,
-            "-m",
-            "mlx_video.ltx_2.generate",
-            "--model-repo",
-            model_repo_or_dir,
-            "--prompt",
-            prompt,
-            "--width",
-            str(width),
-            "--height",
-            str(height),
-            "--num-frames",
-            str(num_frames),
-            "--steps",
-            str(steps),
-            "--cfg-scale",
-            str(guide_scale),
-            "--output",
-            output_path,
-        ]
-        if seed != -1:
-            cmd += ["--seed", str(seed)]
-        if image is not None:
-            pil_imgs = tensor_to_pil(image)
-            temp_img_path = os.path.join(temp_dir, temp_img_name)
-            pil_imgs[0].save(temp_img_path)
-            cmd += ["--image", temp_img_path]
-        if audio_path and os.path.exists(audio_path):
-            cmd += ["--audio-file", audio_path]
+    cmd = _build_video_cmd(
+        cmd_family,
+        model_repo_or_dir,
+        prompt,
+        negative_prompt,
+        width,
+        height,
+        num_frames,
+        steps,
+        guide_scale,
+        seed,
+        output_path,
+        image,
+        temp_img_path,
+        audio_path,
+    )
 
     print(f"Running video generation CLI command: {' '.join(cmd)}")
     process = subprocess.Popen(
@@ -151,7 +174,7 @@ def execute_video_generation(
             if interrupt_callback:
                 interrupt_callback()
 
-            char = process.stdout.read(1) if process.stdout is not None else ''
+            char = process.stdout.read(1) if process.stdout is not None else ""
             if not char and process.poll() is not None:
                 break
             if char:

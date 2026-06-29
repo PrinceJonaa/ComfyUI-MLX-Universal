@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from tests.test_helper import import_node_module
 
+
 class TestDiffusionNodes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -15,7 +16,9 @@ class TestDiffusionNodes(unittest.TestCase):
         cls.MLXEncoder = cls.diffusion_nodes.MLXEncoder
 
         # Get the diffusion_processing module mock
-        cls.diffusion_processing = sys.modules["comfyui_mlx_universal.runtime.diffusion_processing"]
+        cls.diffusion_processing = sys.modules[
+            "comfyui_mlx_universal.runtime.diffusion_processing"
+        ]
         cls.bridge = sys.modules["comfyui_mlx_universal.runtime.bridge"]
 
     def setUp(self):
@@ -31,13 +34,15 @@ class TestDiffusionNodes(unittest.TestCase):
 
     def test_mlx_decoder_happy_path(self):
         node = self.MLXDecoder()
-        
+
         mock_vae = MagicMock()
         self.diffusion_processing.decode_latents.return_value = ("torch_tensor",)
 
         result = node.decode({"samples": "mock_samples"}, mock_vae)
 
-        self.diffusion_processing.decode_latents.assert_called_once_with({"samples": "mock_samples"}, mock_vae)
+        self.diffusion_processing.decode_latents.assert_called_once_with(
+            {"samples": "mock_samples"}, mock_vae
+        )
         self.assertEqual(result, ("torch_tensor",))
 
     def test_mlx_encoder_happy_path(self):
@@ -48,13 +53,17 @@ class TestDiffusionNodes(unittest.TestCase):
 
         result = node.encode("image_tensor", mock_model)
 
-        self.diffusion_processing.encode_image.assert_called_once_with("image_tensor", mock_model)
+        self.diffusion_processing.encode_image.assert_called_once_with(
+            "image_tensor", mock_model
+        )
         self.assertEqual(result, ("mock_latent_dict",))
 
     def test_mlx_sampler_validation_failures(self):
         node = self.MLXSampler()
 
-        self.diffusion_processing.generate_image.side_effect = ValueError("Expected a valid MLX conditioning dictionary")
+        self.diffusion_processing.generate_image.side_effect = ValueError(
+            "Expected a valid MLX conditioning dictionary"
+        )
         with self.assertRaises(ValueError) as context:
             node.generate_image(
                 mlx_model=MagicMock(),
@@ -63,22 +72,31 @@ class TestDiffusionNodes(unittest.TestCase):
                 cfg=0.0,
                 mlx_positive_conditioning={},
                 latent_image={"samples": MagicMock()},
-                denoise=1.0
+                denoise=1.0,
             )
-        self.assertIn("Expected a valid MLX conditioning dictionary", str(context.exception))
+        self.assertIn(
+            "Expected a valid MLX conditioning dictionary", str(context.exception)
+        )
 
-        self.diffusion_processing.generate_image.side_effect = ValueError("Expected a valid ComfyUI latent dictionary")
+        self.diffusion_processing.generate_image.side_effect = ValueError(
+            "Expected a valid ComfyUI latent dictionary"
+        )
         with self.assertRaises(ValueError) as context:
             node.generate_image(
                 mlx_model=MagicMock(),
                 seed=42,
                 steps=4,
                 cfg=0.0,
-                mlx_positive_conditioning={"conditioning": "c", "pooled_conditioning": "pc"},
+                mlx_positive_conditioning={
+                    "conditioning": "c",
+                    "pooled_conditioning": "pc",
+                },
                 latent_image={},
-                denoise=1.0
+                denoise=1.0,
             )
-        self.assertIn("Expected a valid ComfyUI latent dictionary", str(context.exception))
+        self.assertIn(
+            "Expected a valid ComfyUI latent dictionary", str(context.exception)
+        )
 
     def test_mlx_sampler_happy_path(self):
         node = self.MLXSampler()
@@ -95,9 +113,12 @@ class TestDiffusionNodes(unittest.TestCase):
             seed=42,
             steps=4,
             cfg=0.0,
-            mlx_positive_conditioning={"conditioning": "c", "pooled_conditioning": "pc"},
+            mlx_positive_conditioning={
+                "conditioning": "c",
+                "pooled_conditioning": "pc",
+            },
             latent_image={"samples": mock_latent_samples},
-            denoise=0.8
+            denoise=0.8,
         )
 
         self.diffusion_processing.generate_image.assert_called_once_with(
@@ -105,9 +126,12 @@ class TestDiffusionNodes(unittest.TestCase):
             seed=42,
             steps=4,
             cfg=0.0,
-            mlx_positive_conditioning={"conditioning": "c", "pooled_conditioning": "pc"},
+            mlx_positive_conditioning={
+                "conditioning": "c",
+                "pooled_conditioning": "pc",
+            },
             latent_image={"samples": mock_latent_samples},
-            denoise=0.8
+            denoise=0.8,
         )
         self.assertEqual(result, ("output_latent_dict",))
 
@@ -134,11 +158,15 @@ class TestDiffusionNodes(unittest.TestCase):
             "t5_tokenizer": MagicMock(),
         }
 
-        self.diffusion_processing.encode_clip_text.return_value = ({"pooled_conditioning": "mock_pooled", "conditioning": "mock_t5_out"},)
+        self.diffusion_processing.encode_clip_text.return_value = (
+            {"pooled_conditioning": "mock_pooled", "conditioning": "mock_t5_out"},
+        )
 
         result = node.encode(mock_conditioning, "A photo of a dog")
 
-        self.diffusion_processing.encode_clip_text.assert_called_once_with(mock_conditioning, "A photo of a dog")
+        self.diffusion_processing.encode_clip_text.assert_called_once_with(
+            mock_conditioning, "A photo of a dog"
+        )
         self.assertEqual(result[0]["pooled_conditioning"], "mock_pooled")
         self.assertEqual(result[0]["conditioning"], "mock_t5_out")
 

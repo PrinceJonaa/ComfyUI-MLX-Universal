@@ -1,10 +1,13 @@
-import mlx.core as mx
 from typing import Any, Optional
-from ..diffusionkit.mlx.tokenizer import Tokenizer, T5Tokenizer
-from ..diffusionkit.mlx.t5 import SD3T5Encoder
+
+import mlx.core as mx
+
 from ..diffusionkit.mlx.clip import CLIPTextModel
 from ..diffusionkit.mlx.constants import T5_MAX_LENGTH
-from .bridge import mlx_to_torch, latent_to_mlx, mlx_to_latent, torch_to_mlx
+from ..diffusionkit.mlx.t5 import SD3T5Encoder
+from ..diffusionkit.mlx.tokenizer import T5Tokenizer, Tokenizer
+from .bridge import latent_to_mlx, mlx_to_latent, mlx_to_torch, torch_to_mlx
+
 
 def decode_latents(latent_image: dict, mlx_vae: Any) -> tuple:
     """
@@ -22,6 +25,7 @@ def decode_latents(latent_image: dict, mlx_vae: Any) -> tuple:
     # Use bridge to convert to PyTorch efficiently
     decoded_torch = mlx_to_torch(decoded.astype(mx.float32))
     return (decoded_torch,)
+
 
 def generate_image(
     mlx_model: Any,
@@ -74,6 +78,7 @@ def generate_image(
     latents = latents.astype(mlx_model.activation_dtype)
     return (mlx_to_latent(latents),)
 
+
 def _tokenize(tokenizer, text: str, negative_text: Optional[str] = None) -> mx.array:
     if negative_text is None:
         negative_text = ""
@@ -89,6 +94,7 @@ def _tokenize(tokenizer, text: str, negative_text: Optional[str] = None) -> mx.a
     N = max(lengths)
     tokens = [t + [pad_token] * (N - len(t)) for t in tokens]
     return mx.array(tokens)
+
 
 def encode_clip_text(mlx_conditioning: dict, text: str) -> tuple:
     """
@@ -124,6 +130,7 @@ def encode_clip_text(mlx_conditioning: dict, text: str) -> tuple:
         "pooled_conditioning": clip_pooled_output,
     }
     return (output,)
+
 
 def encode_image(image, mlx_model) -> tuple:
     """
