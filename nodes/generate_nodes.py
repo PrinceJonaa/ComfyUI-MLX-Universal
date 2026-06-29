@@ -44,7 +44,13 @@ class MLXLMGenerateText:
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
             },
             "optional": {
-                "draft_model_path": ("STRING", {"default": "", "tooltip": "Optional Hugging Face repo ID for a smaller draft model to accelerate generation via speculative decoding."}),
+                "draft_model_path": (
+                    "STRING",
+                    {
+                        "default": "",
+                        "tooltip": "Optional Hugging Face repo ID for a smaller draft model to accelerate generation via speculative decoding.",
+                    },
+                ),
                 "enable_thinking": ("BOOLEAN", {"default": False}),
                 "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192}),
             },

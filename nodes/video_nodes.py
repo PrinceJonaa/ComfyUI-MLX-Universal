@@ -12,7 +12,10 @@ class MLXVideoGenerator:
             "required": {
                 "model_repo_or_dir": (
                     "STRING",
-                    {"default": "mlx-community/LTX-2-dev-bf16", "tooltip": "Hugging Face repository ID or local directory path for the video model (e.g., 'mlx-community/LTX-2-dev-bf16')."},
+                    {
+                        "default": "mlx-community/LTX-2-dev-bf16",
+                        "tooltip": "Hugging Face repository ID or local directory path for the video model (e.g., 'mlx-community/LTX-2-dev-bf16').",
+                    },
                 ),
                 "prompt": (
                     "STRING",
