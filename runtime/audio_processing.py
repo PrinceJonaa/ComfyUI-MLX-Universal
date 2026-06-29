@@ -1,9 +1,11 @@
 import os
 import uuid
-import torch
+
+import folder_paths
 import numpy as np
 import soundfile as sf
-import folder_paths
+import torch
+
 
 def execute_audio_transcription(audio: dict, model_path: str) -> str:
     """
@@ -12,6 +14,7 @@ def execute_audio_transcription(audio: dict, model_path: str) -> str:
     of MLX background processing and ComfyUI interface objects.
     """
     import mlx_whisper
+
     from .model_loader import track_audio_model
 
     # Trigger registry tracking
