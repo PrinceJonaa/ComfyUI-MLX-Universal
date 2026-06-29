@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from tests.test_helper import import_node_module
 
+
 class TestDiffusionNodes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -26,12 +27,12 @@ class TestDiffusionNodes(unittest.TestCase):
 
     def test_mlx_decoder_happy_path(self):
         node = self.MLXDecoder()
-        
+
         # Configure mocks to support math operators
         mock_vae = MagicMock()
         mock_decoded = MagicMock()
         mock_vae.return_value = mock_decoded
-        
+
         self.bridge.latent_to_mlx.return_value = "mock_latent"
         self.bridge.mlx_to_torch.return_value = "torch_tensor"
 
@@ -50,7 +51,7 @@ class TestDiffusionNodes(unittest.TestCase):
         mock_hidden = MagicMock()
         mock_model.encoder.return_value = mock_hidden
         mock_hidden.split.return_value = (MagicMock(), MagicMock())
-        
+
         self.bridge.torch_to_mlx.return_value = MagicMock()
         self.bridge.mlx_to_latent.return_value = "mock_latent_dict"
 
@@ -73,9 +74,11 @@ class TestDiffusionNodes(unittest.TestCase):
                 cfg=0.0,
                 mlx_positive_conditioning={},
                 latent_image={"samples": MagicMock()},
-                denoise=1.0
+                denoise=1.0,
             )
-        self.assertIn("Expected a valid MLX conditioning dictionary", str(context.exception))
+        self.assertIn(
+            "Expected a valid MLX conditioning dictionary", str(context.exception)
+        )
 
         # Validation: missing latent samples
         with self.assertRaises(ValueError) as context:
@@ -84,11 +87,16 @@ class TestDiffusionNodes(unittest.TestCase):
                 seed=42,
                 steps=4,
                 cfg=0.0,
-                mlx_positive_conditioning={"conditioning": "c", "pooled_conditioning": "pc"},
+                mlx_positive_conditioning={
+                    "conditioning": "c",
+                    "pooled_conditioning": "pc",
+                },
                 latent_image={},
-                denoise=1.0
+                denoise=1.0,
             )
-        self.assertIn("Expected a valid ComfyUI latent dictionary", str(context.exception))
+        self.assertIn(
+            "Expected a valid ComfyUI latent dictionary", str(context.exception)
+        )
 
     def test_mlx_sampler_happy_path(self):
         node = self.MLXSampler()
@@ -97,7 +105,7 @@ class TestDiffusionNodes(unittest.TestCase):
         mock_model = MagicMock()
         mock_latents = MagicMock()
         mock_model.denoise_latents.return_value = (mock_latents, 0.5)
-        
+
         self.bridge.mlx_to_latent.return_value = "output_latent_dict"
         self.bridge.latent_to_mlx.return_value = "mock_input_latents_mlx"
 
@@ -109,12 +117,17 @@ class TestDiffusionNodes(unittest.TestCase):
             seed=42,
             steps=4,
             cfg=0.0,
-            mlx_positive_conditioning={"conditioning": "c", "pooled_conditioning": "pc"},
+            mlx_positive_conditioning={
+                "conditioning": "c",
+                "pooled_conditioning": "pc",
+            },
             latent_image={"samples": mock_latent_samples},
-            denoise=0.8
+            denoise=0.8,
         )
 
-        self.bridge.latent_to_mlx.assert_called_once_with({"samples": mock_latent_samples})
+        self.bridge.latent_to_mlx.assert_called_once_with(
+            {"samples": mock_latent_samples}
+        )
         mock_model.denoise_latents.assert_called_once()
         mock_latents.astype.assert_called_once_with(mock_model.activation_dtype)
         self.assertEqual(result, ("output_latent_dict",))

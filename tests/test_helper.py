@@ -8,9 +8,11 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
+
 # Define a MockTensor class so isinstance(x, torch.Tensor) does not crash
 class MockTensor(MagicMock):
     pass
+
 
 # 1. Pre-mock all external dependencies that might not exist in the test environment
 # We also include intermediate parent packages so Python's import system resolves them correctly
@@ -55,12 +57,13 @@ for mod in mock_modules:
         sys.modules[mod] = MagicMock()
 
 # Inject MockTensor into mocked torch
-sys.modules["torch"].Tensor = MockTensor
+setattr(sys.modules["torch"], "Tensor", MockTensor)
 
 # Setup default mocks for comfyui components to avoid crashes
 mock_comfy = sys.modules["comfy"]
-mock_comfy.utils = sys.modules["comfy.utils"]
-mock_comfy.model_management = sys.modules["comfy.model_management"]
+setattr(mock_comfy, "utils", sys.modules["comfy.utils"])
+setattr(mock_comfy, "model_management", sys.modules["comfy.model_management"])
+
 
 mock_folder_paths = sys.modules["folder_paths"]
 mock_folder_paths.get_temp_directory.return_value = "/tmp"
@@ -83,6 +86,7 @@ for sub in diffusionkit_submodules:
     if fullname not in sys.modules:
         sys.modules[fullname] = MagicMock()
 
+
 def import_submodule(subfolder, name):
     """Dynamically registers a module from the subfolder inside the package namespace."""
     full_name = f"comfyui_mlx_universal.{subfolder}.{name}"
@@ -104,6 +108,7 @@ def import_submodule(subfolder, name):
         print(f"Warning: could not execute {full_name}: {e}")
     return module
 
+
 # Pre-import key runtime files so nodes can resolve them relative to their package parent
 try:
     import_submodule("runtime", "data_types")
@@ -114,6 +119,7 @@ try:
     import_submodule("runtime", "sam_processing")
 except Exception as e:
     print(f"Warning during pre-import: {e}")
+
 
 def import_node_module(node_file_basename):
     """

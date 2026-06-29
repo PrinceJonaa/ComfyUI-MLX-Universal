@@ -1,5 +1,3 @@
-import os
-import sys
 import folder_paths
 import comfy.utils
 import comfy.model_management
@@ -72,14 +70,6 @@ class MLXVideoGenerator:
         image: dict | None = None,
         audio_path: str = "",
     ) -> tuple:
-
-        name_lower = model_repo_or_dir.lower()
-        if "wan" in name_lower:
-            cmd_family = "wan"
-        elif "cogvideo" in name_lower:
-            cmd_family = "cogvideo"
-        else:
-            cmd_family = "ltx_2"
 
         temp_dir = folder_paths.get_temp_directory()
         pbar = comfy.utils.ProgressBar(steps)
