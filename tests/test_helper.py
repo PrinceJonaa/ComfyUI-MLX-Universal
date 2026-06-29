@@ -50,6 +50,10 @@ mock_modules = [
     "safetensors.torch",
     "PIL",
     "PIL.Image",
+    "mlx_audio",
+    "mlx_audio.tts",
+    "mlx_audio.tts.models",
+    "mlx_audio.tts.models.kokoro",
 ]
 
 for mod in mock_modules:
