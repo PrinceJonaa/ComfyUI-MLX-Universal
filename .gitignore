@@ -27,3 +27,5 @@ htmlcov/
 
 # Mypy cache
 .mypy_cache/
+.venv_test
+.venv2
