@@ -91,7 +91,7 @@ class MLXSampler:
             pooled_conditioning = mlx_positive_conditioning["pooled_conditioning"]
         except (KeyError, TypeError, AttributeError):
             raise ValueError(
-                "Expected a valid MLX conditioning dictionary from an MLX CLIP Text Encoder + Invalid or missing conditioning input + Ensure the positive conditioning node is properly connected"
+                "Expected a valid MLX conditioning dictionary from an MLX CLIP Text Encoder but found an invalid or missing conditioning input. Ensure the positive conditioning node is properly connected."
             )
 
         try:
@@ -99,7 +99,7 @@ class MLXSampler:
             latent_size = (height, width)
         except (KeyError, TypeError, AttributeError):
             raise ValueError(
-                "Expected a valid ComfyUI latent dictionary with a 'samples' tensor + Invalid or missing latent input + Ensure an Empty Latent Image or VAE Encode node is properly connected"
+                "Expected a valid ComfyUI latent dictionary with a 'samples' tensor but found an invalid or missing latent input. Ensure an Empty Latent Image or VAE Encode node is properly connected."
             )
 
         print(f"Generating image latents ({steps} steps)...")
@@ -203,7 +203,7 @@ class MLXClipTextEncoder:
             t5_tokenizer: T5Tokenizer = mlx_conditioning["t5_tokenizer"]
         except (KeyError, TypeError, AttributeError):
             raise ValueError(
-                "Expected a valid MLX conditioning dictionary from an MLX Load Flux Model node + Invalid or missing conditioning input + Ensure the MLX Load Flux Model node is properly connected"
+                "Expected a valid MLX conditioning dictionary from an MLX Load Flux Model node but found an invalid or missing conditioning input. Ensure the MLX Load Flux Model node is properly connected."
             )
 
         clip_tokens = self._tokenize(tokenizer=clip_l_tokenizer, text=text)

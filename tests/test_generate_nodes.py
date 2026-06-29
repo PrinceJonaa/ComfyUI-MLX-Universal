@@ -72,7 +72,7 @@ class TestGenerateNodes(unittest.TestCase):
 
         self.assertEqual(
             str(context.exception),
-            "Expected model family 'mlx-lm' + Found 'unknown-family' + Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model",
+            "Expected model family 'mlx-lm' but found 'unknown-family'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model.",
         )
 
     @patch("comfyui_mlx_universal.runtime.model_loader.load_draft_model")
@@ -176,7 +176,7 @@ class TestGenerateNodes(unittest.TestCase):
 
         self.assertEqual(
             str(context.exception),
-            "Expected model family 'mlx-vlm' + Found 'unknown-family' + Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model",
+            "Expected model family 'mlx-vlm' but found 'unknown-family'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model.",
         )
 
     @patch("comfyui_mlx_universal.runtime.model_loader.load_draft_model")

@@ -72,7 +72,7 @@ pip install -r requirements.txt
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **LLMs** | `mlx-lm` | Universal text generation. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **VLMs** | `mlx-vlm` | Multimodal visual reasoning, prompt alignment, speculative decoding, thinking tokens. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Diffusion** | `DiffusionKit` | Native MLX sampling/decoding for Flux architectures. |
-| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **VAEs** | `DiffusionKit` | Standalone causal video and image VAE encode/decode nodes. |
+| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **VAEs** | `DiffusionKit` | Standalone causal image VAE encode/decode nodes. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Video** | `mlx_video` | CLI subprocess wrappers supporting Wan2.x, LTX-2, and CogVideoX. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Segmentation** | `SAM3` | Open-vocabulary semantic segmentation and object detection. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Audio** | `mlx-whisper` | Native Whisper integration. |
