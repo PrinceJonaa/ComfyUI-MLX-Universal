@@ -151,7 +151,7 @@ def execute_video_generation(
             if interrupt_callback:
                 interrupt_callback()
 
-            char = process.stdout.read(1)
+            char = process.stdout.read(1) if process.stdout is not None else ''
             if not char and process.poll() is not None:
                 break
             if char:

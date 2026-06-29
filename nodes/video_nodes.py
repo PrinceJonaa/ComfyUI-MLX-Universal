@@ -1,7 +1,6 @@
-import comfy.model_management
-import comfy.utils
 import folder_paths
-
+import comfy.utils
+import comfy.model_management
 from ..runtime.video_processing import execute_video_generation
 
 
@@ -12,10 +11,7 @@ class MLXVideoGenerator:
             "required": {
                 "model_repo_or_dir": (
                     "STRING",
-                    {
-                        "default": "mlx-community/LTX-2-dev-bf16",
-                        "tooltip": "Hugging Face repository ID or local directory path for the video model (e.g., 'mlx-community/LTX-2-dev-bf16').",
-                    },
+                    {"default": "mlx-community/LTX-2-dev-bf16"},
                 ),
                 "prompt": (
                     "STRING",
@@ -30,7 +26,7 @@ class MLXVideoGenerator:
                 "num_frames": (
                     "INT",
                     {
-                        "default": 8,
+                        "default": 16,
                         "min": 1,
                         "max": 500,
                         "tooltip": "Number of frames to generate. Lower this if you run out of unified memory.",
@@ -74,14 +70,6 @@ class MLXVideoGenerator:
         image: dict | None = None,
         audio_path: str = "",
     ) -> tuple:
-
-        name_lower = model_repo_or_dir.lower()
-        if "wan" in name_lower:
-            cmd_family = "wan"
-        elif "cogvideo" in name_lower:
-            cmd_family = "cogvideo"
-        else:
-            cmd_family = "ltx_2"
 
         temp_dir = folder_paths.get_temp_directory()
         pbar = comfy.utils.ProgressBar(steps)
