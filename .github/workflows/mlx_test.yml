@@ -1,0 +1,38 @@
+name: MLX Runtime Tests
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  test-apple-silicon:
+    name: Run Unit Tests on Apple Silicon
+    runs-on: macos-latest-xlarge
+    
+    env:
+      REAL_MLX_TESTS: "1"
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # Install MLX and all its variants to enable native execution
+        pip install mlx mlx-lm mlx-video mlx-audio mlx-whisper mlx-vlm
+        # Install PyTorch, Torchvision, Torchaudio
+        pip install torch torchvision torchaudio
+        # Install ComfyUI-specific mocks or utility dependencies
+        pip install soundfile Pillow numpy safetensors huggingface_hub
+        
+    - name: Run unit tests (with native MLX)
+      run: |
+        python -m unittest discover tests -v

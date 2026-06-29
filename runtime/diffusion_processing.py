@@ -44,7 +44,7 @@ def generate_image(
         pooled_conditioning = mlx_positive_conditioning["pooled_conditioning"]
     except (KeyError, TypeError, AttributeError):
         raise ValueError(
-            "Expected a valid MLX conditioning dictionary from an MLX CLIP Text Encoder + Invalid or missing conditioning input + Ensure the positive conditioning node is properly connected"
+            "Expected a valid MLX conditioning dictionary from an MLX CLIP Text Encoder but found an invalid or missing conditioning input. Ensure the positive conditioning node is properly connected."
         )
 
     try:
@@ -52,7 +52,7 @@ def generate_image(
         latent_size = (height, width)
     except (KeyError, TypeError, AttributeError):
         raise ValueError(
-            "Expected a valid ComfyUI latent dictionary with a 'samples' tensor + Invalid or missing latent input + Ensure an Empty Latent Image or VAE Encode node is properly connected"
+            "Expected a valid ComfyUI latent dictionary with a 'samples' tensor but found an invalid or missing latent input. Ensure an Empty Latent Image or VAE Encode node is properly connected."
         )
 
     print(f"Generating image latents ({steps} steps)...")

@@ -16,22 +16,36 @@ class MockTensor(MagicMock):
 
 # 1. Pre-mock all external dependencies that might not exist in the test environment
 # We also include intermediate parent packages so Python's import system resolves them correctly
-mock_modules = [
-    "mlx",
-    "mlx.core",
-    "mlx.nn",
-    "mlx.optimizers",
-    "mlx_lm",
-    "mlx_lm.sample_utils",
-    "mlx_vlm",
-    "mlx_vlm.prompt_utils",
-    "mlx_vlm.speculative",
-    "mlx_vlm.speculative.drafters",
-    "mlx_vlm.models",
-    "mlx_vlm.models.sam3",
-    "mlx_vlm.models.sam3.generate",
-    "mlx_video",
-    "mlx_whisper",
+import os
+
+USE_REAL_MLX = os.environ.get("REAL_MLX_TESTS") == "1"
+
+mock_modules = []
+if not USE_REAL_MLX:
+    mock_modules.extend([
+        "mlx",
+        "mlx.core",
+        "mlx.nn",
+        "mlx.optimizers",
+        "mlx_lm",
+        "mlx_lm.sample_utils",
+        "mlx_vlm",
+        "mlx_vlm.prompt_utils",
+        "mlx_vlm.speculative",
+        "mlx_vlm.speculative.drafters",
+        "mlx_vlm.models",
+        "mlx_vlm.models.sam3",
+        "mlx_vlm.models.sam3.generate",
+        "mlx_video",
+        "mlx_whisper",
+        "mlx_audio",
+        "mlx_audio.tts",
+        "mlx_audio.tts.models",
+        "mlx_audio.tts.models.kokoro",
+    ])
+
+# Always mock these since they are specific to the ComfyUI application runtime
+mock_modules.extend([
     "soundfile",
     "beartype",
     "sentry_sdk",
@@ -39,29 +53,33 @@ mock_modules = [
     "comfy",
     "comfy.utils",
     "comfy.model_management",
-    "numpy",
-    "huggingface_hub",
-    "torch",
-    "torch.nn",
-    "torchvision",
-    "torchvision.transforms",
-    "torchaudio",
-    "safetensors",
-    "safetensors.torch",
-    "PIL",
-    "PIL.Image",
-    "mlx_audio",
-    "mlx_audio.tts",
-    "mlx_audio.tts.models",
-    "mlx_audio.tts.models.kokoro",
-]
+])
+
+# For now, if we are doing real mlx tests, we might still mock torch or PIL if we want,
+# but the action installs them. Let's not mock PyTorch or PIL when USE_REAL_MLX is active,
+# since our bridge tests need real tensors to test conversion.
+if not USE_REAL_MLX:
+    mock_modules.extend([
+        "numpy",
+        "huggingface_hub",
+        "torch",
+        "torch.nn",
+        "torchvision",
+        "torchvision.transforms",
+        "torchaudio",
+        "safetensors",
+        "safetensors.torch",
+        "PIL",
+        "PIL.Image",
+    ])
 
 for mod in mock_modules:
     if mod not in sys.modules:
         sys.modules[mod] = MagicMock()
 
-# Inject MockTensor into mocked torch
-sys.modules["torch"].Tensor = MockTensor
+# Inject MockTensor into mocked torch if we mocked it
+if not USE_REAL_MLX:
+    sys.modules["torch"].Tensor = MockTensor
 
 # Setup default mocks for comfyui components to avoid crashes
 mock_comfy = sys.modules["comfy"]
