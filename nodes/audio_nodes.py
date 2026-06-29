@@ -1,6 +1,3 @@
-import os
-import tempfile
-import soundfile as sf
 from ..runtime.registry import get_or_load_model
 
 
@@ -24,52 +21,17 @@ class MLXWhisperTranscribe:
     CATEGORY = "MLX Universal/Audio"
 
     def transcribe(self, audio: dict, model_path: str) -> tuple:
-        if (
-            not isinstance(audio, dict)
-            or "waveform" not in audio
-            or "sample_rate" not in audio
-        ):
+        from ..runtime.audio_processing import execute_audio_transcription
+
+        try:
+            waveform = audio["waveform"]
+            sample_rate = audio["sample_rate"]
+        except (KeyError, TypeError, AttributeError):
             raise ValueError(
                 "Expected ComfyUI AUDIO dict format but found invalid or missing audio input. Connect a valid audio source node to this input."
             )
 
-        # Lazy import of mlx-whisper
-        # Prevents ComfyUI from crashing on startup in unsupported environments
-        import mlx_whisper
-        from ..runtime.model_loader import track_audio_model
-
-        # Trigger registry tracking
-        track_audio_model(model_path)
-
-        waveform = audio["waveform"]
-        sample_rate = audio["sample_rate"]
-
-        # The waveform is usually a tensor [batch, channels, samples].
-        # Convert it to mono numpy array for mlx-whisper.
-        import torch
-        import numpy as np
-
-        if isinstance(waveform, torch.Tensor):
-            # NOTE: Using squeeze(0) assumes batch size 1; a batch size >1 will fail to reduce the dimension (see RM-011).
-            # Take the first batch and mean across channels
-            audio_np = waveform[0].mean(dim=0).cpu().numpy().astype(np.float32)
-        else:
-            audio_np = np.array(waveform).astype(np.float32)
-
-        # mlx-whisper expects 16kHz audio or a file path
-        # Write to a temporary file using soundfile so it handles resampling natively if needed
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
-            sf.write(tmp_file.name, audio_np, sample_rate)
-            tmp_path = tmp_file.name
-
-        try:
-            print(f"Transcribing audio using model '{model_path}'...")
-            result = mlx_whisper.transcribe(tmp_path, path_or_hf_repo=model_path)
-        finally:
-            if os.path.exists(tmp_path):
-                os.remove(tmp_path)
-
-        text = result.get("text", "").strip()
+        text = execute_audio_transcription(audio, model_path)
         return (text,)
 
 

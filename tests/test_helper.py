@@ -112,6 +112,7 @@ try:
     import_submodule("runtime", "model_loader")
     import_submodule("runtime", "video_processing")
     import_submodule("runtime", "sam_processing")
+    import_submodule("runtime", "audio_processing")
 except Exception as e:
     print(f"Warning during pre-import: {e}")
 
