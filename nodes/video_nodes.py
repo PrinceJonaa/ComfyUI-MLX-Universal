@@ -13,7 +13,7 @@ class MLXVideoGenerator:
             "required": {
                 "model_repo_or_dir": (
                     "STRING",
-                    {"default": "mlx-community/LTX-2-dev-bf16"},
+                    {"default": "mlx-community/LTX-2-dev-bf16", "tooltip": "Hugging Face repository ID or local directory path for the video model (e.g., 'mlx-community/LTX-2-dev-bf16')."},
                 ),
                 "prompt": (
                     "STRING",
@@ -28,7 +28,7 @@ class MLXVideoGenerator:
                 "num_frames": (
                     "INT",
                     {
-                        "default": 16,
+                        "default": 8,
                         "min": 1,
                         "max": 500,
                         "tooltip": "Number of frames to generate. Lower this if you run out of unified memory.",

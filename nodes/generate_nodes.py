@@ -43,7 +43,7 @@ class MLXLMGenerateText:
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
             },
             "optional": {
-                "draft_model_path": ("STRING", {"default": ""}),
+                "draft_model_path": ("STRING", {"default": "", "tooltip": "Optional Hugging Face repo ID for a smaller draft model to accelerate generation via speculative decoding."}),
                 "enable_thinking": ("BOOLEAN", {"default": False}),
                 "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192}),
             },
@@ -68,7 +68,7 @@ class MLXLMGenerateText:
     ) -> tuple:
         if mlx_model.family != "mlx-lm":
             raise ValueError(
-                f"Expected model family 'mlx-lm' + Found '{mlx_model.family}' + Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model"
+                f"Expected model family 'mlx-lm' but found '{mlx_model.family}'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model."
             )
 
         mx.random.seed(seed)
@@ -188,7 +188,7 @@ class MLXVLMDescribeImage:
 
         if mlx_model.family != "mlx-vlm":
             raise ValueError(
-                f"Expected model family 'mlx-vlm' + Found '{mlx_model.family}' + Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model"
+                f"Expected model family 'mlx-vlm' but found '{mlx_model.family}'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model."
             )
 
         mx.random.seed(seed)
