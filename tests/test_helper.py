@@ -55,12 +55,12 @@ for mod in mock_modules:
         sys.modules[mod] = MagicMock()
 
 # Inject MockTensor into mocked torch
-sys.modules["torch"].Tensor = MockTensor
+setattr(sys.modules["torch"], "Tensor", MockTensor)
 
 # Setup default mocks for comfyui components to avoid crashes
 mock_comfy = sys.modules["comfy"]
-mock_comfy.utils = sys.modules["comfy.utils"]
-mock_comfy.model_management = sys.modules["comfy.model_management"]
+setattr(mock_comfy, "utils", sys.modules["comfy.utils"])
+setattr(mock_comfy, "model_management", sys.modules["comfy.model_management"])
 
 mock_folder_paths = sys.modules["folder_paths"]
 mock_folder_paths.get_temp_directory.return_value = "/tmp"

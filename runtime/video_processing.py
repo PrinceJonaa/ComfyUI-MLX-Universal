@@ -148,6 +148,7 @@ def execute_video_generation(
             if interrupt_callback:
                 interrupt_callback()
 
+            assert process.stdout is not None
             char = process.stdout.read(1)
             if not char and process.poll() is not None:
                 break

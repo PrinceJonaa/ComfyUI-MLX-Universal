@@ -1,12 +1,10 @@
 import mlx.core as mx
-import os
 from typing import Optional, Any
 
 # DiffusionKit specific imports
 from ..diffusionkit.mlx.tokenizer import Tokenizer, T5Tokenizer
 from ..diffusionkit.mlx.t5 import SD3T5Encoder
 from ..diffusionkit.mlx.clip import CLIPTextModel
-from ..diffusionkit.mlx import FluxPipeline
 from ..diffusionkit.mlx.constants import T5_MAX_LENGTH
 
 
@@ -211,10 +209,13 @@ class MLXClipTextEncoder:
         clip_pooled_output = clip_l_embeddings.pooled_output
 
         t5_tokens = self._tokenize(tokenizer=t5_tokenizer, text=text)
-        padded_tokens_t5 = mx.zeros((1, T5_MAX_LENGTH[model_name])).astype(
-            t5_tokens.dtype
-        )
-        padded_tokens_t5[:, : t5_tokens.shape[1]] = t5_tokens[[0], :]
+        t5_tokens_row = t5_tokens[[0], :]
+        pad_amount = max(0, int(T5_MAX_LENGTH[model_name]) - int(t5_tokens_row.shape[1]))
+        padded_tokens_t5 = mx.pad(
+            t5_tokens_row,
+            pad_width=((0, 0), (0, pad_amount)),
+            constant_values=0
+        ).astype(t5_tokens.dtype)
 
         t5_embeddings = t5_encoder(padded_tokens_t5)
 

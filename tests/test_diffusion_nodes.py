@@ -135,6 +135,8 @@ class TestDiffusionNodes(unittest.TestCase):
         node = self.MLXClipTextEncoder()
 
         # Setup mock conditioning
+        import sys
+        sys.modules["comfyui_mlx_universal.diffusionkit.mlx.constants"].T5_MAX_LENGTH = {"argmaxinc/mlx-FLUX.1-schnell": 256}
         mock_conditioning = {
             "model_name": "argmaxinc/mlx-FLUX.1-schnell",
             "clip_l_model": MagicMock(),
