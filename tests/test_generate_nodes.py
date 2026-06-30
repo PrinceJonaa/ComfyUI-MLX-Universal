@@ -26,16 +26,7 @@ class TestGenerateNodes(unittest.TestCase):
         cls.LoadedMLXModel = runtime_data_types.LoadedMLXModel
 
     def setUp(self):
-        # Reset mocks before each test
-        self.generate_nodes.mx.random.seed.reset_mock()
-        mock_mlx_lm.generate.reset_mock()
-        mock_mlx_lm_sample_utils.make_sampler.reset_mock()
-        mock_mlx_vlm.generate.reset_mock()
-        mock_mlx_vlm_prompt_utils.apply_chat_template.reset_mock()
-        mock_mlx_vlm_speculative_drafters.load_drafter.reset_mock()
-
-        # Setup clean mock for tensor_to_pil in the generate_nodes module
-        self.generate_nodes.tensor_to_pil = MagicMock(return_value=["mocked_pil_image"])
+        pass
 
     def get_mocked_model(self):
         model = self.LoadedMLXModel(
@@ -74,16 +65,12 @@ class TestGenerateNodes(unittest.TestCase):
             "Expected model family 'mlx-lm' but found 'unknown-family'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model.",
         )
 
-    @patch("mlx_lm.sample_utils.make_sampler")
-    def test_mlx_lm_generate_happy_path_with_chat_template(self, mock_make_sampler):
-        mock_make_sampler.return_value = "mocked_sampler"
+    @patch.object(import_node_module("generate_nodes"), "execute_text_generation")
+    def test_mlx_lm_generate_happy_path_with_chat_template(self, mock_execute):
+        mock_execute.return_value = "generated response"
         node = self.MLXLMGenerateText()
         mocked_model = self.get_mocked_model()
         mocked_model.family = "mlx-lm"
-        mocked_model.processor.chat_template = "template"
-        mocked_model.processor.apply_chat_template.return_value = "formatted_prompt"
-
-        mock_mlx_lm.generate.return_value = "generated response"
 
         result = node.generate(
             mlx_model=mocked_model,
@@ -98,34 +85,25 @@ class TestGenerateNodes(unittest.TestCase):
         )
 
         self.assertEqual(result, ("generated response",))
-        self.generate_nodes.mx.random.seed.assert_called_once_with(42)
-        mocked_model.processor.apply_chat_template.assert_called_once_with(
-            [{"role": "user", "content": "Hello"}],
-            tokenize=False,
-            add_generation_prompt=True,
-        )
-        mock_make_sampler.assert_called_once_with(temp=0.7, top_p=0.9)
-        mock_mlx_lm.generate.assert_called_once_with(
-            mocked_model.model,
-            mocked_model.processor,
-            prompt="formatted_prompt",
-            sampler="mocked_sampler",
+        mock_execute.assert_called_once_with(
+            mlx_model=mocked_model,
+            prompt="Hello",
             max_tokens=100,
-            verbose=False,
+            temperature=0.7,
+            top_p=0.9,
+            seed=42,
+            draft_model=None,
             enable_thinking=False,
             thinking_budget=512,
         )
 
-    @patch("mlx_lm.sample_utils.make_sampler")
-    def test_mlx_lm_generate_happy_path_without_chat_template(self, mock_make_sampler):
-        mock_make_sampler.return_value = "mocked_sampler_2"
+    @patch.object(import_node_module("generate_nodes"), "execute_text_generation")
+    def test_mlx_lm_generate_happy_path_without_chat_template(self, mock_execute):
         node = self.MLXLMGenerateText()
         mocked_model = self.get_mocked_model()
         mocked_model.family = "mlx-lm"
-        # Simulate missing chat_template
-        del mocked_model.processor.chat_template
 
-        mock_mlx_lm.generate.return_value = "generated response no template"
+        mock_execute.return_value = "generated response no template"
 
         result = node.generate(
             mlx_model=mocked_model,
@@ -140,15 +118,14 @@ class TestGenerateNodes(unittest.TestCase):
         )
 
         self.assertEqual(result, ("generated response no template",))
-        self.generate_nodes.mx.random.seed.assert_called_once_with(123)
-        mock_make_sampler.assert_called_once_with(temp=1.0, top_p=0.5)
-        mock_mlx_lm.generate.assert_called_once_with(
-            mocked_model.model,
-            mocked_model.processor,
+        mock_execute.assert_called_once_with(
+            mlx_model=mocked_model,
             prompt="Hello raw",
-            sampler="mocked_sampler_2",
             max_tokens=50,
-            verbose=False,
+            temperature=1.0,
+            top_p=0.5,
+            seed=123,
+            draft_model=None,
             enable_thinking=False,
             thinking_budget=512,
         )
@@ -176,20 +153,15 @@ class TestGenerateNodes(unittest.TestCase):
             "Expected model family 'mlx-vlm' but found 'unknown-family'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model.",
         )
 
-    @patch("os.path.exists", return_value=True)
-    def test_mlx_vlm_run_happy_path_no_draft_model(self, mock_os_exists):
+    @patch.object(import_node_module("generate_nodes"), "execute_image_description")
+    def test_mlx_vlm_run_happy_path_no_draft_model(self, mock_execute):
         node = self.MLXVLMDescribeImage()
         mocked_model = self.get_mocked_model()
         mocked_model.family = "mlx-vlm"
 
-        mock_mlx_vlm_prompt_utils.apply_chat_template.return_value = (
-            "vlm_formatted_prompt"
-        )
-        mock_mlx_vlm.generate.return_value = "image described"
+        mock_execute.return_value = "image described"
 
-        # Pass a mock image tensor with ndim property
         mock_image = MagicMock()
-        mock_image.ndim = 3
 
         result = node.run(
             mlx_model=mocked_model,
@@ -205,40 +177,27 @@ class TestGenerateNodes(unittest.TestCase):
         )
 
         self.assertEqual(result, ("image described",))
-        self.generate_nodes.mx.random.seed.assert_called_once_with(99)
-        mock_mlx_vlm_prompt_utils.apply_chat_template.assert_called_once_with(
-            mocked_model.processor,
-            mocked_model.model.config,
-            "Describe this",
-            num_images=1,
-            num_audios=1,
-        )
-        mock_mlx_vlm.generate.assert_called_once_with(
-            mocked_model.model,
-            mocked_model.processor,
-            "vlm_formatted_prompt",
-            image=["mocked_pil_image"],
-            audio=["fake/path.mp3"],
-            temp=0.8,
+        mock_execute.assert_called_once_with(
+            mlx_model=mocked_model,
+            prompt="Describe this",
             max_tokens=256,
-            verbose=False,
+            temperature=0.8,
+            seed=99,
             enable_thinking=True,
             thinking_budget=512,
+            image=mock_image,
+            audio_path="fake/path.mp3",
+            draft_model=None,
+            draft_kind="dflash",
         )
 
-    @patch("os.path.exists", return_value=False)
-    def test_mlx_vlm_run_happy_path_with_draft_model(self, mock_os_exists):
+    @patch.object(import_node_module("generate_nodes"), "execute_image_description")
+    def test_mlx_vlm_run_happy_path_with_draft_model(self, mock_execute):
         node = self.MLXVLMDescribeImage()
         mocked_model = self.get_mocked_model()
         mocked_model.family = "mlx-vlm"
 
-        # Ensure tensor_to_pil returns empty when no image
-        self.generate_nodes.tensor_to_pil.return_value = []
-
-        mock_mlx_vlm_prompt_utils.apply_chat_template.return_value = (
-            "vlm_formatted_prompt_draft"
-        )
-        mock_mlx_vlm.generate.return_value = "fast image described"
+        mock_execute.return_value = "fast image described"
 
         result = node.run(
             mlx_model=mocked_model,
@@ -255,25 +214,16 @@ class TestGenerateNodes(unittest.TestCase):
         )
 
         self.assertEqual(result, ("fast image described",))
-        self.generate_nodes.mx.random.seed.assert_called_once_with(1)
-        mock_mlx_vlm_prompt_utils.apply_chat_template.assert_called_once_with(
-            mocked_model.processor,
-            mocked_model.model.config,
-            "Draft this",
-            num_images=0,
-            num_audios=0,
-        )
-        mock_mlx_vlm.generate.assert_called_once_with(
-            mocked_model.model,
-            mocked_model.processor,
-            "vlm_formatted_prompt_draft",
-            image=None,
-            audio=None,
-            temp=0.5,
+        mock_execute.assert_called_once_with(
+            mlx_model=mocked_model,
+            prompt="Draft this",
             max_tokens=128,
-            verbose=False,
+            temperature=0.5,
+            seed=1,
             enable_thinking=False,
             thinking_budget=0,
+            image=None,
+            audio_path="",
             draft_model="mock_draft_model",
             draft_kind="eagle3",
         )

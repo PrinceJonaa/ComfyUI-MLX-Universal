@@ -146,6 +146,7 @@ try:
     import_submodule("runtime", "sam_processing")
     import_submodule("runtime", "audio_processing")
     import_submodule("runtime", "diffusion_processing")
+    import_submodule("runtime", "generate_processing")
 except Exception as e:
     print(f"Warning during pre-import: {e}")
 
