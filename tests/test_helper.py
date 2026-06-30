@@ -43,6 +43,8 @@ if not USE_REAL_MLX:
             "mlx_audio.tts",
             "mlx_audio.tts.models",
             "mlx_audio.tts.models.kokoro",
+            "mlx_embeddings",
+            "mlx_embeddings.utils",
         ]
     )
 
@@ -146,6 +148,7 @@ try:
     import_submodule("runtime", "sam_processing")
     import_submodule("runtime", "audio_processing")
     import_submodule("runtime", "diffusion_processing")
+    import_submodule("runtime", "embedding_processing")
 except Exception as e:
     print(f"Warning during pre-import: {e}")
 
