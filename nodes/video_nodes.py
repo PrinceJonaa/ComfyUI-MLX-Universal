@@ -1,7 +1,6 @@
 import comfy.model_management
 import comfy.utils
 import folder_paths
-import torch
 
 from ..runtime.video_processing import execute_video_generation
 
@@ -69,7 +68,7 @@ class MLXVideoGenerator:
         steps: int,
         guide_scale: float,
         seed: int,
-        image: torch.Tensor | None = None,
+        image: dict | None = None,
         audio_path: str = "",
     ) -> tuple:
 
