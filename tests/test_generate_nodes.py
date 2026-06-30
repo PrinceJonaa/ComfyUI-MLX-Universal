@@ -5,12 +5,12 @@ from unittest.mock import MagicMock, patch
 from tests.test_helper import import_node_module
 
 # Create mock objects for the dependencies
-mock_mlx_lm = sys.modules["mlx_lm"]
-mock_mlx_lm_sample_utils = sys.modules["mlx_lm.sample_utils"]
-mock_mlx_vlm = sys.modules["mlx_vlm"]
-mock_mlx_vlm_prompt_utils = sys.modules["mlx_vlm.prompt_utils"]
-mock_mlx_vlm_speculative = sys.modules["mlx_vlm.speculative"]
-mock_mlx_vlm_speculative_drafters = sys.modules["mlx_vlm.speculative.drafters"]
+mock_mlx_lm = sys.modules.get("mlx_lm", None)
+mock_mlx_lm_sample_utils = sys.modules.get("mlx_lm.sample_utils", None)
+mock_mlx_vlm = sys.modules.get("mlx_vlm", None)
+mock_mlx_vlm_prompt_utils = sys.modules.get("mlx_vlm.prompt_utils", None)
+mock_mlx_vlm_speculative = sys.modules.get("mlx_vlm.speculative", None)
+mock_mlx_vlm_speculative_drafters = sys.modules.get("mlx_vlm.speculative.drafters", None)
 
 
 class TestGenerateNodes(unittest.TestCase):
@@ -28,11 +28,16 @@ class TestGenerateNodes(unittest.TestCase):
     def setUp(self):
         # Reset mocks before each test
         self.generate_nodes.mx.random.seed.reset_mock()
-        mock_mlx_lm.generate.reset_mock()
-        mock_mlx_lm_sample_utils.make_sampler.reset_mock()
-        mock_mlx_vlm.generate.reset_mock()
-        mock_mlx_vlm_prompt_utils.apply_chat_template.reset_mock()
-        mock_mlx_vlm_speculative_drafters.load_drafter.reset_mock()
+        if mock_mlx_lm: if mock_mlx_lm: if mock_mlx_lm: if mock_mlx_lm:
+            if mock_mlx_lm: mock_mlx_lm.generate.reset_mock()
+        if mock_mlx_lm_sample_utils: if mock_mlx_lm_sample_utils: if mock_mlx_lm_sample_utils: if mock_mlx_lm_sample_utils:
+            if mock_mlx_lm_sample_utils: mock_mlx_lm_sample_utils.make_sampler.reset_mock()
+        if mock_mlx_vlm: if mock_mlx_vlm: if mock_mlx_vlm: if mock_mlx_vlm:
+            if mock_mlx_vlm: mock_mlx_vlm.generate.reset_mock()
+        if mock_mlx_vlm_prompt_utils: if mock_mlx_vlm_prompt_utils: if mock_mlx_vlm_prompt_utils: if mock_mlx_vlm_prompt_utils:
+            if mock_mlx_vlm_prompt_utils: mock_mlx_vlm_prompt_utils.apply_chat_template.reset_mock()
+        if mock_mlx_vlm_speculative_drafters: if mock_mlx_vlm_speculative_drafters: if mock_mlx_vlm_speculative_drafters: if mock_mlx_vlm_speculative_drafters:
+            if mock_mlx_vlm_speculative_drafters: mock_mlx_vlm_speculative_drafters.load_drafter.reset_mock()
 
         # Setup clean mock for tensor_to_pil in the generate_nodes module
         self.generate_nodes.tensor_to_pil = MagicMock(return_value=["mocked_pil_image"])
