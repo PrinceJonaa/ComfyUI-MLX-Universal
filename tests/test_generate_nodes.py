@@ -5,14 +5,20 @@ from unittest.mock import MagicMock, patch
 from tests.test_helper import import_node_module
 
 # Create mock objects for the dependencies
-mock_mlx_lm = sys.modules["mlx_lm"]
-mock_mlx_lm_sample_utils = sys.modules["mlx_lm.sample_utils"]
-mock_mlx_vlm = sys.modules["mlx_vlm"]
-mock_mlx_vlm_prompt_utils = sys.modules["mlx_vlm.prompt_utils"]
-mock_mlx_vlm_speculative = sys.modules["mlx_vlm.speculative"]
-mock_mlx_vlm_speculative_drafters = sys.modules["mlx_vlm.speculative.drafters"]
+mock_mlx_lm = sys.modules.get("mlx_lm")
+mock_mlx_lm_sample_utils = sys.modules.get("mlx_lm.sample_utils")
+mock_mlx_vlm = sys.modules.get("mlx_vlm")
+mock_mlx_vlm_prompt_utils = sys.modules.get("mlx_vlm.prompt_utils")
+mock_mlx_vlm_speculative = sys.modules.get("mlx_vlm.speculative")
+mock_mlx_vlm_speculative_drafters = sys.modules.get("mlx_vlm.speculative.drafters")
 
 
+import os
+
+
+@unittest.skipIf(
+    os.environ.get("REAL_MLX_TESTS") == "1", "Skipping mock tests with real MLX"
+)
 class TestGenerateNodes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

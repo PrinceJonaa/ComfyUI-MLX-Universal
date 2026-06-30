@@ -1,3 +1,4 @@
+import os
 import sys
 import unittest
 from unittest.mock import MagicMock, patch
@@ -5,6 +6,9 @@ from unittest.mock import MagicMock, patch
 from tests.test_helper import import_node_module
 
 
+@unittest.skipIf(
+    os.environ.get("REAL_MLX_TESTS") == "1", "Skipping mock tests with real MLX"
+)
 class TestDiffusionNodes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -22,7 +26,25 @@ class TestDiffusionNodes(unittest.TestCase):
         cls.bridge = sys.modules["comfyui_mlx_universal.runtime.bridge"]
 
     def setUp(self):
-        # Reset diffusion_processing mocks
+        # We need to save the original methods
+        self._orig_decode_latents = getattr(
+            self.diffusion_processing, "decode_latents", None
+        )
+        self._orig_encode_image = getattr(
+            self.diffusion_processing, "encode_image", None
+        )
+        self._orig_generate_image = getattr(
+            self.diffusion_processing, "generate_image", None
+        )
+        self._orig_encode_clip_text = getattr(
+            self.diffusion_processing, "encode_clip_text", None
+        )
+
+        self._orig_latent_to_mlx = getattr(self.bridge, "latent_to_mlx", None)
+        self._orig_mlx_to_torch = getattr(self.bridge, "mlx_to_torch", None)
+        self._orig_torch_to_mlx = getattr(self.bridge, "torch_to_mlx", None)
+        self._orig_mlx_to_latent = getattr(self.bridge, "mlx_to_latent", None)
+
         self.diffusion_processing.decode_latents = MagicMock()
         self.diffusion_processing.encode_image = MagicMock()
         self.diffusion_processing.generate_image = MagicMock()
@@ -31,6 +53,26 @@ class TestDiffusionNodes(unittest.TestCase):
         self.bridge.mlx_to_torch = MagicMock()
         self.bridge.torch_to_mlx = MagicMock()
         self.bridge.mlx_to_latent = MagicMock()
+
+    def tearDown(self):
+        # Restore the original methods
+        if self._orig_decode_latents:
+            self.diffusion_processing.decode_latents = self._orig_decode_latents
+        if self._orig_encode_image:
+            self.diffusion_processing.encode_image = self._orig_encode_image
+        if self._orig_generate_image:
+            self.diffusion_processing.generate_image = self._orig_generate_image
+        if self._orig_encode_clip_text:
+            self.diffusion_processing.encode_clip_text = self._orig_encode_clip_text
+
+        if self._orig_latent_to_mlx:
+            self.bridge.latent_to_mlx = self._orig_latent_to_mlx
+        if self._orig_mlx_to_torch:
+            self.bridge.mlx_to_torch = self._orig_mlx_to_torch
+        if self._orig_torch_to_mlx:
+            self.bridge.torch_to_mlx = self._orig_torch_to_mlx
+        if self._orig_mlx_to_latent:
+            self.bridge.mlx_to_latent = self._orig_mlx_to_latent
 
     def test_mlx_decoder_happy_path(self):
         node = self.MLXDecoder()
