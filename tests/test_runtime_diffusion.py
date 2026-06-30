@@ -12,6 +12,10 @@ class TestRuntimeDiffusion(unittest.TestCase):
         # We just want to mock the components of the conditioning dict
         mock_tokenizer = MagicMock()
         mock_tokenizer.tokenize.return_value = [1, 2, 3]
+        import sys
+        if sys.modules["mlx.core"] is not None and isinstance(sys.modules["mlx.core"], MagicMock):
+            # Ensure the mock array returned by mx.array has a valid shape property
+            sys.modules["mlx.core"].array.return_value.shape = (1, 3)
 
         mock_clip = MagicMock()
         mock_clip_output = MagicMock()
