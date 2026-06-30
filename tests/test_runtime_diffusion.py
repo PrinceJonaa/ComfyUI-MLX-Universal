@@ -11,7 +11,7 @@ class TestRuntimeDiffusion(unittest.TestCase):
     def test_encode_clip_text(self):
         # We just want to mock the components of the conditioning dict
         mock_tokenizer = MagicMock()
-        mock_tokenizer.return_value = MagicMock(shape=(1, 77))
+        mock_tokenizer.tokenize.return_value = [1, 2, 3]
 
         mock_clip = MagicMock()
         mock_clip_output = MagicMock()
