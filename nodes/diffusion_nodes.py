@@ -24,8 +24,24 @@ class MLXSampler:
         return {
             "required": {
                 "mlx_model": ("mlx_model",),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
-                "steps": ("INT", {"default": 4, "min": 1, "max": 10000}),
+                "seed": (
+                    "INT",
+                    {
+                        "default": 0,
+                        "min": 0,
+                        "max": 2**32 - 1,
+                        "tooltip": "Random seed for generation. Set to 0 for random.",
+                    },
+                ),
+                "steps": (
+                    "INT",
+                    {
+                        "default": 4,
+                        "min": 1,
+                        "max": 10000,
+                        "tooltip": "Number of denoising steps.",
+                    },
+                ),
                 "cfg": (
                     "FLOAT",
                     {
@@ -120,7 +136,14 @@ class MLXClipTextEncoder:
     def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "text": ("STRING", {"multiline": True, "dynamicPrompts": True}),
+                "text": (
+                    "STRING",
+                    {
+                        "multiline": True,
+                        "dynamicPrompts": True,
+                        "tooltip": "The text prompt to encode.",
+                    },
+                ),
                 "mlx_conditioning": ("mlx_conditioning", {"forceInput": True}),
             }
         }

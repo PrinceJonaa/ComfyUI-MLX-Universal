@@ -81,9 +81,14 @@ if not USE_REAL_MLX:
         ]
     )
 
+
 for mod in mock_modules:
     if mod not in sys.modules:
-        sys.modules[mod] = MagicMock()
+        mock = MagicMock()
+        mock.__spec__ = MagicMock()
+        mock.__spec__.name = mod
+        sys.modules[mod] = mock
+
 
 # Inject MockTensor into mocked torch if we mocked it
 if not USE_REAL_MLX:

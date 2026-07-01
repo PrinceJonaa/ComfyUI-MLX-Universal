@@ -9,11 +9,17 @@ class MLXModelLoaderUnified:
             "required": {
                 "model_path": (
                     "STRING",
-                    {"default": "mlx-community/Qwen3.5-4B-OptiQ-4bit"},
+                    {
+                        "default": "mlx-community/Qwen3.5-4B-OptiQ-4bit",
+                        "tooltip": "Hugging Face repository ID or local path to the MLX model.",
+                    },
                 ),
                 "model_type": (
                     ["auto", "mlx-lm", "mlx-vlm", "sam3"],
-                    {"default": "auto"},
+                    {
+                        "default": "auto",
+                        "tooltip": "The model architecture family. Leave as 'auto' in most cases.",
+                    },
                 ),
                 "trust_remote_code": (
                     "BOOLEAN",
@@ -109,11 +115,17 @@ class MLXDraftModelLoader:
             "required": {
                 "model_path": (
                     "STRING",
-                    {"default": "mlx-community/Qwen2.5-0.5B-Instruct-4bit"},
+                    {
+                        "default": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+                        "tooltip": "Hugging Face repository ID or local path to the draft model.",
+                    },
                 ),
                 "model_family": (
                     ["mlx-lm", "mlx-vlm"],
-                    {"default": "mlx-lm"},
+                    {
+                        "default": "mlx-lm",
+                        "tooltip": "The expected architecture family of the draft model.",
+                    },
                 ),
             }
         }
@@ -125,7 +137,9 @@ class MLXDraftModelLoader:
 
     def load_model(self, model_path: str, model_family: str) -> tuple:
         if not model_path:
-            raise ValueError("Draft model path cannot be empty.")
+            raise ValueError(
+                "Expected a valid Hugging Face repository ID or local path, but found an empty draft model path. Please provide a valid model path for the draft model."
+            )
 
         loaded = load_draft_model(model_path, model_family)
         return (loaded,)
