@@ -1,9 +1,13 @@
+import os
 import unittest
 from unittest.mock import MagicMock, patch
 
 from tests.test_helper import import_node_module
 
 
+@unittest.skipIf(
+    os.environ.get("REAL_MLX_TESTS") == "1", "Skipping mock tests with real MLX"
+)
 class TestAudioNodes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
