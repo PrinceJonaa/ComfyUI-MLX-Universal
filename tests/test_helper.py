@@ -49,9 +49,12 @@ if not USE_REAL_MLX:
     )
 
 # Always mock these since they are specific to the ComfyUI application runtime
+# Do not mock soundfile globally, transformers checks for it using importlib.util.find_spec which fails on MagicMock
+if not USE_REAL_MLX:
+    mock_modules.append("soundfile")
+
 mock_modules.extend(
     [
-        "soundfile",
         "beartype",
         "sentry_sdk",
         "folder_paths",
