@@ -1,10 +1,9 @@
 import unittest
-import sys
-from unittest.mock import MagicMock, patch
-from tests.test_helper import import_node_module
+from unittest.mock import patch
 
 # Ensure mock dependencies
-import torch
+from tests.test_helper import import_node_module
+
 
 class TestEmbeddingNodes(unittest.TestCase):
     @classmethod
@@ -25,6 +24,7 @@ class TestEmbeddingNodes(unittest.TestCase):
         result = node.generate_embedding("hello world", "model_id")
         self.assertEqual(result, ("mocked_tensor",))
         mock_generate.assert_called_once_with("hello world", "model_id")
+
 
 if __name__ == "__main__":
     unittest.main()

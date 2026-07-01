@@ -1,8 +1,8 @@
 import os
-import torch
 from typing import Any
 
 import mlx.core as mx
+import torch
 
 from .bridge import tensor_to_pil
 from .data_types import LoadedMLXModel

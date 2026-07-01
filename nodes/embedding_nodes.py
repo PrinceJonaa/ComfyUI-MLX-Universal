@@ -1,5 +1,6 @@
 import torch
 
+
 class MLXTextEmbedding:
     @classmethod
     def INPUT_TYPES(s) -> dict:

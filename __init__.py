@@ -35,6 +35,12 @@ from .nodes.diffusion_nodes import (
 from .nodes.diffusion_nodes import (
     NODE_DISPLAY_NAME_MAPPINGS as DIFFUSION_DISPLAY,
 )
+from .nodes.embedding_nodes import (
+    NODE_CLASS_MAPPINGS as EMBEDDING_MAPPINGS,
+)
+from .nodes.embedding_nodes import (
+    NODE_DISPLAY_NAME_MAPPINGS as EMBEDDING_DISPLAY,
+)
 from .nodes.generate_nodes import (
     NODE_CLASS_MAPPINGS as GENERATE_MAPPINGS,
 )
@@ -64,12 +70,6 @@ from .nodes.video_nodes import (
 )
 from .nodes.video_nodes import (
     NODE_DISPLAY_NAME_MAPPINGS as VIDEO_DISPLAY,
-)
-from .nodes.embedding_nodes import (
-    NODE_CLASS_MAPPINGS as EMBEDDING_MAPPINGS,
-)
-from .nodes.embedding_nodes import (
-    NODE_DISPLAY_NAME_MAPPINGS as EMBEDDING_DISPLAY,
 )
 
 NODE_CLASS_MAPPINGS = {}

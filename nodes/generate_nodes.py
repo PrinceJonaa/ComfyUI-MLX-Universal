@@ -1,5 +1,6 @@
-import torch
 from typing import Any
+
+import torch
 
 from ..runtime.data_types import LoadedMLXModel
 from ..runtime.generate_processing import (

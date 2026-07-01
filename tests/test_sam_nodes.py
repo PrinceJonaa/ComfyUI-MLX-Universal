@@ -37,7 +37,9 @@ class TestSAMNodes(unittest.TestCase):
 
     def test_predict_happy_path(self):
         # Configure the Sam3Predictor mock registered in sys.modules
-        mock_sam_predictor_cls = sys.modules.get("mlx_vlm.models.sam3.generate", MagicMock()).Sam3Predictor
+        mock_sam_predictor_cls = sys.modules.get(
+            "mlx_vlm.models.sam3.generate", MagicMock()
+        ).Sam3Predictor
         mock_sam_predictor_cls.reset_mock()
 
         mock_predictor = MagicMock()

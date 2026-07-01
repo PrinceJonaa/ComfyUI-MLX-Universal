@@ -1,24 +1,11 @@
+# Removed unused mock assignments for mlx dependencies
+# as they are now handled by test_runtime_generate.py
+import os
 import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
 from tests.test_helper import import_node_module
-
-<<<<<<< HEAD
-# Removed unused mock assignments for mlx dependencies
-# as they are now handled by test_runtime_generate.py
-=======
-# Create mock objects for the dependencies
-mock_mlx_lm = sys.modules.get("mlx_lm", MagicMock())
-mock_mlx_lm_sample_utils = sys.modules.get("mlx_lm.sample_utils", MagicMock())
-mock_mlx_vlm = sys.modules.get("mlx_vlm", MagicMock())
-mock_mlx_vlm_prompt_utils = sys.modules.get("mlx_vlm.prompt_utils", MagicMock())
-mock_mlx_vlm_speculative = sys.modules.get("mlx_vlm.speculative", MagicMock())
-mock_mlx_vlm_speculative_drafters = sys.modules.get("mlx_vlm.speculative.drafters", MagicMock())
->>>>>>> master
-
-
-import os
 
 
 @unittest.skipIf(
