@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-06-29 at commit 9d2c16a
+> Last curated: 2026-07-01 at commit 027cb44
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -24,11 +24,6 @@
 - Evidence: PRs #73 and #80 successfully extracted logic to `runtime/audio_processing.py` and `runtime/diffusion_processing.py`, but tests still mock at the node layer instead of unit-testing the runtime functions directly.
 - Why it matters: Prevents silent regressions in the new runtime bridging logic.
 
-### [RM-012] Fix static type hints for IMAGE inputs
-- Status: Planned
-- Evidence: `MLXVLMDescribeImage.run` in `nodes/generate_nodes.py` types the `image` argument as `dict | None = None`, but ComfyUI passes `IMAGE` as a `torch.Tensor`.
-- Why it matters: Prevents static analysis drift and misleading type documentation for frontend node developers.
-
 ### [RM-014] Refactor dynamic LoRA fusion in `MLXApplyLoRA`
 - Status: Planned
 - Evidence: `MLXApplyLoRA.apply_lora` in `nodes/loader_nodes.py` re-invokes `load_unified_mlx_model` from scratch to fuse an adapter, bypassing dynamic weight patching.
@@ -42,6 +37,11 @@
 ## Blocked
 
 ## Recently Completed
+
+### [RM-012] Fix static type hints for IMAGE inputs
+- Status: Completed
+- Evidence: `MLXVLMDescribeImage.run` in `nodes/generate_nodes.py` types the `image` argument as `dict | None = None`, but ComfyUI passes `IMAGE` as a `torch.Tensor`.
+- Why it matters: Prevents static analysis drift and misleading type documentation for frontend node developers.
 
 ### [RM-013] Decouple Draft Model Loading from Generate Nodes
 - Status: Completed
