@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import patch
 
@@ -5,6 +6,9 @@ import torch
 from comfyui_mlx_universal.runtime.audio_processing import execute_audio_transcription
 
 
+@unittest.skipIf(
+    os.environ.get("REAL_MLX_TESTS") == "1", "Skipping mock tests with real MLX"
+)
 class TestRuntimeAudio(unittest.TestCase):
     @patch("mlx_whisper.transcribe")
     def test_execute_audio_transcription(self, mock_transcribe):

@@ -13,6 +13,12 @@ mock_mlx_vlm_speculative = sys.modules.get("mlx_vlm.speculative", MagicMock())
 mock_mlx_vlm_speculative_drafters = sys.modules.get("mlx_vlm.speculative.drafters", MagicMock())
 
 
+import os
+
+
+@unittest.skipIf(
+    os.environ.get("REAL_MLX_TESTS") == "1", "Skipping mock tests with real MLX"
+)
 class TestGenerateNodes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

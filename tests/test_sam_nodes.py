@@ -1,3 +1,4 @@
+import os
 import sys
 import unittest
 from unittest.mock import MagicMock
@@ -5,6 +6,9 @@ from unittest.mock import MagicMock
 from tests.test_helper import import_node_module
 
 
+@unittest.skipIf(
+    os.environ.get("REAL_MLX_TESTS") == "1", "Skipping mock tests with real MLX"
+)
 class TestSAMNodes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
