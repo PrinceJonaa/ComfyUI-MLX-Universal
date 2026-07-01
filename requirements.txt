@@ -13,3 +13,4 @@ mlx-whisper
 soundfile
 beartype
 sentry-sdk
+mlx-embeddings

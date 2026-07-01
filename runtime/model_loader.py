@@ -244,3 +244,21 @@ def load_kokoro_pipeline(model_version: str):
         return pipeline
 
     return get_or_load_model(f"kokoro_{model_version}", _loader)
+
+
+def load_embedding_model(model_path: str):
+    """
+    Loads a text embedding model via mlx-embeddings, tracking it in the registry to manage memory.
+    """
+    from .registry import get_or_load_model, make_key
+
+    cache_key = make_key(model_path, "mlx-embeddings")
+
+    def _loader():
+        print(f"Loading embedding model '{model_path}'...")
+        from mlx_embeddings.utils import load
+
+        model, tokenizer = load(model_path)
+        return model, tokenizer
+
+    return get_or_load_model(cache_key, _loader)

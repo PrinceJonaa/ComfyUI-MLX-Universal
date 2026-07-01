@@ -43,6 +43,8 @@ if not USE_REAL_MLX:
             "mlx_audio.tts",
             "mlx_audio.tts.models",
             "mlx_audio.tts.models.kokoro",
+            "mlx_embeddings",
+            "mlx_embeddings.utils",
         ]
     )
 
@@ -85,12 +87,12 @@ for mod in mock_modules:
 
 # Inject MockTensor into mocked torch if we mocked it
 if not USE_REAL_MLX:
-    sys.modules["torch"].Tensor = MockTensor
+    setattr(sys.modules["torch"], "Tensor", MockTensor)
 
 # Setup default mocks for comfyui components to avoid crashes
 mock_comfy = sys.modules["comfy"]
-mock_comfy.utils = sys.modules["comfy.utils"]
-mock_comfy.model_management = sys.modules["comfy.model_management"]
+setattr(mock_comfy, "utils", sys.modules["comfy.utils"])
+setattr(mock_comfy, "model_management", sys.modules["comfy.model_management"])
 
 mock_folder_paths = sys.modules["folder_paths"]
 mock_folder_paths.get_temp_directory.return_value = "/tmp"
@@ -147,6 +149,7 @@ try:
     import_submodule("runtime", "audio_processing")
     import_submodule("runtime", "diffusion_processing")
     import_submodule("runtime", "generate_processing")
+    import_submodule("runtime", "embedding_processing")
 except Exception as e:
     print(f"Warning during pre-import: {e}")
 

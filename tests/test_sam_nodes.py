@@ -1,3 +1,4 @@
+import os
 import sys
 import unittest
 from unittest.mock import MagicMock
@@ -5,6 +6,9 @@ from unittest.mock import MagicMock
 from tests.test_helper import import_node_module
 
 
+@unittest.skipIf(
+    os.environ.get("REAL_MLX_TESTS") == "1", "Skipping mock tests with real MLX"
+)
 class TestSAMNodes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -33,9 +37,7 @@ class TestSAMNodes(unittest.TestCase):
 
     def test_predict_happy_path(self):
         # Configure the Sam3Predictor mock registered in sys.modules
-        mock_sam_predictor_cls = sys.modules[
-            "mlx_vlm.models.sam3.generate"
-        ].Sam3Predictor
+        mock_sam_predictor_cls = sys.modules.get("mlx_vlm.models.sam3.generate", MagicMock()).Sam3Predictor
         mock_sam_predictor_cls.reset_mock()
 
         mock_predictor = MagicMock()

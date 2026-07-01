@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import MagicMock
 
@@ -7,11 +8,18 @@ from comfyui_mlx_universal.runtime.diffusion_processing import (
 )
 
 
+@unittest.skipIf(
+    os.environ.get("REAL_MLX_TESTS") == "1", "Skipping mock tests with real MLX"
+)
 class TestRuntimeDiffusion(unittest.TestCase):
     def test_encode_clip_text(self):
         # We just want to mock the components of the conditioning dict
         mock_tokenizer = MagicMock()
-        mock_tokenizer.return_value = MagicMock(shape=(1, 77))
+        mock_tokenizer.tokenize.return_value = [1, 2, 3]
+        import sys
+        if sys.modules["mlx.core"] is not None and isinstance(sys.modules["mlx.core"], MagicMock):
+            # Ensure the mock array returned by mx.array has a valid shape property
+            sys.modules["mlx.core"].array.return_value.shape = (1, 3)
 
         mock_clip = MagicMock()
         mock_clip_output = MagicMock()

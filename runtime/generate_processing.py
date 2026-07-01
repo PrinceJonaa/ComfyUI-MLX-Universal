@@ -1,4 +1,5 @@
 import os
+import torch
 from typing import Any
 
 import mlx.core as mx
@@ -70,7 +71,7 @@ def execute_image_description(
     seed: int,
     enable_thinking: bool,
     thinking_budget: int,
-    image: dict | None = None,
+    image: torch.Tensor | None = None,
     audio_path: str = "",
     draft_model: Any = None,
     draft_kind: str = "dflash",
