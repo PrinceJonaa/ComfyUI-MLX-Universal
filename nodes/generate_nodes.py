@@ -2,6 +2,7 @@ import os
 from typing import Any
 
 import mlx.core as mx
+import torch
 
 from ..runtime.bridge import tensor_to_pil
 from ..runtime.data_types import LoadedMLXModel
@@ -172,7 +173,7 @@ class MLXVLMDescribeImage:
         seed: int,
         enable_thinking: bool,
         thinking_budget: int,
-        image: dict | None = None,
+        image: torch.Tensor | None = None,
         audio_path: str = "",
         draft_model: Any = None,
         draft_kind: str = "dflash",

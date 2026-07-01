@@ -1,3 +1,4 @@
+import torch
 from ..runtime.bridge import tensor_to_pil
 from ..runtime.data_types import LoadedMLXModel
 from ..runtime.sam_processing import process_sam3_result
@@ -32,7 +33,7 @@ class MLXSAM3Predictor:
     def predict(
         self,
         mlx_model: LoadedMLXModel,
-        image: dict,
+        image: torch.Tensor,
         text_prompt: str,
         score_threshold: float,
     ) -> tuple:

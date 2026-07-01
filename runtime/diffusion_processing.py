@@ -1,4 +1,5 @@
 from typing import Any, Optional
+import torch
 
 import mlx.core as mx
 
@@ -132,7 +133,7 @@ def encode_clip_text(mlx_conditioning: dict, text: str) -> tuple:
     return (output,)
 
 
-def encode_image(image, mlx_model) -> tuple:
+def encode_image(image: torch.Tensor, mlx_model: Any) -> tuple:
     """
     Encodes a PyTorch image tensor into ComfyUI latents using an MLX VAE.
     """

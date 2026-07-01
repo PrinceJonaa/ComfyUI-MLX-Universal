@@ -119,7 +119,7 @@ def execute_video_generation(
     guide_scale: float,
     seed: int,
     temp_dir: str,
-    image=None,
+    image: Optional[torch.Tensor] = None,
     audio_path: str = "",
     progress_callback: Optional[Callable[[int], None]] = None,
     progress_absolute_callback: Optional[Callable[[int], None]] = None,
