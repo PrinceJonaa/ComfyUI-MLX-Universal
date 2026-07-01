@@ -1,3 +1,4 @@
+import torch
 from typing import Any
 
 # DiffusionKit specific imports
@@ -145,7 +146,7 @@ class MLXEncoder:
     FUNCTION = "encode"
     CATEGORY = "MLX Universal/Diffusion"
 
-    def encode(self, image, mlx_model) -> tuple:
+    def encode(self, image: torch.Tensor, mlx_model: Any) -> tuple:
         from ..runtime.diffusion_processing import encode_image
 
         return encode_image(image, mlx_model)
