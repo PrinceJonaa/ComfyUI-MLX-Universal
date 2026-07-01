@@ -23,7 +23,7 @@ def _build_video_cmd(
     guide_scale: float,
     seed: int,
     output_path: str,
-    image,
+    image: Optional[torch.Tensor],
     temp_img_path: str,
     audio_path: str,
 ) -> list[str]:
