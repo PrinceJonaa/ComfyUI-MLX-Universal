@@ -6,7 +6,14 @@ class MLXTextEmbedding:
     def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "text": ("STRING", {"multiline": True, "default": "I like reading"}),
+                "text": (
+                    "STRING",
+                    {
+                        "multiline": True,
+                        "default": "I like reading",
+                        "tooltip": "The text string to generate embeddings for.",
+                    },
+                ),
                 "model_path": (
                     "STRING",
                     {
