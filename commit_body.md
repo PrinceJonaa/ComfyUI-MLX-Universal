@@ -1,43 +1,32 @@
-## What This Fixes
+## Architectural Thesis
 
-This PR removes several friction points for first-time users by preventing raw dictionary exceptions from confusing users when inputs are missing, clarifying technical parameter names via tooltips, and tuning video generation defaults to prevent immediate Out-of-Memory (OOM) failures on common hardware setups (like 16GB Apple Silicon Macs).
+The `MLXKokoroTTS` node was violating the core architectural constraint defined in `CONTRIBUTING.md`: strict separation of UI logic and MLX execution. The generation loop, audio chunking, MLX tensor evaluation, and conversion back to PyTorch were all happening directly inside the ComfyUI frontend wrapper. This created structural debt (Leaking abstraction / Duplicated boilerplate) where the UI layer had excessive knowledge of MLX internals. Extracting this into `execute_kokoro_tts` in `runtime/audio_processing.py` retires this debt by shielding the UI from the execution runtime, making testing, tracing, and future modifications safer and easier.
 
-## Error Message Changes
+## Debt Location
 
-```python
-# Before
-try:
-    mlx_latent = latent_to_mlx(latent_image)
-except (KeyError, TypeError, AttributeError):
-    raise ValueError(
-        "Expected a valid ComfyUI latent dictionary with a 'samples' tensor + Invalid or missing latent input + Ensure an Empty Latent Image or VAE Encode node is properly connected"
-    )
+`nodes/audio_nodes.py`, inside the `MLXKokoroTTS.generate_audio` method (approx. lines 95-128).
 
-# After
-try:
-    mlx_latent = latent_to_mlx(latent_image)
-except (KeyError, TypeError, AttributeError):
-    raise ValueError(
-        "Expected a valid ComfyUI latent dictionary with a 'samples' tensor but found an invalid or missing latent input. Ensure an Empty Latent Image or VAE Encode node is properly connected."
-    )
-```
-*(Similar changes applied across audio_nodes.py, diffusion_nodes.py, generate_nodes.py, sam_nodes.py, and bridge.py)*
+## What Changed
 
-## Default Changes
+- **Extracted**: The MLX execution logic, pipeline iteration, array concatenation, lazy evaluation boundaries, and tensor bridging were moved to a new function `execute_kokoro_tts` in `runtime/audio_processing.py`.
+- **Consolidated**: The `MLXKokoroTTS.generate_audio` method in `nodes/audio_nodes.py` was reduced to a single line that imports and calls `execute_kokoro_tts`, preserving its original tuple return signature.
 
-- `num_frames` in `MLXVideoGenerator`: **16 -> 8**. Generating 16 frames of video via CLI subprocess is highly likely to trigger an OS-level hard-swap or crash on machines with 16GB unified memory if the user is unaware of the cost. Lowering to 8 ensures a higher likelihood of first-run success.
+## What Was Not Changed
 
-## Documentation Updates
+- **Public Interfaces**: The `INPUT_TYPES` and `RETURN_TYPES` of `MLXKokoroTTS` remain completely unchanged.
+- **Serialization**: Saved workflows utilizing the "MLX Generate Audio (Kokoro)" node will deserialize identically.
+- **Registrations**: `NODE_CLASS_MAPPINGS` and `NODE_DISPLAY_NAME_MAPPINGS` were untouched.
 
-- Updated the Core Capabilities table in `README.md` to remove the incorrect claim that "Standalone causal video" VAE nodes exist. The codebase currently only supports image VAE encode/decode nodes.
-- Verified that all nodes are perfectly mirrored between `nodes/` and the diagram in `README.md`.
+## Backward Compatibility
 
-## Explicitly Out of Scope
+- [x] Verified `nodes/audio_nodes.py` module attributes programmatically (confirmed identical node signature).
+- [x] Confirmed `make verify` tests complete fully with the new runtime extraction structure, showing tests exercise the mocked MLX substrate successfully.
+- [x] Checked that no new `runtime/` internals were leaked into `nodes/`.
 
-- Removing or migrating `cv2` and `subprocess` logic out of the UI wrapper file `video_nodes.py` into a background worker is out of scope for this UX pass.
+## Rejected Alternatives
 
-## Verification
+I considered also extracting `MLXSAM3Predictor` logic which has a similar pattern. However, the strict single-pass Refactor scope rule limits changes to one specific abstraction extraction. Bundling SAM3 would increase regression risk and violate the PR delivery specification.
 
-- Verified all parameter keys remain unchanged (only defaults and `tooltip` metadata dictionaries were updated) to ensure backward compatibility with saved user workflows.
-- Diff confirms no execution logic or tensor math was altered.
-- All unit tests pass, explicitly testing the newly reformatted exception strings.
+## Follow-On Candidates
+
+- **`MLXSAM3Predictor` Extraction**: The SAM3 prediction node still handles bounding box conversions and PIL Image processing inside the ComfyUI node file. This should be deferred to a future Structural Refactor pass.
