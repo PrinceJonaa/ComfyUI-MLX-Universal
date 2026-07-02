@@ -1,0 +1,14 @@
+[Hygiene] Typing & Cleanliness Fixes: Generate Processing & `.gitignore`
+
+## What Changed
+- Improved `.gitignore` to explicitly ignore `.DS_Store`, `__pycache__`, and `.env` to prevent caching issues.
+- Fixed a strict Mypy typing issue in `runtime/generate_processing.py` where `hasattr(tokenizer, "chat_template")` failed type assertion by refactoring to use a cleaner `getattr` check.
+- Added explicit exclusions to `.gitignore`
+
+## What Was Not Changed
+- `Makefile` was explicitly left unmodified. Local virtual environment executable hardcoding is inherently bad practice for developer tools.
+- Public method signatures inside `nodes/` are unchanged for now.
+
+## Verification
+- Verified via `mypy runtime/generate_processing.py`.
+- Verified changes with `make verify`.

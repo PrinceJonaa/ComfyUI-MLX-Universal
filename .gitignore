@@ -1,31 +1,28 @@
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-
-.vscode
-*.venv
-*.ipynb
 
 # Environment and secrets
-.env
-.env.*
-
+# Mypy cache
 # OS generated files
+# Pytest caches
+*$py.class
+*.ipynb
+*.py[cod]
+*.so
+*.venv
 .DS_Store
 .DS_Store?
-._*
 .Spotlight-V100
 .Trashes
-ehthumbs.db
-Thumbs.db
-
-# Pytest caches
-.pytest_cache/
+._*
 .coverage
-htmlcov/
-
-# Mypy cache
+.env
+.env.*
 .mypy_cache/
-.venv_test
+.pytest_cache/
 .venv2
+.venv_test
+.vscode
+Thumbs.db
+__pycache__
+__pycache__/
+ehthumbs.db
+htmlcov/
