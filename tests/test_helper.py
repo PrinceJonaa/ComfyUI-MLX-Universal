@@ -83,7 +83,10 @@ if not USE_REAL_MLX:
 
 for mod in mock_modules:
     if mod not in sys.modules:
-        sys.modules[mod] = MagicMock()
+        mock_mod = MagicMock()
+        if mod == 'soundfile':
+            mock_mod.__spec__ = MagicMock()
+        sys.modules[mod] = mock_mod
 
 # Inject MockTensor into mocked torch if we mocked it
 if not USE_REAL_MLX:
