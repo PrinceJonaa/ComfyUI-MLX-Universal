@@ -39,7 +39,7 @@ def generate_text_embedding(text: str, model_path: str) -> tuple:
     # Extract the mean pooled and normalized embeddings
     text_embeds = outputs.text_embeds
 
-    # Explicitly evaluate the lazy array before bridging to PyTorch
+    # Explicitly evaluate the lazy array before bridging to PyTorch to prevent uncomputed graphs from deadlocking the backend.
     mx.eval(text_embeds)
     print("Embedding generation complete.")
 

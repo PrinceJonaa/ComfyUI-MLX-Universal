@@ -136,7 +136,7 @@ class MLXKokoroTTS:
 
         from ..runtime.bridge import mlx_to_torch
 
-        # Convert to mlx arrays if they aren't already, and evaluate explicitly to avoid lazy evaluation traps
+        # Convert to mlx arrays if they aren't already, and explicitly evaluate the lazy arrays before bridging to PyTorch to prevent uncomputed graphs from deadlocking the backend.
         mlx_chunks = [mx.array(c) for c in audio_chunks]
         mx.eval(*mlx_chunks)
         final_audio = mx.concatenate(mlx_chunks, axis=0)

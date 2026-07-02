@@ -1,0 +1,32 @@
+## Doc-Code Discrepancies Found
+
+- **Doc lagging code**: `README.md` was missing documentation for `mlx_embeddings` and `Kokoro` TTS, despite these being implemented in `nodes/embedding_nodes.py` and `nodes/audio_nodes.py`.
+- **Doc lagging code**: `README.md` Architecture Map was missing nodes `UI_TTS[MLX Generate Audio (Kokoro)]`, `UI_Embed[MLX Generate Text Embedding]`, and `UI_Draft[MLX Load Draft Model]`.
+
+## Documentation Changes
+
+- Updated the "Core Capabilities" table in `README.md` to list `Kokoro` as a supported audio generator alongside `mlx-whisper`.
+- Added an "Embeddings" row to the "Core Capabilities" table in `README.md` to document `mlx_embeddings` support.
+- Updated the Mermaid "Architecture Map" in `README.md` to include `UI_TTS`, `UI_Embed`, and `UI_Draft` nodes, and linked them to their respective execution scripts and bridge routes.
+
+## Roadmap Changes
+
+- No tasks required state transitions this cycle. All verified existing tasks were confirmed accurate based on code state.
+- Updated `roadmap.md` "Last curated" header stamp to current date and HEAD commit `fbb4f37`.
+
+## Code Annotations Added
+
+- `runtime/embedding_processing.py:42` — `# Explicitly evaluate the lazy array before bridging to PyTorch to prevent uncomputed graphs from deadlocking the backend.`
+- `nodes/audio_nodes.py:139` — `# Convert to mlx arrays if they aren't already, and explicitly evaluate the lazy arrays before bridging to PyTorch to prevent uncomputed graphs from deadlocking the backend.`
+- One sentence context given on why explicit evaluation is required.
+
+## Open Questions
+
+None.
+
+## Verification
+
+- Zero logic changes made.
+- Zero parameter key changes.
+- `roadmap.md` header stamp updated to current HEAD commit.
+- `make verify` ran and passed locally.
