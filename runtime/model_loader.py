@@ -151,7 +151,7 @@ def load_unified_mlx_model(
             )
         else:
             raise ValueError(
-                f"Expected a known resolved model type (e.g. 'mlx-lm', 'mlx-vlm', 'sam3') + Found '{resolved_type}' + Check the model path or force the model type manually"
+                f"Expected a known resolved model type (e.g., 'mlx-lm', 'mlx-vlm', 'sam3'), but found '{resolved_type}'. Check the model path or force the model type manually."
             )
 
     return get_or_load_model(cache_key, _load)
@@ -177,7 +177,9 @@ def load_draft_model(draft_model_path: str, model_type: str):
 
             return load_drafter(draft_model_path)
         else:
-            raise ValueError(f"Unsupported draft model type: {model_type}")
+            raise ValueError(
+                f"Expected a supported draft model type ('mlx-lm' or 'mlx-vlm'), but found '{model_type}'. Ensure you are passing a valid text or vision-language model for speculative decoding."
+            )
 
     return get_or_load_draft_model(draft_key, _load_draft)
 
