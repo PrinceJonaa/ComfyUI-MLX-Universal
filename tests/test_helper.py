@@ -20,6 +20,15 @@ import os
 
 USE_REAL_MLX = os.environ.get("REAL_MLX_TESTS") == "1"
 
+import sys
+
+# Prevent transformers from crashing on missing soundfile.__spec__ in macOS CI
+if "soundfile" not in sys.modules:
+    soundfile_mock = MagicMock()
+    soundfile_mock.__spec__ = MagicMock()
+    sys.modules["soundfile"] = soundfile_mock
+
+
 mock_modules = []
 if not USE_REAL_MLX:
     mock_modules.extend(
