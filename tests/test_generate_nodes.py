@@ -18,6 +18,7 @@ class TestGenerateNodes(unittest.TestCase):
         cls.generate_nodes = import_node_module("generate_nodes")
         cls.MLXLMGenerateText = cls.generate_nodes.MLXLMGenerateText
         cls.MLXVLMDescribeImage = cls.generate_nodes.MLXVLMDescribeImage
+        cls.MLXBatchVLMDescribeImage = cls.generate_nodes.MLXBatchVLMDescribeImage
 
         # We need to mock runtime classes used in tests
         runtime_data_types = sys.modules["comfyui_mlx_universal.runtime.data_types"]
@@ -224,6 +225,68 @@ class TestGenerateNodes(unittest.TestCase):
             audio_path="",
             draft_model="mock_draft_model",
             draft_kind="eagle3",
+        )
+
+    # --- MLXBatchVLMDescribeImage Tests ---
+
+    def test_mlx_batch_vlm_run_unknown_model_family_raises_value_error(self):
+        node = self.MLXBatchVLMDescribeImage()
+        mocked_model = self.get_mocked_model()
+        mocked_model.family = "unknown-family"
+
+        with self.assertRaises(ValueError) as context:
+            node.run(
+                mlx_model=mocked_model,
+                image=MagicMock(),
+                prompt="test prompt",
+                max_tokens=100,
+                temperature=0.7,
+                seed=42,
+                enable_thinking=False,
+                thinking_budget=100,
+            )
+
+        self.assertEqual(
+            str(context.exception),
+            "Expected model family 'mlx-vlm' but found 'unknown-family'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model.",
+        )
+
+    @patch.object(
+        import_node_module("generate_nodes"), "execute_batch_image_description"
+    )
+    def test_mlx_batch_vlm_run_happy_path(self, mock_execute):
+        node = self.MLXBatchVLMDescribeImage()
+        mocked_model = self.get_mocked_model()
+        mocked_model.family = "mlx-vlm"
+
+        mock_execute.return_value = (["desc 1", "desc 2"], "desc 1\n\ndesc 2")
+
+        mock_image = MagicMock()
+
+        result = node.run(
+            mlx_model=mocked_model,
+            image=mock_image,
+            prompt="Describe this batch",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+            draft_model=None,
+        )
+
+        self.assertEqual(result, (["desc 1", "desc 2"], "desc 1\n\ndesc 2"))
+        mock_execute.assert_called_once_with(
+            mlx_model=mocked_model,
+            prompt="Describe this batch",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+            image=mock_image,
+            draft_model=None,
+            draft_kind="dflash",
         )
 
 

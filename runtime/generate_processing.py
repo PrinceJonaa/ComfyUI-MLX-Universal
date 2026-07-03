@@ -119,3 +119,68 @@ def execute_image_description(
     )
     print("Image description complete.")
     return response
+
+
+def execute_batch_image_description(
+    mlx_model: LoadedMLXModel,
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    seed: int,
+    enable_thinking: bool,
+    thinking_budget: int,
+    image: torch.Tensor,
+    draft_model: Any = None,
+    draft_kind: str = "dflash",
+) -> tuple[list[str], str]:
+    """
+    Executes batched image description using mlx-vlm.
+    This logic converts a batched ComfyUI IMAGE tensor into a list of PIL images
+    and iteratively queries the VLM.
+    """
+    mx.random.seed(seed)
+    import mlx_vlm
+    from mlx_vlm.prompt_utils import apply_chat_template
+
+    pil_images = tensor_to_pil(image) if image is not None else []
+
+    text_list = []
+
+    gen_kwargs: dict[str, Any] = {
+        "temp": temperature,
+        "max_tokens": max_tokens,
+        "verbose": False,
+        "enable_thinking": enable_thinking,
+        "thinking_budget": thinking_budget,
+    }
+
+    if draft_model is not None:
+        gen_kwargs["draft_model"] = draft_model
+        gen_kwargs["draft_kind"] = draft_kind
+
+    print(
+        f"Describing {len(pil_images)} images in batch (max {max_tokens} tokens per image)..."
+    )
+
+    for pil_image in pil_images:
+        formatted_prompt = apply_chat_template(
+            mlx_model.processor,
+            mlx_model.model.config,
+            prompt,
+            num_images=1,
+            num_audios=0,
+        )
+
+        response = mlx_vlm.generate(
+            mlx_model.model,
+            mlx_model.processor,
+            formatted_prompt,
+            image=[pil_image],
+            audio=None,
+            **gen_kwargs,
+        )
+        text_list.append(response)
+
+    print("Batch image description complete.")
+    concatenated_text = "\n\n".join(text_list)
+    return text_list, concatenated_text
