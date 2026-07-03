@@ -25,7 +25,7 @@ class MLXWhisperTranscribe:
     FUNCTION = "transcribe"
     CATEGORY = "MLX Universal/Audio"
 
-    def transcribe(self, audio: dict, model_path: str) -> tuple:
+    def transcribe(self, audio: dict, model_path: str) -> tuple[str]:
         if (
             not isinstance(audio, dict)
             or "waveform" not in audio
@@ -113,7 +113,7 @@ class MLXKokoroTTS:
     FUNCTION = "generate_audio"
     CATEGORY = "MLX Universal/Audio"
 
-    def generate_audio(self, text: str, voice: str, speed: float) -> tuple:
+    def generate_audio(self, text: str, voice: str, speed: float) -> tuple[dict]:
         # Lazy import to prevent ComfyUI crashes if not installed
         from ..runtime.model_loader import load_kokoro_pipeline
 

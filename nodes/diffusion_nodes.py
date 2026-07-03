@@ -1,5 +1,7 @@
 from typing import Any
 
+import torch
+
 # DiffusionKit specific imports
 
 
@@ -12,7 +14,7 @@ class MLXDecoder:
     FUNCTION = "decode"
     CATEGORY = "MLX Universal/Diffusion"
 
-    def decode(self, latent_image: dict, mlx_vae: Any) -> tuple:
+    def decode(self, latent_image: dict, mlx_vae: Any) -> tuple[torch.Tensor]:
         from ..runtime.diffusion_processing import decode_latents
 
         return decode_latents(latent_image, mlx_vae)
@@ -65,7 +67,7 @@ class MLXSampler:
         mlx_positive_conditioning: dict,
         latent_image: dict,
         denoise: float,
-    ) -> tuple:
+    ) -> tuple[dict]:
         from ..runtime.diffusion_processing import generate_image
 
         return generate_image(
@@ -98,7 +100,7 @@ class MLXLoadFlux:
     FUNCTION = "load_flux_model"
     CATEGORY = "MLX Universal/Loaders"
 
-    def load_flux_model(self, model_version: str) -> tuple:
+    def load_flux_model(self, model_version: str) -> tuple[Any, Any, dict]:
         from ..runtime.model_loader import load_flux_pipeline
 
         model = load_flux_pipeline(model_version)
@@ -129,7 +131,7 @@ class MLXClipTextEncoder:
     FUNCTION = "encode"
     CATEGORY = "MLX Universal/Diffusion"
 
-    def encode(self, mlx_conditioning: dict, text: str) -> tuple:
+    def encode(self, mlx_conditioning: dict, text: str) -> tuple[dict]:
         from ..runtime.diffusion_processing import encode_clip_text
 
         return encode_clip_text(mlx_conditioning, text)
@@ -145,7 +147,7 @@ class MLXEncoder:
     FUNCTION = "encode"
     CATEGORY = "MLX Universal/Diffusion"
 
-    def encode(self, image, mlx_model) -> tuple:
+    def encode(self, image: torch.Tensor, mlx_model: Any) -> tuple[dict]:
         from ..runtime.diffusion_processing import encode_image
 
         return encode_image(image, mlx_model)

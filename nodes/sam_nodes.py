@@ -1,3 +1,5 @@
+import torch
+
 from ..runtime.bridge import tensor_to_pil
 from ..runtime.data_types import LoadedMLXModel
 from ..runtime.sam_processing import process_sam3_result
@@ -32,10 +34,10 @@ class MLXSAM3Predictor:
     def predict(
         self,
         mlx_model: LoadedMLXModel,
-        image: dict,
+        image: torch.Tensor,
         text_prompt: str,
         score_threshold: float,
-    ) -> tuple:
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, str]:
         if mlx_model.family != "sam3":
             raise ValueError(
                 f"Expected model family 'sam3' but found '{mlx_model.family}'. Please ensure you are passing a SAM model loaded via 'MLX Load Model'."

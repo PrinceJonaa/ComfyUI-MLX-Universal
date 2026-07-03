@@ -1,6 +1,7 @@
 import comfy.model_management
 import comfy.utils
 import folder_paths
+import torch
 
 from ..runtime.video_processing import execute_video_generation
 
@@ -68,20 +69,20 @@ class MLXVideoGenerator:
         steps: int,
         guide_scale: float,
         seed: int,
-        image: dict | None = None,
+        image: torch.Tensor | None = None,
         audio_path: str = "",
-    ) -> tuple:
+    ) -> tuple[str, torch.Tensor]:
 
         temp_dir = folder_paths.get_temp_directory()
         pbar = comfy.utils.ProgressBar(steps)
 
-        def progress_callback(step_val):
+        def progress_callback(step_val: int) -> None:
             pbar.update(step_val)
 
-        def progress_absolute_callback(step_val):
+        def progress_absolute_callback(step_val: int) -> None:
             pbar.update_absolute(step_val)
 
-        def interrupt_callback():
+        def interrupt_callback() -> None:
             comfy.model_management.throw_exception_if_processing_interrupted()
 
         return execute_video_generation(

@@ -68,7 +68,7 @@ class MLXLMGenerateText:
         draft_model: Any = None,
         enable_thinking: bool = False,
         thinking_budget: int = 512,
-    ) -> tuple:
+    ) -> tuple[str]:
         if mlx_model.family != "mlx-lm":
             raise ValueError(
                 f"Expected model family 'mlx-lm' but found '{mlx_model.family}'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model."
@@ -153,7 +153,7 @@ class MLXVLMDescribeImage:
         audio_path: str = "",
         draft_model: Any = None,
         draft_kind: str = "dflash",
-    ) -> tuple:
+    ) -> tuple[str]:
 
         if mlx_model.family != "mlx-vlm":
             raise ValueError(

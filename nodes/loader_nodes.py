@@ -53,7 +53,7 @@ class MLXModelLoaderUnified:
         trust_remote_code: bool,
         quantize_activations: bool,
         adapter_path: str = "",
-    ) -> tuple:
+    ) -> tuple[LoadedMLXModel]:
         loaded = load_unified_mlx_model(
             model_path=model_path,
             model_type=model_type,
@@ -85,7 +85,9 @@ class MLXApplyLoRA:
     FUNCTION = "apply_lora"
     CATEGORY = "MLX Universal/Loaders"
 
-    def apply_lora(self, mlx_model: LoadedMLXModel, adapter_path: str):
+    def apply_lora(
+        self, mlx_model: LoadedMLXModel, adapter_path: str
+    ) -> tuple[LoadedMLXModel]:
         if not adapter_path:
             return (mlx_model,)
 
@@ -123,7 +125,7 @@ class MLXDraftModelLoader:
     FUNCTION = "load_model"
     CATEGORY = "MLX Universal/Loaders"
 
-    def load_model(self, model_path: str, model_family: str) -> tuple:
+    def load_model(self, model_path: str, model_family: str) -> tuple[LoadedMLXModel]:
         if not model_path:
             raise ValueError("Draft model path cannot be empty.")
 
