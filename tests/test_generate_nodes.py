@@ -226,6 +226,72 @@ class TestGenerateNodes(unittest.TestCase):
             draft_kind="eagle3",
         )
 
+    def test_batch_vlm_describe_image(self):
+        MLXBatchVLMDescribeImage = self.generate_nodes.MLXBatchVLMDescribeImage
+
+        node = MLXBatchVLMDescribeImage()
+
+        self.assertEqual(MLXBatchVLMDescribeImage.OUTPUT_IS_LIST, (True, False))
+
+        mock_loaded_model = self.get_mocked_model()
+        mock_loaded_model.family = "mlx-vlm"
+
+        with patch("comfyui_mlx_universal.nodes.generate_nodes.torch") as mock_torch:
+            image_tensor = MagicMock()
+
+            with patch(
+                "comfyui_mlx_universal.runtime.generate_processing.execute_batch_image_description"
+            ) as mock_execute:
+                mock_execute.return_value = ["Response 1", "Response 2"]
+
+                result = node.run(
+                    mlx_model=mock_loaded_model,
+                    image=image_tensor,
+                    prompt="Test prompt",
+                    max_tokens=10,
+                    temperature=0.7,
+                    seed=42,
+                    enable_thinking=False,
+                    thinking_budget=512,
+                )
+
+                self.assertIsInstance(result, tuple)
+                self.assertEqual(len(result), 2)
+                self.assertEqual(result[0], ["Response 1", "Response 2"])
+                self.assertEqual(result[1], "Response 1\nResponse 2")
+
+                mock_execute.assert_called_once_with(
+                    mlx_model=mock_loaded_model,
+                    prompt="Test prompt",
+                    max_tokens=10,
+                    temperature=0.7,
+                    seed=42,
+                    enable_thinking=False,
+                    thinking_budget=512,
+                    image=image_tensor,
+                    draft_model=None,
+                    draft_kind="dflash",
+                )
+
+    def test_batch_vlm_describe_image_wrong_family(self):
+        MLXBatchVLMDescribeImage = self.generate_nodes.MLXBatchVLMDescribeImage
+        node = MLXBatchVLMDescribeImage()
+
+        mock_loaded_model = self.get_mocked_model()
+        mock_loaded_model.family = "mlx-lm"
+
+        with self.assertRaisesRegex(ValueError, "Expected model family 'mlx-vlm'"):
+            node.run(
+                mlx_model=mock_loaded_model,
+                image=MagicMock(),
+                prompt="Test",
+                max_tokens=10,
+                temperature=0.7,
+                seed=42,
+                enable_thinking=False,
+                thinking_budget=512,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

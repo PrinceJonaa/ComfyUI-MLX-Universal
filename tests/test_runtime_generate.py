@@ -222,6 +222,46 @@ class TestRuntimeGenerate(unittest.TestCase):
             draft_kind="eagle3",
         )
 
+    def test_execute_batch_image_description(self):
+        mock_loaded_model = self.get_mocked_model()
+        mock_loaded_model.family = "mlx-vlm"
+
+        with patch(
+            "comfyui_mlx_universal.runtime.generate_processing.tensor_to_pil"
+        ) as mock_tensor_to_pil:
+            mock_pil_image1 = MagicMock()
+            mock_pil_image2 = MagicMock()
+            mock_tensor_to_pil.return_value = [mock_pil_image1, mock_pil_image2]
+
+            with (
+                patch("mlx_vlm.generate") as mock_generate,
+                patch(
+                    "mlx_vlm.prompt_utils.apply_chat_template"
+                ) as mock_apply_chat_template,
+            ):
+                mock_apply_chat_template.return_value = "Formatted prompt"
+                mock_generate.side_effect = ["Mocked text 1", "Mocked text 2"]
+
+                from comfyui_mlx_universal.runtime.generate_processing import (
+                    execute_batch_image_description,
+                )
+
+                responses = execute_batch_image_description(
+                    mlx_model=mock_loaded_model,
+                    prompt="Test prompt",
+                    max_tokens=10,
+                    temperature=0.7,
+                    seed=42,
+                    enable_thinking=False,
+                    thinking_budget=512,
+                    image=MagicMock(),
+                )
+
+            self.assertIsInstance(responses, list)
+            self.assertEqual(len(responses), 2)
+            self.assertEqual(responses, ["Mocked text 1", "Mocked text 2"])
+            self.assertEqual(mock_generate.call_count, 2)
+
 
 if __name__ == "__main__":
     unittest.main()
