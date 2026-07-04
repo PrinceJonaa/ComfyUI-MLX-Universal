@@ -89,6 +89,8 @@ This repository abandons "mega-nodes" in favor of strict separation of concerns.
 graph TD
     subgraph ComfyUI Canvas
         UI_Load[MLX Load Model]
+        UI_Draft[MLX Load Draft Model]
+        UI_Embed[MLX Generate Text Embedding]
         UI_LoRA[MLX Apply LoRA]
         UI_GenText[MLX Generate Text]
         UI_VLM[MLX Understand Image]
@@ -98,6 +100,7 @@ graph TD
         UI_ClipEnc[MLX CLIP Text Encoder]
         UI_Diff[MLX Generate Image (Flux)]
         UI_Audio[MLX Transcribe Audio (Whisper)]
+        UI_Kokoro[MLX Generate Audio (Kokoro)]
         UI_Encode[MLX VAE Encode (Flux)]
         UI_Decode[MLX VAE Decode (Flux)]
         UI_Sys[MLX Clear Cache]
@@ -106,6 +109,8 @@ graph TD
 
     subgraph nodes/ [Frontend Nodes]
         UI_Load --> LN[loader_nodes.py]
+        UI_Draft --> LN
+        UI_Embed --> EN[embedding_nodes.py]
         UI_LoRA --> LN
         UI_GenText --> GN[generate_nodes.py]
         UI_VLM --> GN
@@ -117,12 +122,15 @@ graph TD
         UI_Encode --> DN
         UI_Decode --> DN
         UI_Audio --> AN[audio_nodes.py]
+        UI_Kokoro --> AN
         UI_Sys --> SysN[system_nodes.py]
         UI_Stats --> SysN
     end
 
     subgraph runtime/ [Execution Substrate]
         LN --> Reg{registry.py}
+        EN --> Reg
+        AN --> Reg
         GN --> Reg
         SN --> Reg
         

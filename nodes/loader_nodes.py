@@ -13,7 +13,10 @@ class MLXModelLoaderUnified:
                 ),
                 "model_type": (
                     ["auto", "mlx-lm", "mlx-vlm", "sam3"],
-                    {"default": "auto"},
+                    {
+                        "default": "auto",
+                        "tooltip": "Force a specific model architecture if auto-detection fails.",
+                    },
                 ),
                 "trust_remote_code": (
                     "BOOLEAN",
@@ -109,11 +112,17 @@ class MLXDraftModelLoader:
             "required": {
                 "model_path": (
                     "STRING",
-                    {"default": "mlx-community/Qwen2.5-0.5B-Instruct-4bit"},
+                    {
+                        "default": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+                        "tooltip": "Hugging Face repository ID or local path to the draft model.",
+                    },
                 ),
                 "model_family": (
                     ["mlx-lm", "mlx-vlm"],
-                    {"default": "mlx-lm"},
+                    {
+                        "default": "mlx-lm",
+                        "tooltip": "The architecture family of the draft model.",
+                    },
                 ),
             }
         }
@@ -125,7 +134,9 @@ class MLXDraftModelLoader:
 
     def load_model(self, model_path: str, model_family: str) -> tuple:
         if not model_path:
-            raise ValueError("Draft model path cannot be empty.")
+            raise ValueError(
+                "Expected a valid file path or Hugging Face repository ID for the draft model, but found an empty string. Please provide a valid model path."
+            )
 
         loaded = load_draft_model(model_path, model_family)
         return (loaded,)
