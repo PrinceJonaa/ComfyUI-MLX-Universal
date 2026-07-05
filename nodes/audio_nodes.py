@@ -53,6 +53,7 @@ class MLXWhisperTranscribe:
         import torch
 
         if isinstance(waveform, torch.Tensor):
+            # why: mlx-whisper expects 1D or 2D audio arrays; ComfyUI passes a 3D [B, C, S] tensor. Taking the first batch reduces the dimension to prevent failure.
             # NOTE: Using squeeze(0) assumes batch size 1; a batch size >1 will fail to reduce the dimension (see RM-011).
             # Take the first batch and mean across channels
             audio_np = waveform[0].mean(dim=0).cpu().numpy().astype(np.float32)
