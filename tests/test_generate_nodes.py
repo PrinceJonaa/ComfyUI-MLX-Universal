@@ -226,6 +226,69 @@ class TestGenerateNodes(unittest.TestCase):
             draft_kind="eagle3",
         )
 
+    # --- MLXBatchVLMDescribeImage Tests ---
+
+    def test_mlx_batch_vlm_run_unknown_model_family_raises_value_error(self):
+        MLXBatchVLMDescribeImage = self.generate_nodes.MLXBatchVLMDescribeImage
+        node = MLXBatchVLMDescribeImage()
+        mocked_model = self.get_mocked_model()
+        mocked_model.family = "unknown-family"
+
+        with self.assertRaises(ValueError) as context:
+            node.run_batch(
+                mlx_model=mocked_model,
+                images=MagicMock(),
+                prompt="test prompt",
+                max_tokens=100,
+                temperature=0.7,
+                seed=42,
+                enable_thinking=False,
+                thinking_budget=100,
+            )
+
+        self.assertEqual(
+            str(context.exception),
+            "Expected model family 'mlx-vlm' but found 'unknown-family'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model.",
+        )
+
+    @patch.object(
+        import_node_module("generate_nodes"), "execute_batch_image_description"
+    )
+    def test_mlx_batch_vlm_run_happy_path(self, mock_execute):
+        MLXBatchVLMDescribeImage = self.generate_nodes.MLXBatchVLMDescribeImage
+        node = MLXBatchVLMDescribeImage()
+        mocked_model = self.get_mocked_model()
+        mocked_model.family = "mlx-vlm"
+
+        mock_execute.return_value = (
+            ["img1 desc", "img2 desc"],
+            "img1 desc\n\nimg2 desc",
+        )
+        mock_images = MagicMock()
+
+        result = node.run_batch(
+            mlx_model=mocked_model,
+            images=mock_images,
+            prompt="Describe this",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+        )
+
+        self.assertEqual(result, (["img1 desc", "img2 desc"], "img1 desc\n\nimg2 desc"))
+        mock_execute.assert_called_once_with(
+            mlx_model=mocked_model,
+            prompt="Describe this",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+            images=mock_images,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

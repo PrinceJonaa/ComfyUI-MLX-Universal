@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from comfyui_mlx_universal.runtime.data_types import LoadedMLXModel
 from comfyui_mlx_universal.runtime.generate_processing import (
+    execute_batch_image_description,
     execute_image_description,
     execute_text_generation,
 )
@@ -221,6 +222,54 @@ class TestRuntimeGenerate(unittest.TestCase):
             draft_model="mock_draft_model",
             draft_kind="eagle3",
         )
+
+    # --- execute_batch_image_description Tests ---
+
+    @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
+    @patch("mlx_vlm.generate")
+    @patch("mlx_vlm.prompt_utils.apply_chat_template")
+    @patch("comfyui_mlx_universal.runtime.generate_processing.tensor_to_pil")
+    def test_execute_batch_image_description(
+        self,
+        mock_tensor_to_pil,
+        mock_apply_chat_template,
+        mock_generate,
+        mock_mx,
+    ):
+        mock_tensor_to_pil.return_value = ["mock_pil_1", "mock_pil_2"]
+        mocked_model = self.get_mocked_model()
+
+        mock_apply_chat_template.return_value = "vlm_formatted_prompt"
+        mock_generate.side_effect = ["description 1", "description 2"]
+
+        mock_images = MagicMock()
+
+        result = execute_batch_image_description(
+            mlx_model=mocked_model,
+            prompt="Describe this",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+            images=mock_images,
+        )
+
+        self.assertEqual(
+            result,
+            (["description 1", "description 2"], "description 1\n\ndescription 2"),
+        )
+        mock_mx.random.seed.assert_called_once_with(99)
+        mock_tensor_to_pil.assert_called_once_with(mock_images)
+        self.assertEqual(mock_apply_chat_template.call_count, 2)
+        mock_apply_chat_template.assert_any_call(
+            mocked_model.processor,
+            mocked_model.model.config,
+            "Describe this",
+            num_images=1,
+            num_audios=0,
+        )
+        self.assertEqual(mock_generate.call_count, 2)
 
 
 if __name__ == "__main__":

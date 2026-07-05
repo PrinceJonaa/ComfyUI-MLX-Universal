@@ -119,3 +119,59 @@ def execute_image_description(
     )
     print("Image description complete.")
     return response
+
+
+def execute_batch_image_description(
+    mlx_model: LoadedMLXModel,
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    seed: int,
+    enable_thinking: bool,
+    thinking_budget: int,
+    images: torch.Tensor,
+) -> tuple[list[str], str]:
+    """
+    Executes batched image description using mlx-vlm.
+    Converts batched ComfyUI IMAGE tensors into a list of PIL images and
+    iteratively queries the VLM.
+    """
+    mx.random.seed(seed)
+    import mlx_vlm
+    from mlx_vlm.prompt_utils import apply_chat_template
+
+    pil_images = tensor_to_pil(images)
+    text_list = []
+
+    gen_kwargs: dict[str, Any] = {
+        "temp": temperature,
+        "max_tokens": max_tokens,
+        "verbose": False,
+        "enable_thinking": enable_thinking,
+        "thinking_budget": thinking_budget,
+    }
+
+    print(
+        f"Processing batch of {len(pil_images)} images (max {max_tokens} tokens per image)..."
+    )
+
+    for i, pil_image in enumerate(pil_images):
+        formatted_prompt = apply_chat_template(
+            mlx_model.processor,
+            mlx_model.model.config,
+            prompt,
+            num_images=1,
+            num_audios=0,
+        )
+        print(f"Describing image {i + 1}/{len(pil_images)}...")
+        response = mlx_vlm.generate(
+            mlx_model.model,
+            mlx_model.processor,
+            formatted_prompt,
+            image=[pil_image],
+            **gen_kwargs,
+        )
+        text_list.append(response)
+
+    print("Batch image description complete.")
+    return text_list, "\n\n".join(text_list)
