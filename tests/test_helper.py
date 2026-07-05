@@ -82,12 +82,18 @@ if not USE_REAL_MLX:
     )
 
 import importlib.machinery
+import types
 
 for mod in mock_modules:
     if mod not in sys.modules:
-        m = MagicMock()
+        m = types.ModuleType(mod)
         m.__spec__ = importlib.machinery.ModuleSpec(name=mod, loader=None)
-        sys.modules[mod] = m
+        mock_m = MagicMock()
+        mock_m.__spec__ = m.__spec__
+        # Needed for dynamic class inspection
+        mock_m.__path__ = []
+        mock_m.__file__ = f"{mod}.py"
+        sys.modules[mod] = mock_m
 
 # Inject MockTensor into mocked torch if we mocked it
 if not USE_REAL_MLX:
