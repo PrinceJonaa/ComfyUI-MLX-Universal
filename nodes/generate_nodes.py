@@ -22,7 +22,15 @@ class MLXLMGenerateText:
                         "default": "Explain quantum computing in simple terms.",
                     },
                 ),
-                "max_tokens": ("INT", {"default": 256, "min": 1, "max": 16384}),
+                "max_tokens": (
+                    "INT",
+                    {
+                        "default": 256,
+                        "min": 1,
+                        "max": 16384,
+                        "tooltip": "Maximum number of tokens to generate.",
+                    },
+                ),
                 "temperature": (
                     "FLOAT",
                     {
@@ -43,12 +51,34 @@ class MLXLMGenerateText:
                         "tooltip": "Nucleus sampling. Only tokens with a cumulative probability above this threshold are considered.",
                     },
                 ),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
+                "seed": (
+                    "INT",
+                    {
+                        "default": 0,
+                        "min": 0,
+                        "max": 2**32 - 1,
+                        "tooltip": "Random seed for generation. Set to 0 for random.",
+                    },
+                ),
             },
             "optional": {
                 "draft_model": ("MLX_DRAFT_MODEL",),
-                "enable_thinking": ("BOOLEAN", {"default": False}),
-                "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192}),
+                "enable_thinking": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": "Enable thinking tokens for advanced visual reasoning models like Qwen-VL or LLaVA.",
+                    },
+                ),
+                "thinking_budget": (
+                    "INT",
+                    {
+                        "default": 512,
+                        "min": 0,
+                        "max": 8192,
+                        "tooltip": "Maximum number of tokens allocated for the model's internal thinking process.",
+                    },
+                ),
             },
         }
 
@@ -71,7 +101,7 @@ class MLXLMGenerateText:
     ) -> tuple:
         if mlx_model.family != "mlx-lm":
             raise ValueError(
-                f"Expected model family 'mlx-lm' but found '{mlx_model.family}'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model."
+                f"Expected model family 'mlx-lm', but found '{mlx_model.family}'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model."
             )
 
         response = execute_text_generation(
@@ -98,7 +128,15 @@ class MLXVLMDescribeImage:
                     "STRING",
                     {"multiline": True, "default": "Describe this image in detail."},
                 ),
-                "max_tokens": ("INT", {"default": 256, "min": 1, "max": 16384}),
+                "max_tokens": (
+                    "INT",
+                    {
+                        "default": 256,
+                        "min": 1,
+                        "max": 16384,
+                        "tooltip": "Maximum number of tokens to generate.",
+                    },
+                ),
                 "temperature": (
                     "FLOAT",
                     {
@@ -109,7 +147,15 @@ class MLXVLMDescribeImage:
                         "tooltip": "Controls randomness. Lower values are more focused and deterministic, higher values are more creative.",
                     },
                 ),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
+                "seed": (
+                    "INT",
+                    {
+                        "default": 0,
+                        "min": 0,
+                        "max": 2**32 - 1,
+                        "tooltip": "Random seed for generation. Set to 0 for random.",
+                    },
+                ),
                 "enable_thinking": (
                     "BOOLEAN",
                     {
@@ -157,7 +203,7 @@ class MLXVLMDescribeImage:
 
         if mlx_model.family != "mlx-vlm":
             raise ValueError(
-                f"Expected model family 'mlx-vlm' but found '{mlx_model.family}'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model."
+                f"Expected model family 'mlx-vlm', but found '{mlx_model.family}'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model."
             )
 
         response = execute_image_description(
