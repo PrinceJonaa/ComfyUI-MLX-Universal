@@ -29,3 +29,7 @@ htmlcov/
 .mypy_cache/
 .venv_test
 .venv2
+
+node_modules/
+
+.idea/
