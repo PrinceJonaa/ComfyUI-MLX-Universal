@@ -222,6 +222,97 @@ class TestRuntimeGenerate(unittest.TestCase):
             draft_kind="eagle3",
         )
 
+    # --- execute_batch_image_description Tests ---
+
+    @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
+    @patch("mlx_vlm.generate")
+    @patch("mlx_vlm.prompt_utils.apply_chat_template")
+    @patch("os.path.exists", return_value=True)
+    @patch("comfyui_mlx_universal.runtime.generate_processing.tensor_to_pil")
+    def test_execute_batch_image_description(
+        self,
+        mock_tensor_to_pil,
+        mock_os_exists,
+        mock_apply_chat_template,
+        mock_generate,
+        mock_mx,
+    ):
+        # Setup mock to return two PIL images for the batch
+        mock_pil_1 = MagicMock()
+        mock_pil_2 = MagicMock()
+        mock_tensor_to_pil.return_value = [mock_pil_1, mock_pil_2]
+        mocked_model = self.get_mocked_model()
+
+        # Returns different prompts to ensure multiple calls
+        mock_apply_chat_template.side_effect = [
+            "vlm_formatted_prompt_1",
+            "vlm_formatted_prompt_2",
+        ]
+
+        # Returns different responses for each image
+        mock_generate.side_effect = ["image 1 described", "image 2 described"]
+
+        mock_image = MagicMock()
+
+        # Execute
+        from comfyui_mlx_universal.runtime.generate_processing import (
+            execute_batch_image_description,
+        )
+
+        result = execute_batch_image_description(
+            mlx_model=mocked_model,
+            prompt="Describe this batch",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+            image=mock_image,
+            audio_path="fake/path.mp3",
+            draft_model=None,
+        )
+
+        # Assertions
+        self.assertEqual(result, ["image 1 described", "image 2 described"])
+        mock_mx.random.seed.assert_called_once_with(99)
+
+        # Ensure apply_chat_template is called twice, explicitly passing num_images=1
+        self.assertEqual(mock_apply_chat_template.call_count, 2)
+        mock_apply_chat_template.assert_any_call(
+            mocked_model.processor,
+            mocked_model.model.config,
+            "Describe this batch",
+            num_images=1,
+            num_audios=1,
+        )
+
+        # Ensure mlx_vlm.generate is called twice with independent images
+        self.assertEqual(mock_generate.call_count, 2)
+        mock_generate.assert_any_call(
+            mocked_model.model,
+            mocked_model.processor,
+            "vlm_formatted_prompt_1",
+            image=[mock_pil_1],
+            audio=["fake/path.mp3"],
+            temp=0.8,
+            max_tokens=256,
+            verbose=False,
+            enable_thinking=True,
+            thinking_budget=512,
+        )
+        mock_generate.assert_any_call(
+            mocked_model.model,
+            mocked_model.processor,
+            "vlm_formatted_prompt_2",
+            image=[mock_pil_2],
+            audio=["fake/path.mp3"],
+            temp=0.8,
+            max_tokens=256,
+            verbose=False,
+            enable_thinking=True,
+            thinking_budget=512,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
