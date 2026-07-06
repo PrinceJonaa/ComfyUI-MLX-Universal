@@ -96,15 +96,29 @@ MAX_LATENT_RESOLUTION = {
 LOCAL_SD3_CKPT = None
 
 
+def _apply_key_replacements(state_dict, replacements):
+    """
+    Sequentially applies a series of string replacements to the keys of a state dictionary.
+    This consolidates chained dictionary comprehensions into a single pass, reducing
+    memory overhead and McCabe complexity.
+    """
+    new_state_dict = {}
+    for k, v in state_dict.items():
+        new_k = k
+        for old_str, new_str in replacements:
+            new_k = new_k.replace(old_str, new_str)
+        new_state_dict[new_k] = v
+    return new_state_dict
+
+
 def flux_state_dict_adjustments(state_dict, prefix="", hidden_size=3072, mlp_ratio=4):
-    state_dict = {
-        k.replace("double_blocks", "multimodal_transformer_blocks"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("single_blocks", "unified_transformer_blocks"): v
-        for k, v in state_dict.items()
-    }
+    state_dict = _apply_key_replacements(
+        state_dict,
+        [
+            ("double_blocks", "multimodal_transformer_blocks"),
+            ("single_blocks", "unified_transformer_blocks"),
+        ],
+    )
 
     # Split qkv proj and rename:
     # *transformer_block.attn.qkv.{weigth/bias}  -> transformer_block.attn.{q/k/v}_proj.{weigth/bias}
@@ -119,69 +133,29 @@ def flux_state_dict_adjustments(state_dict, prefix="", hidden_size=3072, mlp_rat
                     weight if "weight" in k else weight
                 )
 
-    [state_dict.pop(k) for k in keys_to_pop]
+    for k in keys_to_pop:
+        state_dict.pop(k)
     state_dict.update(state_dict_update)
 
-    state_dict = {
-        k.replace("txt_attn", "text_transformer_block.attn"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("img_attn", "image_transformer_block.attn"): v
-        for k, v in state_dict.items()
-    }
-
-    state_dict = {
-        k.replace("txt_mlp.0", "text_transformer_block.mlp.fc1"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("txt_mlp.2", "text_transformer_block.mlp.fc2"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("img_mlp.0", "image_transformer_block.mlp.fc1"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("img_mlp.2", "image_transformer_block.mlp.fc2"): v
-        for k, v in state_dict.items()
-    }
-
-    state_dict = {
-        k.replace("img_mod.lin", "image_transformer_block.adaLN_modulation.layers.1"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("txt_mod.lin", "text_transformer_block.adaLN_modulation.layers.1"): v
-        for k, v in state_dict.items()
-    }
-
-    state_dict = {k.replace(".proj", ".o_proj"): v for k, v in state_dict.items()}
-
-    state_dict = {
-        k.replace(".attn.norm.key_norm.scale", ".qk_norm.k_norm.weight"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace(".attn.norm.query_norm.scale", ".qk_norm.q_norm.weight"): v
-        for k, v in state_dict.items()
-    }
-
-    state_dict = {
-        k.replace(".modulation.lin", ".transformer_block.adaLN_modulation.layers.1"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace(".norm.key_norm.scale", ".transformer_block.qk_norm.k_norm.weight"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace(
-            ".norm.query_norm.scale", ".transformer_block.qk_norm.q_norm.weight"
-        ): v
-        for k, v in state_dict.items()
-    }
+    state_dict = _apply_key_replacements(
+        state_dict,
+        [
+            ("txt_attn", "text_transformer_block.attn"),
+            ("img_attn", "image_transformer_block.attn"),
+            ("txt_mlp.0", "text_transformer_block.mlp.fc1"),
+            ("txt_mlp.2", "text_transformer_block.mlp.fc2"),
+            ("img_mlp.0", "image_transformer_block.mlp.fc1"),
+            ("img_mlp.2", "image_transformer_block.mlp.fc2"),
+            ("img_mod.lin", "image_transformer_block.adaLN_modulation.layers.1"),
+            ("txt_mod.lin", "text_transformer_block.adaLN_modulation.layers.1"),
+            (".proj", ".o_proj"),
+            (".attn.norm.key_norm.scale", ".qk_norm.k_norm.weight"),
+            (".attn.norm.query_norm.scale", ".qk_norm.q_norm.weight"),
+            (".modulation.lin", ".transformer_block.adaLN_modulation.layers.1"),
+            (".norm.key_norm.scale", ".transformer_block.qk_norm.k_norm.weight"),
+            (".norm.query_norm.scale", ".transformer_block.qk_norm.q_norm.weight"),
+        ],
+    )
 
     # Split qkv proj and mlp in unified transformer block and rename:
     keys_to_pop = []
@@ -210,7 +184,8 @@ def flux_state_dict_adjustments(state_dict, prefix="", hidden_size=3072, mlp_rat
                         k.replace(".linear1", f".transformer_block.{name}_proj")
                     ] = weight if "weight" in k else weight
 
-    [state_dict.pop(k) for k in keys_to_pop]
+    for k in keys_to_pop:
+        state_dict.pop(k)
     state_dict.update(state_dict_update)
 
     # Split o_proj and mlp in unified transformer block and rename:
@@ -244,34 +219,22 @@ def flux_state_dict_adjustments(state_dict, prefix="", hidden_size=3072, mlp_rat
                             k.replace(".linear2", f".transformer_block.{name}_proj")
                         ] = weight if "weight" in k else weight
 
-    [state_dict.pop(k) for k in keys_to_pop]
+    for k in keys_to_pop:
+        state_dict.pop(k)
     state_dict.update(state_dict_update)
 
-    state_dict = {
-        k.replace("img_in.", "x_embedder.proj."): v for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("txt_in.", "context_embedder."): v for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("time_in.", "t_embedder."): v for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("vector_in.", "y_embedder."): v for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace(".in_layer.", ".mlp.layers.0."): v for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace(".out_layer.", ".mlp.layers.2."): v for k, v in state_dict.items()
-    }
-
-    state_dict = {
-        k.replace(
-            "final_layer.adaLN_modulation.1", "final_layer.adaLN_modulation.layers.1"
-        ): v
-        for k, v in state_dict.items()
-    }
+    state_dict = _apply_key_replacements(
+        state_dict,
+        [
+            ("img_in.", "x_embedder.proj."),
+            ("txt_in.", "context_embedder."),
+            ("time_in.", "t_embedder."),
+            ("vector_in.", "y_embedder."),
+            (".in_layer.", ".mlp.layers.0."),
+            (".out_layer.", ".mlp.layers.2."),
+            ("final_layer.adaLN_modulation.1", "final_layer.adaLN_modulation.layers.1"),
+        ],
+    )
 
     state_dict["x_embedder.proj.weight"] = mx.expand_dims(
         mx.expand_dims(state_dict["x_embedder.proj.weight"], axis=1), axis=1
@@ -284,39 +247,18 @@ def mmdit_state_dict_adjustments(state_dict, prefix=""):
     # Remove prefix
     state_dict = {k.lstrip(prefix): v for k, v in state_dict.items()}
 
-    state_dict = {
-        k.replace("y_embedder.mlp", "y_embedder.mlp.layers"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("t_embedder.mlp", "t_embedder.mlp.layers"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("adaLN_modulation", "adaLN_modulation.layers"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("al_layer", "final_layer"): v for k, v in state_dict.items()
-    }
-
-    # Rename joint_blocks -> multimodal_transformer_blocks
-    state_dict = {
-        k.replace("joint_blocks", "multimodal_transformer_blocks"): v
-        for k, v in state_dict.items()
-    }
-
-    # Remap context_block -> text_block
-    state_dict = {
-        k.replace("context_block", "text_transformer_block"): v
-        for k, v in state_dict.items()
-    }
-
-    # Remap x_block -> image_block
-    state_dict = {
-        k.replace("x_block", "image_transformer_block"): v
-        for k, v in state_dict.items()
-    }
+    state_dict = _apply_key_replacements(
+        state_dict,
+        [
+            ("y_embedder.mlp", "y_embedder.mlp.layers"),
+            ("t_embedder.mlp", "t_embedder.mlp.layers"),
+            ("adaLN_modulation", "adaLN_modulation.layers"),
+            ("al_layer", "final_layer"),
+            ("joint_blocks", "multimodal_transformer_blocks"),
+            ("context_block", "text_transformer_block"),
+            ("x_block", "image_transformer_block"),
+        ],
+    )
 
     # Split qkv proj and rename:
     # *transformer_block.attn.qkv.{weigth/bias}  -> transformer_block.attn.{q/k/v}_proj.{weigth/bias}
@@ -331,7 +273,8 @@ def mmdit_state_dict_adjustments(state_dict, prefix=""):
                     weight if "weight" in k else weight
                 )
 
-    [state_dict.pop(k) for k in keys_to_pop]
+    for k in keys_to_pop:
+        state_dict.pop(k)
     state_dict.update(state_dict_update)
 
     state_dict = {
@@ -370,34 +313,23 @@ def _common_vae_adjustments(state_dict):
     # Filter out MMDIT related tensors
     state_dict = {k: v for k, v in state_dict.items() if "diffusion_model." not in k}
 
-    state_dict = {k.replace("mid", "mid_blocks"): v for k, v in state_dict.items()}
-
-    state_dict = {
-        k.replace("mid_blocks.block_1", "mid_blocks.0"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("mid_blocks.block_2", "mid_blocks.2"): v
-        for k, v in state_dict.items()
-    }
-    state_dict = {
-        k.replace("mid_blocks.attn_1", "mid_blocks.1"): v for k, v in state_dict.items()
-    }
-
-    state_dict = {k.replace(".norm.", ".group_norm."): v for k, v in state_dict.items()}
-    state_dict = {
-        k.replace("norm_out", "conv_norm_out"): v for k, v in state_dict.items()
-    }
-
-    state_dict = {k.replace(".q", ".query_proj"): v for k, v in state_dict.items()}
-    state_dict = {k.replace(".k", ".key_proj"): v for k, v in state_dict.items()}
-    state_dict = {k.replace(".v", ".value_proj"): v for k, v in state_dict.items()}
-    state_dict = {k.replace(".proj_out", ".out_proj"): v for k, v in state_dict.items()}
-
-    state_dict = {k.replace(".block.", ".resnets."): v for k, v in state_dict.items()}
-    state_dict = {
-        k.replace(".nin_shortcut.", ".conv_shortcut."): v for k, v in state_dict.items()
-    }
+    state_dict = _apply_key_replacements(
+        state_dict,
+        [
+            ("mid", "mid_blocks"),
+            ("mid_blocks.block_1", "mid_blocks.0"),
+            ("mid_blocks.block_2", "mid_blocks.2"),
+            ("mid_blocks.attn_1", "mid_blocks.1"),
+            (".norm.", ".group_norm."),
+            ("norm_out", "conv_norm_out"),
+            (".q", ".query_proj"),
+            (".k", ".key_proj"),
+            (".v", ".value_proj"),
+            (".proj_out", ".out_proj"),
+            (".block.", ".resnets."),
+            (".nin_shortcut.", ".conv_shortcut."),
+        ],
+    )
 
     # reshape weights
     state_dict = {
