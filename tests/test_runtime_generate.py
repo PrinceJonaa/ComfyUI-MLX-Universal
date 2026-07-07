@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from comfyui_mlx_universal.runtime.data_types import LoadedMLXModel
 from comfyui_mlx_universal.runtime.generate_processing import (
+    execute_batch_image_description,
     execute_image_description,
     execute_text_generation,
 )
@@ -221,6 +222,39 @@ class TestRuntimeGenerate(unittest.TestCase):
             draft_model="mock_draft_model",
             draft_kind="eagle3",
         )
+
+    @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
+    @patch("mlx_vlm.generate")
+    @patch("mlx_vlm.prompt_utils.apply_chat_template")
+    @patch("comfyui_mlx_universal.runtime.generate_processing.tensor_to_pil")
+    def test_execute_batch_image_description(
+        self,
+        mock_tensor_to_pil,
+        mock_apply_chat_template,
+        mock_generate,
+        mock_mx,
+    ):
+        mock_tensor_to_pil.return_value = ["mocked_pil_image_1", "mocked_pil_image_2"]
+        mocked_model = self.get_mocked_model()
+
+        mock_apply_chat_template.side_effect = ["vlm_prompt_1", "vlm_prompt_2"]
+        mock_generate.side_effect = ["description 1", "description 2"]
+
+        result = execute_batch_image_description(
+            mlx_model=mocked_model,
+            image="fake_tensor",
+            prompt="Describe this batch",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+        )
+
+        self.assertEqual(result, ["description 1", "description 2"])
+        mock_mx.random.seed.assert_called_once_with(99)
+        self.assertEqual(mock_apply_chat_template.call_count, 2)
+        self.assertEqual(mock_generate.call_count, 2)
 
 
 if __name__ == "__main__":

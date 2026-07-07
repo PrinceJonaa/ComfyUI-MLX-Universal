@@ -119,3 +119,58 @@ def execute_image_description(
     )
     print("Image description complete.")
     return response
+
+
+def execute_batch_image_description(
+    mlx_model: LoadedMLXModel,
+    image: torch.Tensor,
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    seed: int,
+    enable_thinking: bool,
+    thinking_budget: int,
+) -> list[str]:
+    """
+    Executes batched image description using mlx-vlm.
+    Iterates sequentially over a batch of images to prevent memory spikes.
+    """
+    mx.random.seed(seed)
+    import mlx_vlm
+    from mlx_vlm.prompt_utils import apply_chat_template
+
+    pil_images = tensor_to_pil(image)
+    if not pil_images:
+        raise ValueError("Expected an image batch but found empty input.")
+
+    responses = []
+    gen_kwargs = {
+        "temp": temperature,
+        "max_tokens": max_tokens,
+        "verbose": False,
+        "enable_thinking": enable_thinking,
+        "thinking_budget": thinking_budget,
+    }
+
+    for idx, pil_img in enumerate(pil_images):
+        print(
+            f"Describing image {idx + 1}/{len(pil_images)} (max {max_tokens} tokens)..."
+        )
+        formatted_prompt = apply_chat_template(
+            mlx_model.processor,
+            mlx_model.model.config,
+            prompt,
+            num_images=1,
+            num_audios=0,
+        )
+        response = mlx_vlm.generate(
+            mlx_model.model,
+            mlx_model.processor,
+            formatted_prompt,
+            image=[pil_img],
+            **gen_kwargs,
+        )
+        responses.append(response)
+
+    print("Batch image description complete.")
+    return responses

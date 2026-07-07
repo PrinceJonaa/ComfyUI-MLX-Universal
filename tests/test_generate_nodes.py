@@ -226,6 +226,65 @@ class TestGenerateNodes(unittest.TestCase):
             draft_kind="eagle3",
         )
 
+    # --- MLXBatchVLMDescribe Tests ---
+
+    def test_mlx_vlm_batch_run_unknown_model_family_raises_value_error(self):
+        node = self.generate_nodes.MLXBatchVLMDescribe()
+        mocked_model = self.get_mocked_model()
+        mocked_model.family = "unknown-family"
+
+        with self.assertRaises(ValueError) as context:
+            node.run_batch(
+                mlx_model=mocked_model,
+                image=MagicMock(),
+                prompt="test prompt",
+                max_tokens=100,
+                temperature=0.7,
+                seed=42,
+                enable_thinking=False,
+                thinking_budget=100,
+            )
+
+        self.assertEqual(
+            str(context.exception),
+            "Expected model family 'mlx-vlm' but found 'unknown-family'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model.",
+        )
+
+    @patch.object(
+        import_node_module("generate_nodes"), "execute_batch_image_description"
+    )
+    def test_mlx_vlm_batch_run_happy_path(self, mock_execute):
+        node = self.generate_nodes.MLXBatchVLMDescribe()
+        mocked_model = self.get_mocked_model()
+        mocked_model.family = "mlx-vlm"
+
+        mock_execute.return_value = ["response 1", "response 2"]
+
+        mock_image = MagicMock()
+
+        result = node.run_batch(
+            mlx_model=mocked_model,
+            image=mock_image,
+            prompt="Describe this batch",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+        )
+
+        self.assertEqual(result, (["response 1", "response 2"],))
+        mock_execute.assert_called_once_with(
+            mlx_model=mocked_model,
+            image=mock_image,
+            prompt="Describe this batch",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
