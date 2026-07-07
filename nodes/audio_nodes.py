@@ -55,6 +55,7 @@ class MLXWhisperTranscribe:
         if isinstance(waveform, torch.Tensor):
             # NOTE: Using squeeze(0) assumes batch size 1; a batch size >1 will fail to reduce the dimension (see RM-011).
             # Take the first batch and mean across channels
+            # why: Reducing batch and channel dimensions because mlx-whisper expects a 1D mono audio array.
             audio_np = waveform[0].mean(dim=0).cpu().numpy().astype(np.float32)
         else:
             audio_np = np.array(waveform).astype(np.float32)
