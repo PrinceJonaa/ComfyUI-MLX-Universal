@@ -1,16 +1,11 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-07-01 at commit 027cb44
+> Last curated: 2026-07-08 at commit fbb4f37
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
 
 ## In Progress
-
-### [RM-015] Reduce cyclomatic complexity in IO and Runtime modules
-- Status: In Progress
-- Evidence: `execute_video_generation` in `runtime/video_processing.py` was successfully refactored (E -> D). `ruff check` / Xenon still flags `flux_state_dict_adjustments` (F), `_common_vae_adjustments` (D), and `mmdit_state_dict_adjustments` (D) in `diffusionkit/mlx/model_io.py`.
-- Why it matters: High cyclomatic complexity creates monolithic, untestable functions. Breaking them down into modular mapping pipelines reduces the risk of regression during future updates.
 
 ## Planned
 
@@ -37,6 +32,11 @@
 ## Blocked
 
 ## Recently Completed
+
+### [RM-015] Reduce cyclomatic complexity in IO and Runtime modules — completed 2026-07-08
+- Status: Completed
+- Evidence: `execute_video_generation` in `runtime/video_processing.py` was successfully refactored (E -> D). `ruff check` / Xenon still flags `flux_state_dict_adjustments` (F), `_common_vae_adjustments` (D), and `mmdit_state_dict_adjustments` (D) in `diffusionkit/mlx/model_io.py`.
+- Why it matters: High cyclomatic complexity creates monolithic, untestable functions. Breaking them down into modular mapping pipelines reduces the risk of regression during future updates.
 
 ### [RM-012] Fix static type hints for IMAGE inputs
 - Status: Completed
