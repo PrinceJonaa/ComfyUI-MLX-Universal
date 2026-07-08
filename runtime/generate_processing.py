@@ -119,3 +119,73 @@ def execute_image_description(
     )
     print("Image description complete.")
     return response
+
+
+def execute_batch_image_description(
+    mlx_model: LoadedMLXModel,
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    seed: int,
+    enable_thinking: bool,
+    thinking_budget: int,
+    image: torch.Tensor | None = None,
+    audio_path: str = "",
+    draft_model: Any = None,
+    draft_kind: str = "dflash",
+) -> tuple[list[str], str]:
+    """
+    Executes batched image description using mlx-vlm.
+    It loops through batched PIL images sequentially to avoid unified memory OOM.
+    """
+    mx.random.seed(seed)
+    import mlx_vlm
+    from mlx_vlm.prompt_utils import apply_chat_template
+
+    pil_images = tensor_to_pil(image) if image is not None else []
+    audios = [audio_path] if audio_path and os.path.exists(audio_path) else []
+
+    if not pil_images:
+        # Fallback to standard if no images
+        return ([""], "")
+
+    gen_kwargs: dict[str, Any] = {
+        "temp": temperature,
+        "max_tokens": max_tokens,
+        "verbose": False,
+        "enable_thinking": enable_thinking,
+        "thinking_budget": thinking_budget,
+    }
+
+    if draft_model is not None:
+        gen_kwargs["draft_model"] = draft_model
+        gen_kwargs["draft_kind"] = draft_kind
+
+    print(
+        f"Batch describing {len(pil_images)} image(s) (max {max_tokens} tokens per image)..."
+    )
+
+    responses = []
+    for i, pil_img in enumerate(pil_images):
+        print(f"Describing frame {i + 1}/{len(pil_images)}...")
+        formatted_prompt = apply_chat_template(
+            mlx_model.processor,
+            mlx_model.model.config,
+            prompt,
+            num_images=1,
+            num_audios=len(audios),
+        )
+
+        response = mlx_vlm.generate(
+            mlx_model.model,
+            mlx_model.processor,
+            formatted_prompt,
+            image=[pil_img],
+            audio=audios if audios else None,
+            **gen_kwargs,
+        )
+        responses.append(response)
+
+    print("Batch image description complete.")
+    concatenated_text = "\n\n".join(responses)
+    return responses, concatenated_text

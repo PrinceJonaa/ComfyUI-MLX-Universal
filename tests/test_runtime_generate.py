@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from comfyui_mlx_universal.runtime.data_types import LoadedMLXModel
 from comfyui_mlx_universal.runtime.generate_processing import (
+    execute_batch_image_description,
     execute_image_description,
     execute_text_generation,
 )
@@ -220,6 +221,89 @@ class TestRuntimeGenerate(unittest.TestCase):
             thinking_budget=0,
             draft_model="mock_draft_model",
             draft_kind="eagle3",
+        )
+
+    # --- execute_batch_image_description Tests ---
+
+    @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
+    @patch("mlx_vlm.generate")
+    @patch("mlx_vlm.prompt_utils.apply_chat_template")
+    @patch("os.path.exists", return_value=True)
+    @patch("comfyui_mlx_universal.runtime.generate_processing.tensor_to_pil")
+    def test_execute_batch_image_description(
+        self,
+        mock_tensor_to_pil,
+        mock_os_exists,
+        mock_apply_chat_template,
+        mock_generate,
+        mock_mx,
+    ):
+        mock_tensor_to_pil.return_value = ["mocked_pil_image_1", "mocked_pil_image_2"]
+        mocked_model = self.get_mocked_model()
+
+        mock_apply_chat_template.return_value = "vlm_formatted_prompt_batch"
+        mock_generate.side_effect = ["description 1", "description 2"]
+
+        mock_image = MagicMock()
+
+        responses, concat_text = execute_batch_image_description(
+            mlx_model=mocked_model,
+            prompt="Batch describe this",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+            image=mock_image,
+            audio_path="fake/path.mp3",
+            draft_model=None,
+        )
+
+        self.assertEqual(responses, ["description 1", "description 2"])
+        self.assertEqual(concat_text, "description 1\n\ndescription 2")
+
+        mock_mx.random.seed.assert_called_once_with(99)
+
+        self.assertEqual(mock_apply_chat_template.call_count, 2)
+        mock_apply_chat_template.assert_any_call(
+            mocked_model.processor,
+            mocked_model.model.config,
+            "Batch describe this",
+            num_images=1,
+            num_audios=1,
+        )
+
+        self.assertEqual(mock_generate.call_count, 2)
+
+        from unittest.mock import call
+
+        mock_generate.assert_has_calls(
+            [
+                call(
+                    mocked_model.model,
+                    mocked_model.processor,
+                    "vlm_formatted_prompt_batch",
+                    image=["mocked_pil_image_1"],
+                    audio=["fake/path.mp3"],
+                    temp=0.8,
+                    max_tokens=256,
+                    verbose=False,
+                    enable_thinking=True,
+                    thinking_budget=512,
+                ),
+                call(
+                    mocked_model.model,
+                    mocked_model.processor,
+                    "vlm_formatted_prompt_batch",
+                    image=["mocked_pil_image_2"],
+                    audio=["fake/path.mp3"],
+                    temp=0.8,
+                    max_tokens=256,
+                    verbose=False,
+                    enable_thinking=True,
+                    thinking_budget=512,
+                ),
+            ]
         )
 
 
