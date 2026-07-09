@@ -1,6 +1,4 @@
-from ..runtime.bridge import tensor_to_pil
 from ..runtime.data_types import LoadedMLXModel
-from ..runtime.sam_processing import process_sam3_result
 
 
 class MLXSAM3Predictor:
@@ -36,34 +34,14 @@ class MLXSAM3Predictor:
         text_prompt: str,
         score_threshold: float,
     ) -> tuple:
-        if mlx_model.family != "sam3":
-            raise ValueError(
-                f"Expected model family 'sam3' but found '{mlx_model.family}'. Please ensure you are passing a SAM model loaded via 'MLX Load Model'."
-            )
+        from ..runtime.sam_processing import execute_sam3_prediction
 
-        from mlx_vlm.models.sam3.generate import Sam3Predictor
-
-        pil_images = tensor_to_pil(image)
-        if not pil_images:
-            raise ValueError(
-                "Expected an image batch but found empty input. Please connect a valid image to the node."
-            )
-
-        pil_img = pil_images[0]
-        W, H = pil_img.size
-
-        predictor = Sam3Predictor(
-            mlx_model.model, mlx_model.processor, score_threshold=score_threshold
+        return execute_sam3_prediction(
+            mlx_model=mlx_model,
+            image=image,
+            text_prompt=text_prompt,
+            score_threshold=score_threshold,
         )
-        print(f"Running SAM3 prediction for prompt: '{text_prompt}'...")
-        result = predictor.predict(pil_img, text_prompt=text_prompt)
-        print(f"SAM3 prediction complete. Found {len(result.scores)} detections.")
-
-        out_image, combined_mask, individual_masks, json_data = process_sam3_result(
-            result, pil_img
-        )
-
-        return (out_image, combined_mask, individual_masks, json_data)
 
 
 NODE_CLASS_MAPPINGS = {

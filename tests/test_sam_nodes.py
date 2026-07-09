@@ -1,7 +1,7 @@
 import os
 import sys
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from tests.test_helper import import_node_module
 
@@ -49,17 +49,25 @@ class TestSAMNodes(unittest.TestCase):
         mock_detection_result.scores = [0.9, 0.8]
         mock_predictor.predict.return_value = mock_detection_result
 
-        # Configure clean manual mock for process_sam3_result in the sam_nodes module
+        # Configure clean manual mock for process_sam3_result
         mock_output = ("out_img", "comb_mask", "ind_masks", '{"data":[]}')
-        self.sam_nodes.process_sam3_result = MagicMock(return_value=mock_output)
+        self.patcher1 = patch(
+            "comfyui_mlx_universal.runtime.sam_processing.process_sam3_result",
+            return_value=mock_output,
+        )
+        self.mock_process = self.patcher1.start()
 
         # Setup mock node
         node = self.MLXSAM3Predictor()
 
-        # Setup clean mock for tensor_to_pil in the sam_nodes module
+        # Setup clean mock for tensor_to_pil
         mock_pil_img = MagicMock()
         mock_pil_img.size = (512, 512)
-        self.sam_nodes.tensor_to_pil = MagicMock(return_value=[mock_pil_img])
+        self.patcher2 = patch(
+            "comfyui_mlx_universal.runtime.sam_processing.tensor_to_pil",
+            return_value=[mock_pil_img],
+        )
+        self.mock_tensor_to_pil = self.patcher2.start()
 
         mock_model = self.LoadedMLXModel(
             family="sam3",
@@ -74,17 +82,17 @@ class TestSAMNodes(unittest.TestCase):
         result = node.predict(mock_model, "fake_image_tensor", "a cat", 0.4)
 
         # Asserts
-        self.sam_nodes.tensor_to_pil.assert_called_once_with("fake_image_tensor")
+        self.mock_tensor_to_pil.assert_called_once_with("fake_image_tensor")
         mock_sam_predictor_cls.assert_called_once_with(
             "internal_model", "internal_processor", score_threshold=0.4
         )
         mock_predictor.predict.assert_called_once_with(
             mock_pil_img, text_prompt="a cat"
         )
-        self.sam_nodes.process_sam3_result.assert_called_once_with(
-            mock_detection_result, mock_pil_img
-        )
+        self.mock_process.assert_called_once_with(mock_detection_result, mock_pil_img)
         self.assertEqual(result, ("out_img", "comb_mask", "ind_masks", '{"data":[]}'))
+        self.patcher1.stop()
+        self.patcher2.stop()
 
 
 if __name__ == "__main__":
