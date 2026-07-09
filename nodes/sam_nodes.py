@@ -46,7 +46,7 @@ class MLXSAM3Predictor:
         pil_images = tensor_to_pil(image)
         if not pil_images:
             raise ValueError(
-                "Expected an image batch but found empty input. Please connect a valid image to the node."
+                "Expected an image batch, but found an empty input. Please connect a valid image to the node."
             )
 
         pil_img = pil_images[0]

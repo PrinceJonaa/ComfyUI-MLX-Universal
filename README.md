@@ -76,6 +76,8 @@ pip install -r requirements.txt
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Video** | `mlx_video` | CLI subprocess wrappers supporting Wan2.x, LTX-2, and CogVideoX. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Segmentation** | `SAM3` | Open-vocabulary semantic segmentation and object detection. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Audio** | `mlx-whisper` | Native Whisper integration. |
+| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Audio** | `mlx_audio` | Native Kokoro TTS integration. |
+| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Embeddings** | `mlx-embeddings` | Native MLX text embeddings. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Adapters** | `registry.py` | Safe, dynamic LoRA fusions injected directly into the unified memory pool. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **System** | `mx.metal` | Explicit cache eviction to protect against Mac swap-memory death. |
 
@@ -102,6 +104,9 @@ graph TD
         UI_Decode[MLX VAE Decode (Flux)]
         UI_Sys[MLX Clear Cache]
         UI_Stats[MLX Cache Stats]
+        UI_Embed[MLX Generate Text Embedding]
+        UI_AudioGen[MLX Generate Audio (Kokoro)]
+        UI_DraftLoad[MLX Load Draft Model]
     end
 
     subgraph nodes/ [Frontend Nodes]
@@ -119,6 +124,9 @@ graph TD
         UI_Audio --> AN[audio_nodes.py]
         UI_Sys --> SysN[system_nodes.py]
         UI_Stats --> SysN
+        UI_Embed --> EN[embedding_nodes.py]
+        UI_AudioGen --> AN
+        UI_DraftLoad --> LN
     end
 
     subgraph runtime/ [Execution Substrate]

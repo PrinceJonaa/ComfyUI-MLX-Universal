@@ -130,7 +130,9 @@ class MLXKokoroTTS:
                 audio_chunks.append(audio)
 
         if not audio_chunks:
-            raise ValueError("Kokoro TTS generated no audio for the given text.")
+            raise ValueError(
+                "Expected generated audio chunks from Kokoro TTS, but none were returned. Try using a longer text prompt or a different voice."
+            )
 
         import mlx.core as mx
 
