@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from comfyui_mlx_universal.runtime.data_types import LoadedMLXModel
 from comfyui_mlx_universal.runtime.generate_processing import (
+    execute_batch_image_description,
     execute_image_description,
     execute_text_generation,
 )
@@ -211,6 +212,129 @@ class TestRuntimeGenerate(unittest.TestCase):
             mocked_model.model,
             mocked_model.processor,
             "vlm_formatted_prompt_draft",
+            image=None,
+            audio=None,
+            temp=0.5,
+            max_tokens=128,
+            verbose=False,
+            enable_thinking=False,
+            thinking_budget=0,
+            draft_model="mock_draft_model",
+            draft_kind="eagle3",
+        )
+
+    # --- execute_batch_image_description Tests ---
+
+    @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
+    @patch("mlx_vlm.generate")
+    @patch("mlx_vlm.prompt_utils.apply_chat_template")
+    @patch("os.path.exists", return_value=True)
+    @patch("comfyui_mlx_universal.runtime.generate_processing.tensor_to_pil")
+    def test_execute_batch_image_description_multiple_images(
+        self,
+        mock_tensor_to_pil,
+        mock_os_exists,
+        mock_apply_chat_template,
+        mock_generate,
+        mock_mx,
+    ):
+        mock_tensor_to_pil.return_value = ["mocked_pil_image_1", "mocked_pil_image_2"]
+        mocked_model = self.get_mocked_model()
+
+        mock_apply_chat_template.side_effect = [
+            "vlm_formatted_prompt_1",
+            "vlm_formatted_prompt_2",
+        ]
+        mock_generate.side_effect = ["description 1", "description 2"]
+
+        mock_image = MagicMock()
+
+        result_list, result_concat = execute_batch_image_description(
+            mlx_model=mocked_model,
+            prompt="Describe this batch",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+            image=mock_image,
+            audio_path="fake/path.mp3",
+            draft_model=None,
+        )
+
+        self.assertEqual(result_list, ["description 1", "description 2"])
+        self.assertEqual(result_concat, "description 1\n\ndescription 2")
+
+        mock_mx.random.seed.assert_called_once_with(99)
+        self.assertEqual(mock_apply_chat_template.call_count, 2)
+        mock_apply_chat_template.assert_any_call(
+            mocked_model.processor,
+            mocked_model.model.config,
+            "Describe this batch",
+            num_images=1,
+            num_audios=1,
+        )
+        self.assertEqual(mock_generate.call_count, 2)
+        mock_generate.assert_any_call(
+            mocked_model.model,
+            mocked_model.processor,
+            "vlm_formatted_prompt_1",
+            image=["mocked_pil_image_1"],
+            audio=["fake/path.mp3"],
+            temp=0.8,
+            max_tokens=256,
+            verbose=False,
+            enable_thinking=True,
+            thinking_budget=512,
+        )
+
+    @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
+    @patch("mlx_vlm.generate")
+    @patch("mlx_vlm.prompt_utils.apply_chat_template")
+    @patch("os.path.exists", return_value=False)
+    @patch("comfyui_mlx_universal.runtime.generate_processing.tensor_to_pil")
+    def test_execute_batch_image_description_no_image(
+        self,
+        mock_tensor_to_pil,
+        mock_os_exists,
+        mock_apply_chat_template,
+        mock_generate,
+        mock_mx,
+    ):
+        mock_tensor_to_pil.return_value = []
+        mocked_model = self.get_mocked_model()
+
+        mock_apply_chat_template.return_value = "vlm_formatted_prompt_no_image"
+        mock_generate.return_value = "no image description"
+
+        result_list, result_concat = execute_batch_image_description(
+            mlx_model=mocked_model,
+            prompt="Draft this",
+            max_tokens=128,
+            temperature=0.5,
+            seed=1,
+            enable_thinking=False,
+            thinking_budget=0,
+            image=None,
+            audio_path="",
+            draft_model="mock_draft_model",
+            draft_kind="eagle3",
+        )
+
+        self.assertEqual(result_list, ["no image description"])
+        self.assertEqual(result_concat, "no image description")
+        mock_mx.random.seed.assert_called_once_with(1)
+        mock_apply_chat_template.assert_called_once_with(
+            mocked_model.processor,
+            mocked_model.model.config,
+            "Draft this",
+            num_images=0,
+            num_audios=0,
+        )
+        mock_generate.assert_called_once_with(
+            mocked_model.model,
+            mocked_model.processor,
+            "vlm_formatted_prompt_no_image",
             image=None,
             audio=None,
             temp=0.5,
