@@ -1,35 +1,12 @@
-## Architectural Thesis
+## Tasks Completed
 
-The MLX diffusion implementation details (lazy evaluation triggers, tokenization logic, and complex MLX tensor manipulations) were heavily bleeding into the ComfyUI node wrappers in `nodes/diffusion_nodes.py`. This created a severely leaking abstraction where the UI layer had to juggle core dependencies (like `mlx.core` and `diffusionkit`) and perform low-level caching. By introducing `runtime/diffusion_processing.py` as a dedicated barrier, we isolate these responsibilities strictly to the runtime substrate, reducing dependency drift and completely satisfying the strict UI/MLX separation invariant.
+- **Type Errors**: Fixed `[attr-defined]` errors in `tests/test_helper.py` by swapping direct module attribute assignment for `setattr()`. This resolves errors when mocking out modules.
+- **Type Errors**: Fixed `[union-attr]` error in `runtime/generate_processing.py` related to `tokenizer` methods. Added a `None` check and used `# type: ignore[union-attr]` since `mypy` cannot perfectly narrow types when relying on `hasattr` or `getattr` on an `Any | None` object.
+- **.gitignore**: The git cache was cleaned to remove tracked files that should be ignored by the current `.gitignore` (specifically ensuring `.DS_Store`, `__pycache__`, `.env`, and `.venv` are untracked).
+- **Formatting**: The codebase was formatted with `ruff`.
 
-## Debt Location
+## Specific Linters/Rules applied
 
-- `nodes/diffusion_nodes.py`: Execution functions inside `MLXDecoder`, `MLXSampler`, `MLXClipTextEncoder`, and `MLXEncoder` classes.
-- `nodes/diffusion_nodes.py`: The `_tokenize` private helper method residing in the UI layer.
-
-## What Changed
-
-- Introduced `runtime/diffusion_processing.py` containing four high-level execution functions: `decode_latents`, `generate_image`, `encode_clip_text`, and `encode_image`.
-- Migrated all `mx.eval()` calls, tokenization scaling logic, and diffusion tracking into these runtime functions.
-- Stripped all `mlx.core` and `diffusionkit` imports out of `nodes/diffusion_nodes.py`, converting it into a pure dictionary-passing frontend wrapper.
-- Extracted the `_tokenize` helper method out of the `MLXClipTextEncoder` class and into the runtime module.
-
-## What Was Not Changed
-
-- All ComfyUI node definitions (`INPUT_TYPES`, `RETURN_TYPES`, `RETURN_NAMES`) remain 100% identical.
-- The public signatures and parameter keys are untouched. Existing saved user workflows will successfully deserialize and run without any modification.
-- Existing internal bridges (e.g., `runtime/bridge.py` and `runtime/model_loader.py`) remain completely unchanged, ensuring cache behaviors are unaffected.
-
-## Backward Compatibility
-
-- Ran `python3 -m unittest discover tests` successfully across all 20 existing unit tests, explicitly verifying that the newly abstracted node methods still correctly route and process mock MLX tensors via the bridge.
-- Confirmed `mypy .` and `ruff check --fix .` pass with zero failures, proving robust typing and separation.
-- Verified manual resolution of the project's roadmap merge conflicts without altering file tracking expectations.
-
-## Rejected Alternatives
-
-- **Extracting tokenization to `bridge.py` instead of `diffusion_processing.py`**: This was rejected because `bridge.py` is explicitly designed for agnostic framework conversion (PyTorch ↔ MLX), whereas tokenization is specific to the diffusion process. Dumping it there would violate single-responsibility.
-
-## Follow-On Candidates
-
-- Consider extracting the heavy dictionary parsing out of the node wrappers (like unpacking `mlx_positive_conditioning`) and handling parameter validation directly inside `diffusion_processing.py` to make the UI wrappers even thinner.
+- **Mypy**: Enforced strict typing for dynamic module mocking and attribute checking.
+- **Ruff**: Applied standard python formatting and safe fixes.
+- **Git**: Ensured the working tree adheres to the repository's `.gitignore` policy.
