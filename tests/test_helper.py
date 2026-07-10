@@ -81,9 +81,13 @@ if not USE_REAL_MLX:
         ]
     )
 
+import importlib.machinery
+
 for mod in mock_modules:
     if mod not in sys.modules:
-        sys.modules[mod] = MagicMock()
+        mock_obj = MagicMock()
+        mock_obj.__spec__ = importlib.machinery.ModuleSpec(mod, None)
+        sys.modules[mod] = mock_obj
 
 # Inject MockTensor into mocked torch if we mocked it
 if not USE_REAL_MLX:
