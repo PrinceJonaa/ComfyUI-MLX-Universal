@@ -9,7 +9,7 @@ on:
 jobs:
   test-apple-silicon:
     name: Run Unit Tests on Apple Silicon
-    runs-on: macos-latest-xlarge
+    runs-on: macos-latest
     
     env:
       REAL_MLX_TESTS: "1"
