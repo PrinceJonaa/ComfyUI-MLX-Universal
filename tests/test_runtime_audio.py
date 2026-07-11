@@ -31,6 +31,34 @@ class TestRuntimeAudio(unittest.TestCase):
             kwargs["path_or_hf_repo"], "mlx-community/whisper-large-v3-turbo"
         )
 
+    @patch("comfyui_mlx_universal.runtime.model_loader.track_audio_model")
+    @patch("mlx_whisper.transcribe")
+    @patch("soundfile.write")
+    @patch("os.path.exists", return_value=True)
+    @patch("os.remove")
+    @patch("folder_paths.get_temp_directory", return_value="/tmp")
+    def test_execute_audio_transcription_full(
+        self,
+        mock_get_temp,
+        mock_remove,
+        mock_exists,
+        mock_sf_write,
+        mock_transcribe,
+        mock_track,
+    ):
+        mock_transcribe.return_value = {"text": "hello transcribed world"}
+
+        audio_dict = {"waveform": torch.zeros((1, 1, 16000)), "sample_rate": 16000}
+
+        result = execute_audio_transcription(
+            audio_dict, "mlx-community/whisper-large-v3-turbo"
+        )
+        self.assertEqual(result, "hello transcribed world")
+        mock_track.assert_called_once_with("mlx-community/whisper-large-v3-turbo")
+        mock_transcribe.assert_called_once()
+        mock_sf_write.assert_called_once()
+        mock_remove.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

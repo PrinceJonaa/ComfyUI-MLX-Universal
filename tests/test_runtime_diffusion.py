@@ -1,6 +1,6 @@
 import os
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from comfyui_mlx_universal.runtime.diffusion_processing import (
     encode_clip_text,
@@ -81,6 +81,111 @@ class TestRuntimeDiffusion(unittest.TestCase):
                 latent_image={"wrong_key": "val"},
                 denoise=1.0,
             )
+
+    @patch("comfyui_mlx_universal.runtime.diffusion_processing.mx.eval")
+    @patch("comfyui_mlx_universal.runtime.diffusion_processing.mlx_to_torch")
+    @patch("comfyui_mlx_universal.runtime.diffusion_processing.latent_to_mlx")
+    def test_decode_latents(self, mock_latent_to_mlx, mock_mlx_to_torch, mock_mx_eval):
+        mock_latent_to_mlx.return_value = "mlx_latent_mock"
+        mock_mlx_to_torch.return_value = "torch_image_mock"
+
+        mock_vae = MagicMock()
+
+        # We need to mock the tensor math operations too
+        mock_decoded = MagicMock()
+        mock_vae.return_value = mock_decoded
+
+        import sys
+
+        # ensure clip works on the mock
+        if sys.modules["mlx.core"] is not None and isinstance(
+            sys.modules["mlx.core"], MagicMock
+        ):
+            sys.modules["mlx.core"].clip.return_value = mock_decoded
+            sys.modules["mlx.core"].float32 = "float32"
+            mock_decoded.astype.return_value = mock_decoded
+
+        from comfyui_mlx_universal.runtime.diffusion_processing import decode_latents
+
+        result = decode_latents({"samples": "mock_samples"}, mock_vae)
+
+        self.assertEqual(result, ("torch_image_mock",))
+        mock_latent_to_mlx.assert_called_once_with({"samples": "mock_samples"})
+        mock_vae.assert_called_once_with("mlx_latent_mock")
+        mock_mx_eval.assert_called_once()
+        mock_mlx_to_torch.assert_called_once()
+
+    @patch("comfyui_mlx_universal.runtime.diffusion_processing.mx.eval")
+    @patch("comfyui_mlx_universal.runtime.diffusion_processing.mlx_to_latent")
+    @patch("comfyui_mlx_universal.runtime.diffusion_processing.torch_to_mlx")
+    def test_encode_image(self, mock_torch_to_mlx, mock_mlx_to_latent, mock_mx_eval):
+        mock_torch_to_mlx.return_value = MagicMock()
+        mock_mlx_to_latent.return_value = "latent_image_mock"
+
+        mock_vae = MagicMock()
+        mock_hidden = MagicMock()
+        mock_mean = MagicMock()
+        mock_hidden.split.return_value = (mock_mean, MagicMock())
+        mock_vae.encoder.return_value = mock_hidden
+
+        mock_latents = MagicMock()
+        mock_vae.latent_format.process_in.return_value = mock_latents
+
+        from comfyui_mlx_universal.runtime.diffusion_processing import encode_image
+
+        result = encode_image("torch_image_mock", mock_vae)
+
+        self.assertEqual(result, ("latent_image_mock",))
+        mock_torch_to_mlx.assert_called_once_with("torch_image_mock")
+        mock_vae.encoder.assert_called_once()
+        mock_vae.latent_format.process_in.assert_called_once_with(mock_mean)
+        mock_mx_eval.assert_called_once_with(mock_latents)
+        mock_mlx_to_latent.assert_called_once_with(mock_latents)
+
+    @patch("comfyui_mlx_universal.runtime.diffusion_processing.mx.eval")
+    @patch("comfyui_mlx_universal.runtime.diffusion_processing.mlx_to_latent")
+    @patch("comfyui_mlx_universal.runtime.diffusion_processing.latent_to_mlx")
+    def test_generate_image(self, mock_latent_to_mlx, mock_mlx_to_latent, mock_mx_eval):
+        mock_latent_to_mlx.return_value = "input_latents_mock"
+        mock_mlx_to_latent.return_value = "latent_image_mock"
+
+        mock_model = MagicMock()
+        mock_latents = MagicMock()
+        mock_latents.astype.return_value = mock_latents
+        mock_model.denoise_latents.return_value = (mock_latents, 1.0)
+        mock_model.activation_dtype = "float32"
+
+        cond_dict = {"conditioning": "cond", "pooled_conditioning": "pooled"}
+        latent_dict = {"samples": MagicMock()}
+        latent_dict["samples"].shape = (1, 4, 64, 64)
+
+        from comfyui_mlx_universal.runtime.diffusion_processing import generate_image
+
+        result = generate_image(
+            mlx_model=mock_model,
+            seed=42,
+            steps=4,
+            cfg=1.0,
+            mlx_positive_conditioning=cond_dict,
+            latent_image=latent_dict,
+            denoise=0.5,
+        )
+
+        self.assertEqual(result, ("latent_image_mock",))
+        mock_latent_to_mlx.assert_called_once_with(latent_dict)
+        mock_model.denoise_latents.assert_called_once_with(
+            "cond",
+            "pooled",
+            num_steps=4,
+            cfg_weight=1.0,
+            latent_size=(64, 64),
+            seed=42,
+            image_path=None,
+            denoise=0.5,
+            input_latents="input_latents_mock",
+        )
+        mock_mx_eval.assert_called_once_with(mock_latents)
+        mock_mlx_to_latent.assert_called_once_with(mock_latents)
 
 
 if __name__ == "__main__":
