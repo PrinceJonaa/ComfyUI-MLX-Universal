@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-07-01 at commit 027cb44
+> Last curated: 2026-07-11 at commit fbb4f37
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -19,11 +19,6 @@
 - Evidence: MCP architecture analysis and `make complexity` highlight `diffusionkit/mlx/model_io.py` as a monolithic hotspot with `flux_state_dict_adjustments` scoring an F in cyclomatic complexity.
 - Why it matters: State dict adjustments are currently one massive function. Refactoring these into a Chain of Responsibility pattern or modular map dictionaries will drastically improve maintainability.
 
-### [RM-017] Increase Test Coverage for Runtime Extractions
-- Status: Planned
-- Evidence: PRs #73 and #80 successfully extracted logic to `runtime/audio_processing.py` and `runtime/diffusion_processing.py`, but tests still mock at the node layer instead of unit-testing the runtime functions directly.
-- Why it matters: Prevents silent regressions in the new runtime bridging logic.
-
 ### [RM-014] Refactor dynamic LoRA fusion in `MLXApplyLoRA`
 - Status: Planned
 - Evidence: `MLXApplyLoRA.apply_lora` in `nodes/loader_nodes.py` re-invokes `load_unified_mlx_model` from scratch to fuse an adapter, bypassing dynamic weight patching.
@@ -37,6 +32,11 @@
 ## Blocked
 
 ## Recently Completed
+
+### [RM-017] Increase Test Coverage for Runtime Extractions — completed 2026-07-11
+- Status: Completed
+- Evidence: Created tests in `tests/test_runtime_diffusion.py` that directly mock and unit-test `decode_latents`, `encode_image`, and `generate_image` from `runtime/diffusion_processing.py`.
+- Why it matters: Prevents silent regressions in the new runtime bridging logic.
 
 ### [RM-012] Fix static type hints for IMAGE inputs
 - Status: Completed
