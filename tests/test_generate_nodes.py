@@ -18,6 +18,7 @@ class TestGenerateNodes(unittest.TestCase):
         cls.generate_nodes = import_node_module("generate_nodes")
         cls.MLXLMGenerateText = cls.generate_nodes.MLXLMGenerateText
         cls.MLXVLMDescribeImage = cls.generate_nodes.MLXVLMDescribeImage
+        cls.MLXBatchVLMDescribeImage = cls.generate_nodes.MLXBatchVLMDescribeImage
 
         # We need to mock runtime classes used in tests
         runtime_data_types = sys.modules["comfyui_mlx_universal.runtime.data_types"]
@@ -224,6 +225,48 @@ class TestGenerateNodes(unittest.TestCase):
             audio_path="",
             draft_model="mock_draft_model",
             draft_kind="eagle3",
+        )
+
+    # --- MLXBatchVLMDescribeImage Tests ---
+
+    @patch.object(
+        import_node_module("generate_nodes"), "execute_batch_image_description"
+    )
+    def test_mlx_batch_vlm_run_happy_path(self, mock_execute):
+        node = self.MLXBatchVLMDescribeImage()
+        mocked_model = self.get_mocked_model()
+        mocked_model.family = "mlx-vlm"
+
+        mock_execute.return_value = (["desc1", "desc2"], "desc1\ndesc2")
+
+        mock_image = MagicMock()
+
+        result = node.run(
+            mlx_model=mocked_model,
+            prompt="Describe this batch",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+            image=mock_image,
+            audio_path="fake/path.mp3",
+            draft_model=None,
+        )
+
+        self.assertEqual(result, (["desc1", "desc2"], "desc1\ndesc2"))
+        mock_execute.assert_called_once_with(
+            mlx_model=mocked_model,
+            prompt="Describe this batch",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+            image=mock_image,
+            audio_path="fake/path.mp3",
+            draft_model=None,
+            draft_kind="dflash",
         )
 
 

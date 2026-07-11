@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from comfyui_mlx_universal.runtime.data_types import LoadedMLXModel
 from comfyui_mlx_universal.runtime.generate_processing import (
+    execute_batch_image_description,
     execute_image_description,
     execute_text_generation,
 )
@@ -221,6 +222,55 @@ class TestRuntimeGenerate(unittest.TestCase):
             draft_model="mock_draft_model",
             draft_kind="eagle3",
         )
+
+    # --- execute_batch_image_description Tests ---
+
+    @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
+    @patch("mlx_vlm.generate")
+    @patch("mlx_vlm.prompt_utils.apply_chat_template")
+    @patch("os.path.exists", return_value=True)
+    @patch("comfyui_mlx_universal.runtime.generate_processing.tensor_to_pil")
+    def test_execute_batch_image_description_multiple_images(
+        self,
+        mock_tensor_to_pil,
+        mock_os_exists,
+        mock_apply_chat_template,
+        mock_generate,
+        mock_mx,
+    ):
+        # We will mock it so that we have 2 images
+        mock_tensor_to_pil.return_value = ["img1", "img2"]
+        mocked_model = self.get_mocked_model()
+
+        mock_apply_chat_template.return_value = "batch_vlm_formatted_prompt"
+        mock_generate.side_effect = ["description 1", "description 2"]
+
+        mock_image = MagicMock()
+
+        result = execute_batch_image_description(
+            mlx_model=mocked_model,
+            prompt="Describe this",
+            max_tokens=256,
+            temperature=0.8,
+            seed=99,
+            enable_thinking=True,
+            thinking_budget=512,
+            image=mock_image,
+            audio_path="fake/path.mp3",
+            draft_model=None,
+        )
+
+        # Ensure the result is a tuple (list of text, concatenated string)
+        self.assertEqual(
+            result, (["description 1", "description 2"], "description 1\ndescription 2")
+        )
+
+        # We check the memory clearance is called exactly for every image in the batch
+        self.assertEqual(mock_mx.metal.clear_cache.call_count, 2)
+        self.assertEqual(mock_mx.eval.call_count, 2)
+
+        # Verify generate is called individually for each image
+        self.assertEqual(mock_generate.call_count, 2)
 
 
 if __name__ == "__main__":
