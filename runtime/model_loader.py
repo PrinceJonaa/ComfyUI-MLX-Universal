@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 
@@ -155,6 +156,57 @@ def load_unified_mlx_model(
             )
 
     return get_or_load_model(cache_key, _load)
+
+
+def apply_dynamic_lora(base_model: LoadedMLXModel, adapter_path: str) -> LoadedMLXModel:
+    """
+    Dynamically fuses a LoRA adapter into an existing loaded model using a deepcopy of the model graph,
+    avoiding redundant disk I/O and base model instantiation. Tracks the result via the registry.
+    """
+    if not adapter_path:
+        return base_model
+
+    print(f"Intercepting MLX Model payload to dynamically fuse LoRA adapter: {adapter_path}")
+
+    # Use the same cache key construction but inject the adapter suffix to properly track the new state
+    key_suffix = f":adapter={adapter_path}"
+    cache_key = (
+        make_key(
+            base_model.model_path,
+            base_model.model_type,
+            base_model.trust_remote_code,
+            base_model.quantize_activations,
+        )
+        + key_suffix
+    )
+
+    def _fuse_lora():
+        print(f"Dynamically applying LoRA weights from '{adapter_path}' to model '{base_model.model_path}'...")
+        # Deepcopy the parameter graph so we don't permanently alter the cached base model for other nodes
+        model_copy = copy.deepcopy(base_model.model)
+
+        if base_model.family == "mlx-lm":
+            from mlx_lm.utils import load_adapters
+            model_copy = load_adapters(model_copy, adapter_path)
+            model_copy.eval()
+        elif base_model.family in ("mlx-vlm", "sam3"):
+            from mlx_vlm.trainer.utils import apply_lora_layers
+            model_copy = apply_lora_layers(model_copy, adapter_path)
+            model_copy.eval()
+        else:
+            raise ValueError(f"Dynamic LoRA fusion is not supported for family: {base_model.family}")
+
+        return LoadedMLXModel(
+            family=base_model.family,
+            model_path=base_model.model_path,
+            model_type=base_model.model_type,
+            trust_remote_code=base_model.trust_remote_code,
+            quantize_activations=base_model.quantize_activations,
+            model=model_copy,
+            processor=base_model.processor,
+        )
+
+    return get_or_load_model(cache_key, _fuse_lora)
 
 
 def load_draft_model(draft_model_path: str, model_type: str):

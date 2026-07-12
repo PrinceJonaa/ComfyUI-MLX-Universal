@@ -1,5 +1,9 @@
 from ..runtime.data_types import LoadedMLXModel
-from ..runtime.model_loader import load_draft_model, load_unified_mlx_model
+from ..runtime.model_loader import (
+    apply_dynamic_lora,
+    load_draft_model,
+    load_unified_mlx_model,
+)
 
 
 class MLXModelLoaderUnified:
@@ -89,16 +93,7 @@ class MLXApplyLoRA:
         if not adapter_path:
             return (mlx_model,)
 
-        # LoRA weights are fused at load-time rather than dynamically applied to existing instances to ensure safe tracking within the MLX unified memory cache
-        print(f"Intercepting MLX Model payload to fuse LoRA adapter: {adapter_path}")
-
-        loaded = load_unified_mlx_model(
-            model_path=mlx_model.model_path,
-            model_type=mlx_model.model_type,
-            trust_remote_code=mlx_model.trust_remote_code,
-            quantize_activations=mlx_model.quantize_activations,
-            adapter_path=adapter_path,
-        )
+        loaded = apply_dynamic_lora(mlx_model, adapter_path)
         return (loaded,)
 
 
