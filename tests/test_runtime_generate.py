@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -23,6 +24,7 @@ class TestRuntimeGenerate(unittest.TestCase):
 
     # --- execute_text_generation Tests ---
 
+    @unittest.skipIf(os.environ.get("REAL_MLX_TESTS") == "1", "Skipping mock tests with real MLX")
     @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
     @patch("mlx_lm.generate")
     @patch("mlx_lm.sample_utils.make_sampler")
@@ -67,6 +69,7 @@ class TestRuntimeGenerate(unittest.TestCase):
             thinking_budget=512,
         )
 
+    @unittest.skipIf(os.environ.get("REAL_MLX_TESTS") == "1", "Skipping mock tests with real MLX")
     @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
     @patch("mlx_lm.generate")
     @patch("mlx_lm.sample_utils.make_sampler")
@@ -109,6 +112,7 @@ class TestRuntimeGenerate(unittest.TestCase):
 
     # --- execute_image_description Tests ---
 
+    @unittest.skipIf(os.environ.get("REAL_MLX_TESTS") == "1", "Skipping mock tests with real MLX")
     @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
     @patch("mlx_vlm.generate")
     @patch("mlx_vlm.prompt_utils.apply_chat_template")
@@ -165,6 +169,7 @@ class TestRuntimeGenerate(unittest.TestCase):
             thinking_budget=512,
         )
 
+    @unittest.skipIf(os.environ.get("REAL_MLX_TESTS") == "1", "Skipping mock tests with real MLX")
     @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
     @patch("mlx_vlm.generate")
     @patch("mlx_vlm.prompt_utils.apply_chat_template")
