@@ -119,3 +119,78 @@ def execute_image_description(
     )
     print("Image description complete.")
     return response
+
+
+def execute_batch_image_description(
+    mlx_model: LoadedMLXModel,
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    seed: int,
+    enable_thinking: bool,
+    thinking_budget: int,
+    image: torch.Tensor | None = None,
+    audio_path: str = "",
+    draft_model: Any = None,
+    draft_kind: str = "dflash",
+) -> list[str]:
+    """
+    Executes image description sequentially for a batch of images using mlx-vlm.
+    """
+    mx.random.seed(seed)
+    import mlx_vlm
+    from mlx_vlm.prompt_utils import apply_chat_template
+
+    pil_images = tensor_to_pil(image) if image is not None else []
+    audios = [audio_path] if audio_path and os.path.exists(audio_path) else []
+
+    gen_kwargs: dict[str, Any] = {
+        "temp": temperature,
+        "max_tokens": max_tokens,
+        "verbose": False,
+        "enable_thinking": enable_thinking,
+        "thinking_budget": thinking_budget,
+    }
+
+    if draft_model is not None:
+        gen_kwargs["draft_model"] = draft_model
+        gen_kwargs["draft_kind"] = draft_kind
+
+    print(
+        f"Batch describing {len(pil_images)} images (max {max_tokens} tokens per image)..."
+    )
+
+    responses = []
+    # If there are no images, we still want to run once (e.g. for audio only or plain text)
+    if not pil_images:
+        pil_images = [None]
+
+    for i, pil_img in enumerate(pil_images):
+        print(f"Describing image {i + 1}/{len(pil_images)}...")
+
+        # apply_chat_template expects the number of images to format the prompt correctly
+        num_images = 1 if pil_img is not None else 0
+        formatted_prompt = apply_chat_template(
+            mlx_model.processor,
+            mlx_model.model.config,
+            prompt,
+            num_images=num_images,
+            num_audios=len(audios),
+        )
+
+        response = mlx_vlm.generate(
+            mlx_model.model,
+            mlx_model.processor,
+            formatted_prompt,
+            image=[pil_img] if pil_img is not None else None,
+            audio=audios if audios else None,
+            **gen_kwargs,
+        )
+        responses.append(response)
+
+        # Explicitly evaluate and clear cache to prevent OOM
+        mx.eval()
+        mx.metal.clear_cache()
+
+    print("Batch image description complete.")
+    return responses
