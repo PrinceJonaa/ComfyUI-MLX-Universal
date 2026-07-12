@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-07-01 at commit 027cb44
+> Last curated: 2026-07-12 at commit fbb4f37
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -13,6 +13,16 @@
 - Why it matters: High cyclomatic complexity creates monolithic, untestable functions. Breaking them down into modular mapping pipelines reduces the risk of regression during future updates.
 
 ## Planned
+
+### [RM-018] Fix mlx-lm text generation crash due to thinking tokens
+- Status: Planned
+- Evidence: `execute_text_generation` in `runtime/generate_processing.py` passes `enable_thinking` and `thinking_budget` in `gen_kwargs` to `mlx_lm.generate()`, which does not support vision-language specific arguments.
+- Why it matters: Passing unsupported arguments to mlx-lm causes a crash during text-only generation.
+
+### [RM-020] Guarantee cleanup of temporary image paths in video generation
+- Status: Planned
+- Evidence: `execute_video_generation` in `runtime/video_processing.py` creates a temporary image file at `temp_img_path` but the `finally` block fails to clean it up with `os.remove()`.
+- Why it matters: Temporary image paths generated for subprocesses must be guaranteed to be cleaned up to prevent disk space leaks in the event of failures.
 
 ### [RM-016] Modularize model_io.py in diffusionkit
 - Status: Planned

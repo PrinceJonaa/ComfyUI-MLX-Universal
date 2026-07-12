@@ -155,6 +155,7 @@ def encode_image(image, mlx_model) -> tuple:
     mean, _ = hidden.split(2, axis=-1)
     latents = mlx_model.latent_format.process_in(mean)
 
+    # Force evaluation here to prevent passing uncomputed lazy arrays into the bridge layer, avoiding potential deadlock or memory leak in ComfyUI.
     mx.eval(latents)
     print("VAE encoding complete.")
 

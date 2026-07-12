@@ -1,35 +1,37 @@
-## Architectural Thesis
+## Doc-Code Discrepancies Found
 
-The MLX diffusion implementation details (lazy evaluation triggers, tokenization logic, and complex MLX tensor manipulations) were heavily bleeding into the ComfyUI node wrappers in `nodes/diffusion_nodes.py`. This created a severely leaking abstraction where the UI layer had to juggle core dependencies (like `mlx.core` and `diffusionkit`) and perform low-level caching. By introducing `runtime/diffusion_processing.py` as a dedicated barrier, we isolate these responsibilities strictly to the runtime substrate, reducing dependency drift and completely satisfying the strict UI/MLX separation invariant.
+- **mlx-embeddings missing from docs (Doc lagging):** The codebase implements `MLXTextEmbedding` in `nodes/embedding_nodes.py`, but it was missing from the Core Capabilities table and Architecture Map.
+- **Kokoro TTS missing from docs (Doc lagging):** The codebase implements `MLXKokoroTTS` in `nodes/audio_nodes.py`, but the Audio capability in the README only mentioned `mlx-whisper`.
+- **mlx-lm text generation crash due to thinking tokens (Structural debt):** `execute_text_generation` in `runtime/generate_processing.py` incorrectly passes vision-language specific arguments (`enable_thinking`, `thinking_budget`) to `mlx_lm.generate()`, which does not support them.
+- **Missing cleanup of temp_img_path (Structural gap):** `execute_video_generation` in `runtime/video_processing.py` creates a temporary image file but fails to guarantee its deletion in the `finally` block.
 
-## Debt Location
+## Documentation Changes
 
-- `nodes/diffusion_nodes.py`: Execution functions inside `MLXDecoder`, `MLXSampler`, `MLXClipTextEncoder`, and `MLXEncoder` classes.
-- `nodes/diffusion_nodes.py`: The `_tokenize` private helper method residing in the UI layer.
+- **README.md**: Added `mlx-embeddings` as a new row in the Core Capabilities table.
+- **README.md**: Appended `kokoro` to the Audio row in the Core Capabilities table.
+- **README.md**: Updated the Architecture Map mermaid chart to correctly model the frontend to runtime routing for `MLXKokoroTTS` and `MLXTextEmbedding`.
 
-## What Changed
+## Roadmap Changes
 
-- Introduced `runtime/diffusion_processing.py` containing four high-level execution functions: `decode_latents`, `generate_image`, `encode_clip_text`, and `encode_image`.
-- Migrated all `mx.eval()` calls, tokenization scaling logic, and diffusion tracking into these runtime functions.
-- Stripped all `mlx.core` and `diffusionkit` imports out of `nodes/diffusion_nodes.py`, converting it into a pure dictionary-passing frontend wrapper.
-- Extracted the `_tokenize` helper method out of the `MLXClipTextEncoder` class and into the runtime module.
+Updated header `Last curated:` to `2026-07-12 at commit fbb4f37`.
 
-## What Was Not Changed
+Added: `[RM-018] Fix mlx-lm text generation crash due to thinking tokens`
+- Evidence: `execute_text_generation` in `runtime/generate_processing.py` passing unsupported kwargs to `mlx_lm.generate()`.
+- Why it matters: Prevents crashes during standard text generation.
 
-- All ComfyUI node definitions (`INPUT_TYPES`, `RETURN_TYPES`, `RETURN_NAMES`) remain 100% identical.
-- The public signatures and parameter keys are untouched. Existing saved user workflows will successfully deserialize and run without any modification.
-- Existing internal bridges (e.g., `runtime/bridge.py` and `runtime/model_loader.py`) remain completely unchanged, ensuring cache behaviors are unaffected.
+Added: `[RM-020] Guarantee cleanup of temporary image paths in video generation`
+- Evidence: `temp_img_path` omitted from `os.remove` in the `finally` block of `runtime/video_processing.py`.
+- Why it matters: Prevents silent disk leaks after repeated generations or failures.
 
-## Backward Compatibility
+## Code Annotations Added
 
-- Ran `python3 -m unittest discover tests` successfully across all 20 existing unit tests, explicitly verifying that the newly abstracted node methods still correctly route and process mock MLX tensors via the bridge.
-- Confirmed `mypy .` and `ruff check --fix .` pass with zero failures, proving robust typing and separation.
-- Verified manual resolution of the project's roadmap merge conflicts without altering file tracking expectations.
+`runtime/diffusion_processing.py:126` — Added explanation for `mx.eval(latents)` in `encode_image` to explain that it prevents uncomputed lazy arrays from entering the bridge layer, which causes ComfyUI deadlocks.
 
-## Rejected Alternatives
+## Open Questions
 
-- **Extracting tokenization to `bridge.py` instead of `diffusion_processing.py`**: This was rejected because `bridge.py` is explicitly designed for agnostic framework conversion (PyTorch ↔ MLX), whereas tokenization is specific to the diffusion process. Dumping it there would violate single-responsibility.
+None this cycle.
 
-## Follow-On Candidates
+## Verification
 
-- Consider extracting the heavy dictionary parsing out of the node wrappers (like unpacking `mlx_positive_conditioning`) and handling parameter validation directly inside `diffusion_processing.py` to make the UI wrappers even thinner.
+- Verified zero logic changes and zero parameter key changes across all modified files.
+- Verified roadmap header timestamp and commit SHA point to current HEAD.
