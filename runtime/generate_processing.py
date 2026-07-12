@@ -45,8 +45,6 @@ def execute_text_generation(
         "sampler": sampler,
         "max_tokens": max_tokens,
         "verbose": False,
-        "enable_thinking": enable_thinking,
-        "thinking_budget": thinking_budget,
     }
 
     if draft_model is not None:

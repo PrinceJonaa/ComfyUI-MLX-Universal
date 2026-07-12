@@ -63,8 +63,6 @@ class TestRuntimeGenerate(unittest.TestCase):
             sampler="mocked_sampler",
             max_tokens=100,
             verbose=False,
-            enable_thinking=False,
-            thinking_budget=512,
         )
 
     @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
@@ -102,8 +100,6 @@ class TestRuntimeGenerate(unittest.TestCase):
             sampler="mocked_sampler_2",
             max_tokens=50,
             verbose=False,
-            enable_thinking=True,
-            thinking_budget=1024,
             draft_model="mock_draft_model",
         )
 

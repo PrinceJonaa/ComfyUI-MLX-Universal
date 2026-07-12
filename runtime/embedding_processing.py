@@ -23,15 +23,12 @@ def generate_text_embedding(text: str, model_path: str) -> tuple:
 
     if hasattr(tokenizer, "encode") and hasattr(tokenizer, "pad_token_id"):
         # standard HF tokenizer behavior fallback
-        try:
-            input_ids = tokenizer.encode(text, return_tensors="mlx")
-        except ValueError:
-            # fallback if 'mlx' is not supported
-            input_ids_list = tokenizer.encode(text)
-            input_ids = mx.array([input_ids_list])
+        input_ids_list = tokenizer.encode(text)
+        input_ids = mx.array([input_ids_list])
     else:
         # Just in case, mlx_embeddings actually patched encode to support "mlx" as per its docs
-        input_ids = tokenizer.encode(text, return_tensors="mlx")
+        input_ids_list = tokenizer.encode(text)
+        input_ids = mx.array([input_ids_list])
 
     # Generate embeddings
     outputs = model(input_ids)
