@@ -47,8 +47,22 @@ class MLXLMGenerateText:
             },
             "optional": {
                 "draft_model": ("MLX_DRAFT_MODEL",),
-                "enable_thinking": ("BOOLEAN", {"default": False}),
-                "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192}),
+                "enable_thinking": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": "Enable thinking tokens for advanced visual reasoning models like Qwen-VL or LLaVA.",
+                    },
+                ),
+                "thinking_budget": (
+                    "INT",
+                    {
+                        "default": 512,
+                        "min": 0,
+                        "max": 8192,
+                        "tooltip": "Maximum number of tokens allocated for the model's internal thinking process.",
+                    },
+                ),
             },
         }
 
@@ -71,7 +85,7 @@ class MLXLMGenerateText:
     ) -> tuple:
         if mlx_model.family != "mlx-lm":
             raise ValueError(
-                f"Expected model family 'mlx-lm' but found '{mlx_model.family}'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model."
+                f"Expected model family 'mlx-lm' but found '{mlx_model.family}'. Ensure you passed a text model to 'MLX Load Model' (e.g. Qwen, Llama). If passing a Vision/Audio model, use the appropriate node."
             )
 
         response = execute_text_generation(
@@ -128,10 +142,30 @@ class MLXVLMDescribeImage:
                 ),
             },
             "optional": {
-                "image": ("IMAGE",),
-                "audio_path": ("STRING", {"default": ""}),
-                "draft_model": ("MLX_DRAFT_MODEL",),
-                "draft_kind": (["dflash", "eagle3", "mtp"], {"default": "dflash"}),
+                "image": (
+                    "IMAGE",
+                    {
+                        "tooltip": "Optional image to provide visual context for the model."
+                    },
+                ),
+                "audio_path": (
+                    "STRING",
+                    {
+                        "default": "",
+                        "tooltip": "Optional path to an audio file for multimodal models.",
+                    },
+                ),
+                "draft_model": (
+                    "MLX_DRAFT_MODEL",
+                    {"tooltip": "Optional draft model for speculative decoding."},
+                ),
+                "draft_kind": (
+                    ["dflash", "eagle3", "mtp"],
+                    {
+                        "default": "dflash",
+                        "tooltip": "The speculative decoding algorithm to use.",
+                    },
+                ),
             },
         }
 
@@ -157,7 +191,7 @@ class MLXVLMDescribeImage:
 
         if mlx_model.family != "mlx-vlm":
             raise ValueError(
-                f"Expected model family 'mlx-vlm' but found '{mlx_model.family}'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model."
+                f"Expected model family 'mlx-vlm' but found '{mlx_model.family}'. Ensure you passed a Vision-Language Model to 'MLX Load Model'. Check the supported models list if unsure."
             )
 
         response = execute_image_description(

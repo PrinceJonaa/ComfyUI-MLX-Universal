@@ -8,9 +8,15 @@ class MLXSAM3Predictor:
     def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "mlx_model": ("MLX_MODEL",),
-                "image": ("IMAGE",),
-                "text_prompt": ("STRING", {"default": "a dog"}),
+                "mlx_model": ("MLX_MODEL", {"tooltip": "The loaded SAM3 model."}),
+                "image": ("IMAGE", {"tooltip": "The input image to segment."}),
+                "text_prompt": (
+                    "STRING",
+                    {
+                        "default": "a dog",
+                        "tooltip": "The text prompt describing the object to segment.",
+                    },
+                ),
                 "score_threshold": (
                     "FLOAT",
                     {
@@ -38,7 +44,7 @@ class MLXSAM3Predictor:
     ) -> tuple:
         if mlx_model.family != "sam3":
             raise ValueError(
-                f"Expected model family 'sam3' but found '{mlx_model.family}'. Please ensure you are passing a SAM model loaded via 'MLX Load Model'."
+                f"Expected model family 'sam3' but found '{mlx_model.family}'. Please ensure you loaded a valid SAM3 model via 'MLX Load Model'."
             )
 
         from mlx_vlm.models.sam3.generate import Sam3Predictor
@@ -46,7 +52,7 @@ class MLXSAM3Predictor:
         pil_images = tensor_to_pil(image)
         if not pil_images:
             raise ValueError(
-                "Expected an image batch but found empty input. Please connect a valid image to the node."
+                "Expected an image batch but found empty input. Connect a valid image (e.g., from 'Load Image') to the node."
             )
 
         pil_img = pil_images[0]

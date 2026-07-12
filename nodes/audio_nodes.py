@@ -9,7 +9,7 @@ class MLXWhisperTranscribe:
     def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "audio": ("AUDIO",),
+                "audio": ("AUDIO", {"tooltip": "The audio data to transcribe."}),
                 "model_path": (
                     "STRING",
                     {
@@ -32,7 +32,7 @@ class MLXWhisperTranscribe:
             or "sample_rate" not in audio
         ):
             raise ValueError(
-                "Expected ComfyUI AUDIO dict format but found invalid or missing audio input. Connect a valid audio source node to this input."
+                "Expected ComfyUI AUDIO dict format but found invalid or missing audio input. Connect a valid audio source node (like 'Load Audio') to this input."
             )
 
         # Lazy import of mlx-whisper
@@ -83,7 +83,11 @@ class MLXKokoroTTS:
             "required": {
                 "text": (
                     "STRING",
-                    {"multiline": True, "default": "The MLX King lives. Let him cook!"},
+                    {
+                        "multiline": True,
+                        "default": "The MLX King lives. Let him cook!",
+                        "tooltip": "The text to convert to speech.",
+                    },
                 ),
                 "voice": (
                     [
@@ -99,11 +103,20 @@ class MLXKokoroTTS:
                         "bm_george",
                         "bm_lewis",
                     ],
-                    {"default": "af_heart"},
+                    {
+                        "default": "af_heart",
+                        "tooltip": "The voice profile to use for generation.",
+                    },
                 ),
                 "speed": (
                     "FLOAT",
-                    {"default": 1.0, "min": 0.1, "max": 5.0, "step": 0.1},
+                    {
+                        "default": 1.0,
+                        "min": 0.1,
+                        "max": 5.0,
+                        "step": 0.1,
+                        "tooltip": "Playback speed of the generated audio.",
+                    },
                 ),
             }
         }
@@ -130,7 +143,9 @@ class MLXKokoroTTS:
                 audio_chunks.append(audio)
 
         if not audio_chunks:
-            raise ValueError("Kokoro TTS generated no audio for the given text.")
+            raise ValueError(
+                "Kokoro TTS generated no audio for the given text. Please check if your prompt is empty or contains only unsupported characters."
+            )
 
         import mlx.core as mx
 
