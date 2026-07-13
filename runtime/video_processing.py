@@ -228,3 +228,5 @@ def execute_video_generation(
         if process.poll() is None:
             process.terminate()
             process.wait()
+        if os.path.exists(temp_img_path):
+            os.remove(temp_img_path)
