@@ -119,3 +119,87 @@ def execute_image_description(
     )
     print("Image description complete.")
     return response
+
+
+def execute_batch_image_description(
+    mlx_model: LoadedMLXModel,
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    seed: int,
+    enable_thinking: bool,
+    thinking_budget: int,
+    image: torch.Tensor | None = None,
+    audio_path: str = "",
+    draft_model: Any = None,
+    draft_kind: str = "dflash",
+) -> str:
+    """
+    Executes image description sequentially for a batch of images using mlx-vlm.
+    This logic ensures explicit cache clearing between iterations to prevent OOM errors.
+    """
+    mx.random.seed(seed)
+    import mlx_vlm
+    from mlx_vlm.prompt_utils import apply_chat_template
+
+    pil_images = tensor_to_pil(image) if image is not None else []
+    audios = [audio_path] if audio_path and os.path.exists(audio_path) else []
+
+    if not pil_images:
+        # Fall back to standard behavior if no images are provided
+        return execute_image_description(
+            mlx_model=mlx_model,
+            prompt=prompt,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            seed=seed,
+            enable_thinking=enable_thinking,
+            thinking_budget=thinking_budget,
+            image=None,
+            audio_path=audio_path,
+            draft_model=draft_model,
+            draft_kind=draft_kind,
+        )
+
+    gen_kwargs: dict[str, Any] = {
+        "temp": temperature,
+        "max_tokens": max_tokens,
+        "verbose": False,
+        "enable_thinking": enable_thinking,
+        "thinking_budget": thinking_budget,
+    }
+
+    if draft_model is not None:
+        gen_kwargs["draft_model"] = draft_model
+        gen_kwargs["draft_kind"] = draft_kind
+
+    print(f"Describing batch of {len(pil_images)} images (max {max_tokens} tokens per image)...")
+
+    responses = []
+
+    for i, pil_img in enumerate(pil_images):
+        formatted_prompt = apply_chat_template(
+            mlx_model.processor,
+            mlx_model.model.config,
+            prompt,
+            num_images=1,
+            num_audios=len(audios),
+        )
+
+        print(f"Processing image {i + 1}/{len(pil_images)}...")
+        response = mlx_vlm.generate(
+            mlx_model.model,
+            mlx_model.processor,
+            formatted_prompt,
+            image=[pil_img],
+            audio=audios if audios else None,
+            **gen_kwargs,
+        )
+        responses.append(response)
+
+        # Free unified memory for large batches
+        mx.eval()
+        mx.metal.clear_cache()
+
+    print("Batch image description complete.")
+    return "\n\n---\n\n".join(responses)
