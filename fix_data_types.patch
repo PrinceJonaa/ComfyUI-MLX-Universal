@@ -1,0 +1,15 @@
+--- runtime/data_types.py
++++ runtime/data_types.py
+@@ -1,5 +1,5 @@
+ from dataclasses import dataclass
+-from typing import Any, Optional
++from typing import Any
+
+
+ @dataclass
+@@ -10,4 +10,4 @@
+     trust_remote_code: bool
+     quantize_activations: bool
+     model: Any
+-    processor: Optional[Any] = None
++    processor: Any | None = None

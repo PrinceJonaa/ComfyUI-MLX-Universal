@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 
 @dataclass
@@ -10,4 +10,4 @@ class LoadedMLXModel:
     trust_remote_code: bool
     quantize_activations: bool
     model: Any
-    processor: Any | None = None
+    processor: Optional[Any] = None

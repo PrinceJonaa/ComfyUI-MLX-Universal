@@ -1,0 +1,8 @@
+--- data_types.py
++++ data_types.py
+@@ -6,7 +6,7 @@
+     trust_remote_code: bool
+     quantize_activations: bool
+     model: Any
+-    processor: Optional[Any] = None
++    processor: Any | None = None

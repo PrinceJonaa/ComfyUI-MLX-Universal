@@ -1,0 +1,18 @@
+--- nodes/video_nodes.py
++++ nodes/video_nodes.py
+@@ -3,6 +3,7 @@
+ import folder_paths
+
+ from ..runtime.video_processing import execute_video_generation
++import torch
+
+
+ class MLXVideoGenerator:
+@@ -53,7 +54,7 @@
+         steps: int,
+         guide_scale: float,
+         seed: int,
+-        image: dict | None = None,
++        image: torch.Tensor | None = None,
+         audio_path: str = "",
+     ) -> tuple:
