@@ -54,14 +54,53 @@ class TestLoaderNodes(unittest.TestCase):
         self.loader_nodes.load_unified_mlx_model.assert_not_called()
         self.assertEqual(result, (mock_model,))
 
-    def test_mlx_apply_lora_fuses_via_load_time_fusion(self):
-        self.loader_nodes.load_unified_mlx_model.return_value = "mock_fused_model"
+    def test_mlx_apply_lora_dynamic_fusion_for_mlx_lm(self):
         node = self.MLXApplyLoRA()
+        mock_internal_model = MagicMock()
+        mock_processor = MagicMock()
 
         mock_model = self.LoadedMLXModel(
             family="mlx-lm",
             model_path="original/path",
             model_type="mlx-lm",
+            trust_remote_code=False,
+            quantize_activations=True,
+            model=mock_internal_model,
+            processor=mock_processor,
+        )
+
+        from unittest.mock import patch
+
+        with patch("copy.deepcopy") as mock_deepcopy:
+
+            mock_copied_model = MagicMock()
+            mock_deepcopy.return_value = mock_copied_model
+            mock_patched_model = MagicMock()
+
+            import mlx_lm.utils
+            mock_load_adapters = MagicMock(return_value=mock_patched_model)
+            mlx_lm.utils.load_adapters = mock_load_adapters
+
+            result = node.apply_lora(mock_model, "lora/adapter")
+
+            mock_deepcopy.assert_called_once_with(mock_internal_model)
+            mock_load_adapters.assert_called_once_with(mock_copied_model, "lora/adapter")
+
+            self.loader_nodes.load_unified_mlx_model.assert_not_called()
+
+            self.assertIsInstance(result[0], self.LoadedMLXModel)
+            self.assertEqual(result[0].model, mock_patched_model)
+            self.assertEqual(result[0].processor, mock_processor)
+            self.assertEqual(result[0].model_path, "original/path")
+
+    def test_mlx_apply_lora_fallback_fusion_for_non_mlx_lm(self):
+        self.loader_nodes.load_unified_mlx_model.return_value = "mock_fused_model"
+        node = self.MLXApplyLoRA()
+
+        mock_model = self.LoadedMLXModel(
+            family="mlx-vlm",
+            model_path="original/path",
+            model_type="mlx-vlm",
             trust_remote_code=False,
             quantize_activations=True,
             model=MagicMock(),
@@ -72,7 +111,7 @@ class TestLoaderNodes(unittest.TestCase):
 
         self.loader_nodes.load_unified_mlx_model.assert_called_once_with(
             model_path="original/path",
-            model_type="mlx-lm",
+            model_type="mlx-vlm",
             trust_remote_code=False,
             quantize_activations=True,
             adapter_path="lora/adapter",

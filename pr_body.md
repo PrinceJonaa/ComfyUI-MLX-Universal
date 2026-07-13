@@ -1,35 +1,36 @@
-## Architectural Thesis
+## Task Selected
 
-The MLX diffusion implementation details (lazy evaluation triggers, tokenization logic, and complex MLX tensor manipulations) were heavily bleeding into the ComfyUI node wrappers in `nodes/diffusion_nodes.py`. This created a severely leaking abstraction where the UI layer had to juggle core dependencies (like `mlx.core` and `diffusionkit`) and perform low-level caching. By introducing `runtime/diffusion_processing.py` as a dedicated barrier, we isolate these responsibilities strictly to the runtime substrate, reducing dependency drift and completely satisfying the strict UI/MLX separation invariant.
+Source: Roadmap RM-014
+Why this one: This is a clear, contained task with a precise scope that reduces cache pressure and overhead for users by taking advantage of dynamic LoRA patching via `mlx_lm.utils.load_adapters`. It's a high-impact optimization for the core loading pipeline.
 
-## Debt Location
+## Dedup Verification
 
-- `nodes/diffusion_nodes.py`: Execution functions inside `MLXDecoder`, `MLXSampler`, `MLXClipTextEncoder`, and `MLXEncoder` classes.
-- `nodes/diffusion_nodes.py`: The `_tokenize` private helper method residing in the UI layer.
+gh available: no
+Checked: branches (`git branch -r`), commit log (`git log --all --grep="RM-014"`), and ground-truth code read (`cat nodes/loader_nodes.py`).
+Result: Confirmed unclaimed and unbuilt before starting.
 
 ## What Changed
 
-- Introduced `runtime/diffusion_processing.py` containing four high-level execution functions: `decode_latents`, `generate_image`, `encode_clip_text`, and `encode_image`.
-- Migrated all `mx.eval()` calls, tokenization scaling logic, and diffusion tracking into these runtime functions.
-- Stripped all `mlx.core` and `diffusionkit` imports out of `nodes/diffusion_nodes.py`, converting it into a pure dictionary-passing frontend wrapper.
-- Extracted the `_tokenize` helper method out of the `MLXClipTextEncoder` class and into the runtime module.
+- Modified `MLXApplyLoRA.apply_lora` in `nodes/loader_nodes.py` to check for `mlx_model.family == "mlx-lm"`.
+- If true, dynamically patches the LoRA by deep-copying the internal model and calling `mlx_lm.utils.load_adapters` on it instead of rebuilding the unified model from the cache wrapper.
+- Falls back to the previous load-time fusion logic for non-`mlx-lm` families (like `mlx-vlm`).
+- Mocked `mlx_lm.utils` in `tests/test_helper.py` to prevent CI failures.
+- Renamed and split the unit tests in `tests/test_loader_nodes.py` to assert both the new dynamic fusion and the fallback fusion mechanisms.
 
-## What Was Not Changed
+## Source Reconciliation
 
-- All ComfyUI node definitions (`INPUT_TYPES`, `RETURN_TYPES`, `RETURN_NAMES`) remain 100% identical.
-- The public signatures and parameter keys are untouched. Existing saved user workflows will successfully deserialize and run without any modification.
-- Existing internal bridges (e.g., `runtime/bridge.py` and `runtime/model_loader.py`) remain completely unchanged, ensuring cache behaviors are unaffected.
+RM-014 status updated to Recently Completed in `roadmap.md` using the automated `roadmap.py` script.
 
-## Backward Compatibility
+## Skipped This Run
 
-- Ran `python3 -m unittest discover tests` successfully across all 20 existing unit tests, explicitly verifying that the newly abstracted node methods still correctly route and process mock MLX tensors via the bridge.
-- Confirmed `mypy .` and `ruff check --fix .` pass with zero failures, proving robust typing and separation.
-- Verified manual resolution of the project's roadmap merge conflicts without altering file tracking expectations.
+- `[RM-015]` and `[RM-016]` skipped because their scope (refactoring monolithic state dictionary mappings in `diffusionkit`) presents a much higher blast radius and risk of regression.
+- `[RM-017]` skipped because `RM-014` acts as a direct optimization blocker for future adapter changes.
 
-## Rejected Alternatives
+## Open Thread Responses
 
-- **Extracting tokenization to `bridge.py` instead of `diffusion_processing.py`**: This was rejected because `bridge.py` is explicitly designed for agnostic framework conversion (PyTorch ↔ MLX), whereas tokenization is specific to the diffusion process. Dumping it there would violate single-responsibility.
+None pending.
 
-## Follow-On Candidates
+## Verification
 
-- Consider extracting the heavy dictionary parsing out of the node wrappers (like unpacking `mlx_positive_conditioning`) and handling parameter validation directly inside `diffusion_processing.py` to make the UI wrappers even thinner.
+- `make test` executed and verified to pass completely.
+- Confirmed zero parameter key renames or node schema changes in `nodes/loader_nodes.py`.

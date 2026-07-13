@@ -89,6 +89,28 @@ class MLXApplyLoRA:
         if not adapter_path:
             return (mlx_model,)
 
+        if mlx_model.family == "mlx-lm":
+            import copy
+
+            import mlx_lm.utils
+
+            print(
+                f"Dynamically fusing LoRA adapter '{adapter_path}' into mlx-lm model..."
+            )
+            patched_model = copy.deepcopy(mlx_model.model)
+            patched_model = mlx_lm.utils.load_adapters(patched_model, adapter_path)
+
+            loaded = LoadedMLXModel(
+                family=mlx_model.family,
+                model_path=mlx_model.model_path,
+                model_type=mlx_model.model_type,
+                trust_remote_code=mlx_model.trust_remote_code,
+                quantize_activations=mlx_model.quantize_activations,
+                model=patched_model,
+                processor=mlx_model.processor,
+            )
+            return (loaded,)
+
         # LoRA weights are fused at load-time rather than dynamically applied to existing instances to ensure safe tracking within the MLX unified memory cache
         print(f"Intercepting MLX Model payload to fuse LoRA adapter: {adapter_path}")
 
