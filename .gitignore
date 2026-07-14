@@ -29,3 +29,9 @@ htmlcov/
 .mypy_cache/
 .venv_test
 .venv2
+.idea/
+.vscode/
+dist/
+build/
+*.egg-info/
+*.pyc
