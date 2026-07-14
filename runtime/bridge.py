@@ -11,6 +11,7 @@ def tensor_to_pil(image_tensor: torch.Tensor) -> list[Image.Image]:
         image_tensor = image_tensor.unsqueeze(0)
     for img in image_tensor:
         # Scale [0, 1] to [0, 255]
+        # ComfyUI represents IMAGE tensors in normalized [0, 1] range; PIL requires standard 8-bit [0, 255] byte scaling
         img_np = (img * 255.0).clamp(0, 255).to(torch.uint8).cpu().numpy()
         if img_np.ndim == 3 and img_np.shape[2] == 1:
             img_np = np.squeeze(img_np, axis=2)
