@@ -222,6 +222,53 @@ class TestRuntimeGenerate(unittest.TestCase):
             draft_kind="eagle3",
         )
 
+    @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
+    @patch("mlx_vlm.generate")
+    @patch("mlx_vlm.prompt_utils.apply_chat_template")
+    @patch("comfyui_mlx_universal.runtime.generate_processing.tensor_to_pil")
+    def test_execute_batch_image_description(
+        self,
+        mock_tensor_to_pil,
+        mock_apply_chat_template,
+        mock_generate,
+        mock_mx,
+    ):
+        from comfyui_mlx_universal.runtime.generate_processing import (
+            execute_batch_image_description,
+        )
+
+        mock_tensor_to_pil.return_value = ["pil_img_1", "pil_img_2"]
+        mocked_model = self.get_mocked_model()
+        mock_apply_chat_template.return_value = "vlm_batch_prompt"
+
+        # Return different descriptions for each iteration
+        mock_generate.side_effect = ["description 1", "description 2"]
+
+        result = execute_batch_image_description(
+            mlx_model=mocked_model,
+            prompt="Describe",
+            max_tokens=100,
+            temperature=0.8,
+            seed=42,
+            enable_thinking=False,
+            thinking_budget=0,
+            image_batch=MagicMock(),
+            draft_model="mock_draft_model",
+            draft_kind="mtp",
+        )
+
+        # Ensure correct concatenation delimiter
+        self.assertEqual(result, "description 1\n\n---\n\ndescription 2")
+        mock_mx.random.seed.assert_called_once_with(42)
+
+        # Verify it was called twice
+        self.assertEqual(mock_apply_chat_template.call_count, 2)
+        self.assertEqual(mock_generate.call_count, 2)
+
+        # Verify explicit cache clears
+        self.assertEqual(mock_mx.eval.call_count, 2)
+        self.assertEqual(mock_mx.metal.clear_cache.call_count, 2)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -119,3 +119,76 @@ def execute_image_description(
     )
     print("Image description complete.")
     return response
+
+
+def execute_batch_image_description(
+    mlx_model: LoadedMLXModel,
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    seed: int,
+    enable_thinking: bool,
+    thinking_budget: int,
+    image_batch: torch.Tensor,
+    draft_model: Any = None,
+    draft_kind: str = "dflash",
+) -> str:
+    """
+    Executes batched image description using mlx-vlm.
+    This logic ensures OOM safety by sequentially evaluating single images and clearing the cache.
+    """
+    mx.random.seed(seed)
+    import mlx_vlm
+    from mlx_vlm.prompt_utils import apply_chat_template
+
+    pil_images = tensor_to_pil(image_batch)
+    if not pil_images:
+        raise ValueError("Expected an image batch but found empty input.")
+
+    results = []
+
+    gen_kwargs: dict[str, Any] = {
+        "temp": temperature,
+        "max_tokens": max_tokens,
+        "verbose": False,
+        "enable_thinking": enable_thinking,
+        "thinking_budget": thinking_budget,
+    }
+
+    if draft_model is not None:
+        gen_kwargs["draft_model"] = draft_model
+        gen_kwargs["draft_kind"] = draft_kind
+
+    print(
+        f"Describing {len(pil_images)} images in batch (max {max_tokens} tokens per image)..."
+    )
+
+    for idx, pil_img in enumerate(pil_images):
+        print(f"Processing image {idx + 1}/{len(pil_images)}...")
+
+        formatted_prompt = apply_chat_template(
+            mlx_model.processor,
+            mlx_model.model.config,
+            prompt,
+            num_images=1,
+            num_audios=0,
+        )
+
+        response = mlx_vlm.generate(
+            mlx_model.model,
+            mlx_model.processor,
+            formatted_prompt,
+            image=[pil_img],
+            audio=None,
+            **gen_kwargs,
+        )
+
+        results.append(response)
+
+        # Explicit evaluation and memory management per iteration
+        # This prevents massive computation graph accumulation on Apple Silicon
+        mx.eval()
+        mx.metal.clear_cache()
+
+    print("Batch image description complete.")
+    return "\n\n---\n\n".join(results)
