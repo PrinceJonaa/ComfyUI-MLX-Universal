@@ -82,8 +82,6 @@ class MLXLMGenerateText:
             top_p=top_p,
             seed=seed,
             draft_model=draft_model,
-            enable_thinking=enable_thinking,
-            thinking_budget=thinking_budget,
         )
         return (response,)
 

@@ -54,8 +54,6 @@ class TestGenerateNodes(unittest.TestCase):
                 top_p=0.9,
                 seed=42,
                 draft_model=None,
-                enable_thinking=False,
-                thinking_budget=512,
             )
 
         self.assertEqual(
@@ -78,8 +76,6 @@ class TestGenerateNodes(unittest.TestCase):
             top_p=0.9,
             seed=42,
             draft_model=None,
-            enable_thinking=False,
-            thinking_budget=512,
         )
 
         self.assertEqual(result, ("generated response",))
@@ -91,8 +87,6 @@ class TestGenerateNodes(unittest.TestCase):
             top_p=0.9,
             seed=42,
             draft_model=None,
-            enable_thinking=False,
-            thinking_budget=512,
         )
 
     @patch.object(import_node_module("generate_nodes"), "execute_text_generation")
@@ -111,8 +105,6 @@ class TestGenerateNodes(unittest.TestCase):
             top_p=0.5,
             seed=123,
             draft_model=None,
-            enable_thinking=False,
-            thinking_budget=512,
         )
 
         self.assertEqual(result, ("generated response no template",))
@@ -124,8 +116,6 @@ class TestGenerateNodes(unittest.TestCase):
             top_p=0.5,
             seed=123,
             draft_model=None,
-            enable_thinking=False,
-            thinking_budget=512,
         )
 
     # --- MLXVLMDescribeImage Tests ---
