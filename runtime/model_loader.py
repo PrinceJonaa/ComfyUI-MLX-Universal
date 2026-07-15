@@ -262,3 +262,51 @@ def load_embedding_model(model_path: str):
         return model, tokenizer
 
     return get_or_load_model(cache_key, _loader)
+
+
+def apply_lora_to_model(mlx_model: LoadedMLXModel, adapter_path: str) -> LoadedMLXModel:
+    """
+    Dynamically applies a LoRA adapter to an already loaded MLX model.
+    Uses deepcopy on the module tree to prevent mutating the globally cached base model.
+    """
+    if mlx_model.family != "mlx-lm":
+        raise ValueError(
+            f"Expected mlx-lm model family for dynamic LoRA fusion but found '{mlx_model.family}'. Only text models currently support dynamic runtime LoRA fusion."
+        )
+
+    from .registry import get_or_load_model, make_key
+
+    cache_key = make_key(
+        mlx_model.model_path,
+        mlx_model.model_type,
+        mlx_model.trust_remote_code,
+        mlx_model.quantize_activations,
+        "dynamic_lora",
+        adapter_path,
+    )
+
+    def _apply():
+        import copy
+
+        import mlx_lm.utils
+
+        print(
+            f"Dynamically fusing LoRA adapter '{adapter_path}' into model '{mlx_model.model_path}'..."
+        )
+        # Deepcopy the nn.Module tree to avoid mutating the cached base model
+        new_model = copy.deepcopy(mlx_model.model)
+
+        # Apply the adapter weights
+        mlx_lm.utils.load_adapters(new_model, adapter_path)
+
+        return LoadedMLXModel(
+            family=mlx_model.family,
+            model_path=mlx_model.model_path,
+            model_type=mlx_model.model_type,
+            trust_remote_code=mlx_model.trust_remote_code,
+            quantize_activations=mlx_model.quantize_activations,
+            model=new_model,
+            processor=mlx_model.processor,
+        )
+
+    return get_or_load_model(cache_key, _apply)

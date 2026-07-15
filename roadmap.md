@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-07-01 at commit 027cb44
+> Last curated: 2026-07-15 at commit fbb4f37
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -24,11 +24,6 @@
 - Evidence: PRs #73 and #80 successfully extracted logic to `runtime/audio_processing.py` and `runtime/diffusion_processing.py`, but tests still mock at the node layer instead of unit-testing the runtime functions directly.
 - Why it matters: Prevents silent regressions in the new runtime bridging logic.
 
-### [RM-014] Refactor dynamic LoRA fusion in `MLXApplyLoRA`
-- Status: Planned
-- Evidence: `MLXApplyLoRA.apply_lora` in `nodes/loader_nodes.py` re-invokes `load_unified_mlx_model` from scratch to fuse an adapter, bypassing dynamic weight patching.
-- Why it matters: Reduces cache pressure and loading overhead when users swap LoRAs during live ComfyUI sessions.
-
 ### [RM-004] Native SDXL / ControlNet pipelines
 - Status: Planned
 - Evidence: `README.md` claims SDXL / ControlNet in Phase 2 Expansion.
@@ -37,6 +32,11 @@
 ## Blocked
 
 ## Recently Completed
+
+### [RM-014] Refactor dynamic LoRA fusion in `MLXApplyLoRA`
+- Status: Completed
+- Evidence: `MLXApplyLoRA.apply_lora` in `nodes/loader_nodes.py` re-invokes `load_unified_mlx_model` from scratch to fuse an adapter, bypassing dynamic weight patching.
+- Why it matters: Reduces cache pressure and loading overhead when users swap LoRAs during live ComfyUI sessions.
 
 ### [RM-012] Fix static type hints for IMAGE inputs
 - Status: Completed

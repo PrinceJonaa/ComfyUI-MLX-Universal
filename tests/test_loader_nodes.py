@@ -23,6 +23,7 @@ class TestLoaderNodes(unittest.TestCase):
     def setUp(self):
         # Configure manual clean mock for load_unified_mlx_model in the loader_nodes module
         self.loader_nodes.load_unified_mlx_model = MagicMock()
+        self.loader_nodes.apply_lora_to_model = MagicMock()
 
     def test_mlx_model_loader_unified_calls_runtime_loader(self):
         self.loader_nodes.load_unified_mlx_model.return_value = "mock_loaded_model"
@@ -51,11 +52,11 @@ class TestLoaderNodes(unittest.TestCase):
 
         result = node.apply_lora(mock_model, "")
 
-        self.loader_nodes.load_unified_mlx_model.assert_not_called()
+        self.loader_nodes.apply_lora_to_model.assert_not_called()
         self.assertEqual(result, (mock_model,))
 
-    def test_mlx_apply_lora_fuses_via_load_time_fusion(self):
-        self.loader_nodes.load_unified_mlx_model.return_value = "mock_fused_model"
+    def test_mlx_apply_lora_dynamically_fuses_via_runtime(self):
+        self.loader_nodes.apply_lora_to_model.return_value = "mock_fused_model"
         node = self.MLXApplyLoRA()
 
         mock_model = self.LoadedMLXModel(
@@ -70,12 +71,8 @@ class TestLoaderNodes(unittest.TestCase):
 
         result = node.apply_lora(mock_model, "lora/adapter")
 
-        self.loader_nodes.load_unified_mlx_model.assert_called_once_with(
-            model_path="original/path",
-            model_type="mlx-lm",
-            trust_remote_code=False,
-            quantize_activations=True,
-            adapter_path="lora/adapter",
+        self.loader_nodes.apply_lora_to_model.assert_called_once_with(
+            mock_model, "lora/adapter"
         )
         self.assertEqual(result, ("mock_fused_model",))
 
