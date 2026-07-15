@@ -119,3 +119,82 @@ def execute_image_description(
     )
     print("Image description complete.")
     return response
+
+
+def execute_batch_image_description(
+    mlx_model: LoadedMLXModel,
+    prompt: str,
+    max_tokens: int,
+    temperature: float,
+    seed: int,
+    enable_thinking: bool,
+    thinking_budget: int,
+    image: torch.Tensor | None = None,
+    audio_path: str = "",
+    draft_model: Any = None,
+    draft_kind: str = "dflash",
+) -> str:
+    """
+    Executes batch image description using mlx-vlm.
+    This logic has been extracted from the UI nodes to ensure proper separation
+    of MLX background processing and ComfyUI interface objects.
+    """
+    mx.random.seed(seed)
+    import mlx_vlm
+    from mlx_vlm.prompt_utils import apply_chat_template
+
+    if image is None:
+        return ""
+
+    pil_images = tensor_to_pil(image)
+    if not pil_images:
+        return ""
+
+    audios = [audio_path] if audio_path and os.path.exists(audio_path) else []
+
+    gen_kwargs: dict[str, Any] = {
+        "temp": temperature,
+        "max_tokens": max_tokens,
+        "verbose": False,
+        "enable_thinking": enable_thinking,
+        "thinking_budget": thinking_budget,
+    }
+
+    if draft_model is not None:
+        gen_kwargs["draft_model"] = draft_model
+        gen_kwargs["draft_kind"] = draft_kind
+
+    print(
+        f"Describing batch of {len(pil_images)} images (max {max_tokens} tokens per image)..."
+    )
+
+    results = []
+
+    for i, pil_img in enumerate(pil_images):
+        print(f"Processing image {i + 1}/{len(pil_images)}...")
+
+        formatted_prompt = apply_chat_template(
+            mlx_model.processor,
+            mlx_model.model.config,
+            prompt,
+            num_images=1,
+            num_audios=len(audios),
+        )
+
+        response = mlx_vlm.generate(
+            mlx_model.model,
+            mlx_model.processor,
+            formatted_prompt,
+            image=[pil_img],
+            audio=audios if audios else None,
+            **gen_kwargs,
+        )
+
+        results.append(response)
+
+        # explicitly evaluate arrays and drop references
+        mx.eval()
+        mx.metal.clear_cache()
+
+    print("Batch image description complete.")
+    return "\n\n---\n\n".join(results)
