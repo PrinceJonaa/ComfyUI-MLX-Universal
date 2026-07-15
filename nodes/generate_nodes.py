@@ -47,8 +47,6 @@ class MLXLMGenerateText:
             },
             "optional": {
                 "draft_model": ("MLX_DRAFT_MODEL",),
-                "enable_thinking": ("BOOLEAN", {"default": False}),
-                "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192}),
             },
         }
 
@@ -66,8 +64,6 @@ class MLXLMGenerateText:
         top_p: float,
         seed: int,
         draft_model: Any = None,
-        enable_thinking: bool = False,
-        thinking_budget: int = 512,
     ) -> tuple:
         if mlx_model.family != "mlx-lm":
             raise ValueError(
@@ -82,8 +78,6 @@ class MLXLMGenerateText:
             top_p=top_p,
             seed=seed,
             draft_model=draft_model,
-            enable_thinking=enable_thinking,
-            thinking_budget=thinking_budget,
         )
         return (response,)
 

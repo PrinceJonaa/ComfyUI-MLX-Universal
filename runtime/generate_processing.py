@@ -16,8 +16,6 @@ def execute_text_generation(
     top_p: float,
     seed: int,
     draft_model: Any = None,
-    enable_thinking: bool = False,
-    thinking_budget: int = 512,
 ) -> str:
     """
     Executes text generation using mlx-lm.
@@ -45,8 +43,6 @@ def execute_text_generation(
         "sampler": sampler,
         "max_tokens": max_tokens,
         "verbose": False,
-        "enable_thinking": enable_thinking,
-        "thinking_budget": thinking_budget,
     }
 
     if draft_model is not None:

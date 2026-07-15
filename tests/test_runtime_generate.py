@@ -44,8 +44,6 @@ class TestRuntimeGenerate(unittest.TestCase):
             top_p=0.9,
             seed=42,
             draft_model=None,
-            enable_thinking=False,
-            thinking_budget=512,
         )
 
         self.assertEqual(result, "generated response")
@@ -63,8 +61,6 @@ class TestRuntimeGenerate(unittest.TestCase):
             sampler="mocked_sampler",
             max_tokens=100,
             verbose=False,
-            enable_thinking=False,
-            thinking_budget=512,
         )
 
     @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
@@ -88,8 +84,6 @@ class TestRuntimeGenerate(unittest.TestCase):
             top_p=0.5,
             seed=123,
             draft_model="mock_draft_model",
-            enable_thinking=True,
-            thinking_budget=1024,
         )
 
         self.assertEqual(result, "generated response no template")
@@ -102,8 +96,6 @@ class TestRuntimeGenerate(unittest.TestCase):
             sampler="mocked_sampler_2",
             max_tokens=50,
             verbose=False,
-            enable_thinking=True,
-            thinking_budget=1024,
             draft_model="mock_draft_model",
         )
 

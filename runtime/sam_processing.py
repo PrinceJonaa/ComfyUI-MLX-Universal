@@ -82,3 +82,40 @@ def process_sam3_result(
         individual_masks = torch.zeros((1, H, W), dtype=torch.float32)
 
     return out_image, combined_mask, individual_masks, json.dumps(boxes_data)
+
+
+def execute_sam3_prediction(
+    mlx_model,
+    image: torch.Tensor,
+    text_prompt: str,
+    score_threshold: float,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, str]:
+    """
+    Executes SAM3 prediction.
+    This logic has been extracted from the UI nodes to ensure proper separation
+    of MLX background processing and ComfyUI interface objects.
+    """
+    from mlx_vlm.models.sam3.generate import Sam3Predictor
+
+    from .bridge import tensor_to_pil
+
+    pil_images = tensor_to_pil(image)
+    if not pil_images:
+        raise ValueError(
+            "Expected an image batch but found empty input. Please connect a valid image to the node."
+        )
+
+    pil_img = pil_images[0]
+
+    predictor = Sam3Predictor(
+        mlx_model.model, mlx_model.processor, score_threshold=score_threshold
+    )
+    print(f"Running SAM3 prediction for prompt: '{text_prompt}'...")
+    result = predictor.predict(pil_img, text_prompt=text_prompt)
+    print(f"SAM3 prediction complete. Found {len(result.scores)} detections.")
+
+    out_image, combined_mask, individual_masks, json_data = process_sam3_result(
+        result, pil_img
+    )
+
+    return (out_image, combined_mask, individual_masks, json_data)
