@@ -29,7 +29,11 @@ def execute_text_generation(
     from mlx_lm.sample_utils import make_sampler
 
     tokenizer = mlx_model.processor
-    if hasattr(tokenizer, "chat_template") and tokenizer.chat_template is not None:
+    if (
+        tokenizer is not None
+        and hasattr(tokenizer, "chat_template")
+        and tokenizer.chat_template is not None
+    ):
         messages = [{"role": "user", "content": prompt}]
         # tokenize=False ensures the template returns a formatted string instead of token IDs, which mlx_lm.generate expects.
         formatted_prompt = tokenizer.apply_chat_template(
@@ -87,6 +91,11 @@ def execute_image_description(
 
     pil_images = tensor_to_pil(image) if image is not None else []
     audios = [audio_path] if audio_path and os.path.exists(audio_path) else []
+
+    if mlx_model.processor is None:
+        raise ValueError(
+            "Expected a valid MLX processor but found None. Ensure the MLX model was loaded correctly."
+        )
 
     formatted_prompt = apply_chat_template(
         mlx_model.processor,

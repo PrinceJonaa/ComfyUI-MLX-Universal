@@ -45,3 +45,49 @@ def execute_audio_transcription(audio: dict, model_path: str) -> str:
             os.remove(tmp_path)
 
     return result.get("text", "").strip()
+
+
+def execute_kokoro_tts(text: str, voice: str, speed: float) -> dict:
+    import mlx.core as mx
+
+    from .bridge import mlx_to_torch
+    from .model_loader import load_kokoro_pipeline
+
+    pipeline = load_kokoro_pipeline("prince-canuma/Kokoro-82M")
+
+    print(f"Generating Kokoro TTS audio with voice '{voice}' at {speed}x speed...")
+    audio_chunks = []
+    for _, _, audio in pipeline(text, voice=voice, speed=speed, split_pattern=r"\n+"):
+        if len(audio) > 0 and isinstance(audio, (list, tuple)):
+            audio_array = mx.array(audio[0])
+            audio_chunks.append(audio_array)
+            mx.eval(audio_array)
+            mx.metal.clear_cache()
+        elif len(audio) > 0:
+            audio_array = mx.array(audio)
+            audio_chunks.append(audio_array)
+            mx.eval(audio_array)
+            mx.metal.clear_cache()
+
+    if not audio_chunks:
+        raise ValueError(
+            "Expected audio chunks from Kokoro TTS but found none. Try changing the text or the voice."
+        )
+
+    final_audio = mx.concatenate(audio_chunks, axis=0)
+    mx.eval(final_audio)
+
+    # Use bridge to convert to PyTorch efficiently
+    final_audio_tensor = mlx_to_torch(final_audio).float()
+
+    # Reshape to [1, channels, samples] for ComfyUI (Kokoro is mono)
+    # Note: mlx_to_torch may add a batch dimension for 3D tensors, but for 1D audio it will return 1D
+    if final_audio_tensor.dim() == 1:
+        final_audio_tensor = final_audio_tensor.unsqueeze(0).unsqueeze(0)
+    elif final_audio_tensor.dim() == 2:
+        final_audio_tensor = final_audio_tensor.unsqueeze(0)
+
+    audio_out = {"waveform": final_audio_tensor, "sample_rate": 24000}
+
+    print("TTS generation complete.")
+    return audio_out
