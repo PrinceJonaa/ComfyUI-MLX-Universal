@@ -197,7 +197,7 @@ def execute_video_generation(
         if progress_absolute_callback:
             progress_absolute_callback(steps)
 
-        rc = process.poll()
+        rc = process.wait()
         if rc != 0:
             raise RuntimeError(
                 f"Expected video generation to complete successfully, but the process failed with exit code {rc}. Check your terminal output for out-of-memory or dependency errors, and try lowering 'num_frames' or resolution."

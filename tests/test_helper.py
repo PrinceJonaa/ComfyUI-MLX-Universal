@@ -29,6 +29,7 @@ if not USE_REAL_MLX:
             "mlx.nn",
             "mlx.optimizers",
             "mlx_lm",
+            "mlx_lm.utils",
             "mlx_lm.sample_utils",
             "mlx_vlm",
             "mlx_vlm.prompt_utils",
