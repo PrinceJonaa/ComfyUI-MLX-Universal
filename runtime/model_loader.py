@@ -226,7 +226,7 @@ def load_flux_pipeline(model_version: str):
     return get_or_load_model(f"flux_{model_version}", _loader)
 
 
-def load_kokoro_pipeline(model_version: str):
+def load_kokoro_pipeline(model_version: str, lang_code: str = "a"):
     """
     Loads a Kokoro TTS pipeline, and tracks it via the registry to ensure unified memory is managed correctly.
     """
@@ -236,14 +236,14 @@ def load_kokoro_pipeline(model_version: str):
     from .registry import get_or_load_model
 
     def _loader():
-        print(f"Loading Kokoro TTS model '{model_version}'...")
-        # A pipeline uses 'a' (American) or 'b' (British).
-        # We can default to 'a' as it covers most voices and voice styles can be managed by the node input.
+        print(
+            f"Loading Kokoro TTS model '{model_version}' with lang_code '{lang_code}'..."
+        )
         model = KokoroModel(repo_id=model_version)
-        pipeline = KokoroPipeline(lang_code="a", model=model)
+        pipeline = KokoroPipeline(lang_code=lang_code, model=model)
         return pipeline
 
-    return get_or_load_model(f"kokoro_{model_version}", _loader)
+    return get_or_load_model(f"kokoro_{model_version}_{lang_code}", _loader)
 
 
 def load_embedding_model(model_path: str):

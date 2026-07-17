@@ -117,7 +117,8 @@ class MLXKokoroTTS:
         # Lazy import to prevent ComfyUI crashes if not installed
         from ..runtime.model_loader import load_kokoro_pipeline
 
-        pipeline = load_kokoro_pipeline("prince-canuma/Kokoro-82M")
+        lang_code = voice[0] if voice else "a"
+        pipeline = load_kokoro_pipeline("prince-canuma/Kokoro-82M", lang_code=lang_code)
 
         print(f"Generating Kokoro TTS audio with voice '{voice}' at {speed}x speed...")
         audio_chunks = []
