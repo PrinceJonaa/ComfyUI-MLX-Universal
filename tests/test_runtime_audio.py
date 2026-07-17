@@ -1,9 +1,12 @@
 import os
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import torch
-from comfyui_mlx_universal.runtime.audio_processing import execute_audio_transcription
+from comfyui_mlx_universal.runtime.audio_processing import (
+    execute_audio_transcription,
+    execute_kokoro_tts,
+)
 
 
 @unittest.skipIf(
@@ -30,6 +33,30 @@ class TestRuntimeAudio(unittest.TestCase):
         self.assertEqual(
             kwargs["path_or_hf_repo"], "mlx-community/whisper-large-v3-turbo"
         )
+
+    @patch("comfyui_mlx_universal.runtime.model_loader.load_kokoro_pipeline")
+    @patch("comfyui_mlx_universal.runtime.bridge.mlx_to_torch")
+    @patch("mlx.core.concatenate")
+    @patch("mlx.core.array")
+    @patch("mlx.core.eval")
+    def test_execute_kokoro_tts(
+        self, mock_eval, mock_array, mock_concatenate, mock_mlx_to_torch, mock_load
+    ):
+        mock_pipeline = MagicMock()
+        mock_pipeline.return_value = [("a", "b", [1, 2, 3])]
+        mock_load.return_value = mock_pipeline
+
+        mock_tensor = MagicMock()
+        mock_tensor.dim.return_value = 1
+        mock_tensor.unsqueeze.return_value = mock_tensor
+        mock_tensor.float.return_value = mock_tensor
+        mock_mlx_to_torch.return_value = mock_tensor
+
+        result = execute_kokoro_tts("Hello world!", "af_heart", 1.0)
+
+        self.assertIn("waveform", result)
+        self.assertIn("sample_rate", result)
+        self.assertEqual(result["sample_rate"], 24000)
 
 
 if __name__ == "__main__":
