@@ -46,9 +46,28 @@ class MLXLMGenerateText:
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
             },
             "optional": {
-                "draft_model": ("MLX_DRAFT_MODEL",),
-                "enable_thinking": ("BOOLEAN", {"default": False}),
-                "thinking_budget": ("INT", {"default": 512, "min": 0, "max": 8192}),
+                "draft_model": (
+                    "MLX_DRAFT_MODEL",
+                    {
+                        "tooltip": "Connect an MLX Draft Model for speculative decoding to speed up generation."
+                    },
+                ),
+                "enable_thinking": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "tooltip": "Enable internal thinking/reasoning steps before output generation.",
+                    },
+                ),
+                "thinking_budget": (
+                    "INT",
+                    {
+                        "default": 512,
+                        "min": 0,
+                        "max": 8192,
+                        "tooltip": "Maximum tokens the model can use for internal thinking.",
+                    },
+                ),
             },
         }
 
@@ -71,9 +90,12 @@ class MLXLMGenerateText:
     ) -> tuple:
         if mlx_model.family != "mlx-lm":
             raise ValueError(
-                f"Expected model family 'mlx-lm' but found '{mlx_model.family}'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model."
+                f"Expected model family 'mlx-lm' but found '{mlx_model.family}'. You passed a non-text model. Please ensure you load an LLM (not a Vision/Audio/SAM model) via the 'MLX Load Model' node."
             )
 
+        print(
+            f"Generating text with '{mlx_model.model_path}' (max_tokens={max_tokens})..."
+        )
         response = execute_text_generation(
             mlx_model=mlx_model,
             prompt=prompt,
@@ -130,7 +152,12 @@ class MLXVLMDescribeImage:
             "optional": {
                 "image": ("IMAGE",),
                 "audio_path": ("STRING", {"default": ""}),
-                "draft_model": ("MLX_DRAFT_MODEL",),
+                "draft_model": (
+                    "MLX_DRAFT_MODEL",
+                    {
+                        "tooltip": "Connect an MLX Draft Model for speculative decoding to speed up generation."
+                    },
+                ),
                 "draft_kind": (["dflash", "eagle3", "mtp"], {"default": "dflash"}),
             },
         }
@@ -157,9 +184,12 @@ class MLXVLMDescribeImage:
 
         if mlx_model.family != "mlx-vlm":
             raise ValueError(
-                f"Expected model family 'mlx-vlm' but found '{mlx_model.family}'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model."
+                f"Expected model family 'mlx-vlm' but found '{mlx_model.family}'. You passed an incorrect model type. Please ensure you load a Vision-Language Model via the 'MLX Load Model' node."
             )
 
+        print(
+            f"Describing image with '{mlx_model.model_path}' (max_tokens={max_tokens})..."
+        )
         response = execute_image_description(
             mlx_model=mlx_model,
             prompt=prompt,

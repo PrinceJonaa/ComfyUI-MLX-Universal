@@ -54,6 +54,7 @@ class MLXModelLoaderUnified:
         quantize_activations: bool,
         adapter_path: str = "",
     ) -> tuple:
+        print(f"Loading MLX model '{model_path}'...")
         loaded = load_unified_mlx_model(
             model_path=model_path,
             model_type=model_type,
@@ -92,6 +93,7 @@ class MLXApplyLoRA:
         # LoRA weights are fused at load-time rather than dynamically applied to existing instances to ensure safe tracking within the MLX unified memory cache
         print(f"Intercepting MLX Model payload to fuse LoRA adapter: {adapter_path}")
 
+        print(f"Loading MLX model with LoRA '{adapter_path}'...")
         loaded = load_unified_mlx_model(
             model_path=mlx_model.model_path,
             model_type=mlx_model.model_type,
@@ -125,8 +127,11 @@ class MLXDraftModelLoader:
 
     def load_model(self, model_path: str, model_family: str) -> tuple:
         if not model_path:
-            raise ValueError("Draft model path cannot be empty.")
+            raise ValueError(
+                "Expected a valid Hugging Face repo ID for the draft model but found an empty string. Please provide a valid model path like 'mlx-community/Qwen2.5-0.5B-Instruct-4bit'."
+            )
 
+        print(f"Loading draft model '{model_path}'...")
         loaded = load_draft_model(model_path, model_family)
         return (loaded,)
 

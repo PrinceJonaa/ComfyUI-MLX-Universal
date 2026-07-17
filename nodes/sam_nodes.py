@@ -38,7 +38,7 @@ class MLXSAM3Predictor:
     ) -> tuple:
         if mlx_model.family != "sam3":
             raise ValueError(
-                f"Expected model family 'sam3' but found '{mlx_model.family}'. Please ensure you are passing a SAM model loaded via 'MLX Load Model'."
+                f"Expected model family 'sam3' but found '{mlx_model.family}'. You passed an incorrect model type. Please load a SAM3 model using the 'MLX Load Model' node."
             )
 
         from mlx_vlm.models.sam3.generate import Sam3Predictor
@@ -46,7 +46,7 @@ class MLXSAM3Predictor:
         pil_images = tensor_to_pil(image)
         if not pil_images:
             raise ValueError(
-                "Expected an image batch but found empty input. Please connect a valid image to the node."
+                "Expected an image batch but found empty input. The image input is empty. Please connect a valid image output to this node."
             )
 
         pil_img = pil_images[0]

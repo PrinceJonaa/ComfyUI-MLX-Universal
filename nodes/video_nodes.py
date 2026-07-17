@@ -27,7 +27,7 @@ class MLXVideoGenerator:
                 "num_frames": (
                     "INT",
                     {
-                        "default": 16,
+                        "default": 8,
                         "min": 1,
                         "max": 500,
                         "tooltip": "Number of frames to generate. Lower this if you run out of unified memory.",
@@ -84,6 +84,9 @@ class MLXVideoGenerator:
         def interrupt_callback():
             comfy.model_management.throw_exception_if_processing_interrupted()
 
+        print(
+            f"Generating video with model '{model_repo_or_dir}' (frames={num_frames}, steps={steps})..."
+        )
         return execute_video_generation(
             model_repo_or_dir=model_repo_or_dir,
             prompt=prompt,

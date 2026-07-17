@@ -70,6 +70,7 @@ pip install -r requirements.txt
 | Status | Modality | Tech Stack | Description |
 |:---:|---|---|---|
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **LLMs** | `mlx-lm` | Universal text generation. |
+| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Embeddings** | `mlx-lm` | Universal text embeddings. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **VLMs** | `mlx-vlm` | Multimodal visual reasoning, prompt alignment, speculative decoding, thinking tokens. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Diffusion** | `DiffusionKit` | Native MLX sampling/decoding for Flux architectures. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **VAEs** | `DiffusionKit` | Standalone causal image VAE encode/decode nodes. |
@@ -90,14 +91,17 @@ graph TD
     subgraph ComfyUI Canvas
         UI_Load[MLX Load Model]
         UI_LoRA[MLX Apply LoRA]
+        UI_Draft[MLX Load Draft Model]
         UI_GenText[MLX Generate Text]
         UI_VLM[MLX Understand Image]
+        UI_Embed[MLX Generate Text Embedding]
         UI_SAM[MLX Segment Image]
         UI_Vid[MLX Generate Video]
         UI_LoadFlux[MLX Load Flux Model from HF]
         UI_ClipEnc[MLX CLIP Text Encoder]
         UI_Diff[MLX Generate Image (Flux)]
         UI_Audio[MLX Transcribe Audio (Whisper)]
+        UI_TTS[MLX Generate Audio (Kokoro)]
         UI_Encode[MLX VAE Encode (Flux)]
         UI_Decode[MLX VAE Decode (Flux)]
         UI_Sys[MLX Clear Cache]
@@ -107,8 +111,10 @@ graph TD
     subgraph nodes/ [Frontend Nodes]
         UI_Load --> LN[loader_nodes.py]
         UI_LoRA --> LN
+        UI_Draft --> LN
         UI_GenText --> GN[generate_nodes.py]
         UI_VLM --> GN
+        UI_Embed --> EN[embedding_nodes.py]
         UI_SAM --> SN[sam_nodes.py]
         UI_Vid --> VN[video_nodes.py]
         UI_LoadFlux --> DN[diffusion_nodes.py]
@@ -117,6 +123,7 @@ graph TD
         UI_Encode --> DN
         UI_Decode --> DN
         UI_Audio --> AN[audio_nodes.py]
+        UI_TTS --> AN
         UI_Sys --> SysN[system_nodes.py]
         UI_Stats --> SysN
     end
@@ -125,9 +132,11 @@ graph TD
         LN --> Reg{registry.py}
         GN --> Reg
         SN --> Reg
+        EN --> Reg
         
         GN --> Bridge[bridge.py]
         SN --> Bridge
+        EN --> Bridge
         VN --> Bridge
         
         Reg --> Data[data_types.py]

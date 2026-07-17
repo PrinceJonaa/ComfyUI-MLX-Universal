@@ -32,7 +32,7 @@ class MLXWhisperTranscribe:
             or "sample_rate" not in audio
         ):
             raise ValueError(
-                "Expected ComfyUI AUDIO dict format but found invalid or missing audio input. Connect a valid audio source node to this input."
+                "Expected ComfyUI AUDIO dict format but found invalid or missing audio input. The audio tensor structure is incorrect. Please connect a valid audio source node to this input."
             )
 
         # Lazy import of mlx-whisper
@@ -130,7 +130,9 @@ class MLXKokoroTTS:
                 audio_chunks.append(audio)
 
         if not audio_chunks:
-            raise ValueError("Kokoro TTS generated no audio for the given text.")
+            raise ValueError(
+                "Expected audio chunks from Kokoro TTS but found none. The generator returned empty. Ensure the text input is not empty or try a different voice."
+            )
 
         import mlx.core as mx
 

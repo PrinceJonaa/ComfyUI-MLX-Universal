@@ -60,7 +60,7 @@ class TestGenerateNodes(unittest.TestCase):
 
         self.assertEqual(
             str(context.exception),
-            "Expected model family 'mlx-lm' but found 'unknown-family'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model.",
+            "Expected model family 'mlx-lm' but found 'unknown-family'. You passed a non-text model. Please ensure you load an LLM (not a Vision/Audio/SAM model) via the 'MLX Load Model' node.",
         )
 
     @patch.object(import_node_module("generate_nodes"), "execute_text_generation")
@@ -148,7 +148,7 @@ class TestGenerateNodes(unittest.TestCase):
 
         self.assertEqual(
             str(context.exception),
-            "Expected model family 'mlx-vlm' but found 'unknown-family'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model.",
+            "Expected model family 'mlx-vlm' but found 'unknown-family'. You passed an incorrect model type. Please ensure you load a Vision-Language Model via the 'MLX Load Model' node.",
         )
 
     @patch.object(import_node_module("generate_nodes"), "execute_image_description")

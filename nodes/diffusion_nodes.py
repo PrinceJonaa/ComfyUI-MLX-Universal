@@ -15,6 +15,7 @@ class MLXDecoder:
     def decode(self, latent_image: dict, mlx_vae: Any) -> tuple:
         from ..runtime.diffusion_processing import decode_latents
 
+        print("Decoding latents to image...")
         return decode_latents(latent_image, mlx_vae)
 
 
@@ -68,6 +69,7 @@ class MLXSampler:
     ) -> tuple:
         from ..runtime.diffusion_processing import generate_image
 
+        print(f"Generating image (steps={steps}, cfg={cfg}, denoise={denoise})...")
         return generate_image(
             mlx_model=mlx_model,
             seed=seed,
@@ -90,6 +92,9 @@ class MLXLoadFlux:
                         "argmaxinc/mlx-FLUX.1-schnell",
                         "argmaxinc/mlx-FLUX.1-dev",
                     ],
+                    {
+                        "tooltip": "Select the Flux model variant to load. Schnell is faster, Dev is higher quality."
+                    },
                 )
             }
         }
@@ -132,6 +137,7 @@ class MLXClipTextEncoder:
     def encode(self, mlx_conditioning: dict, text: str) -> tuple:
         from ..runtime.diffusion_processing import encode_clip_text
 
+        print("Encoding CLIP text...")
         return encode_clip_text(mlx_conditioning, text)
 
 
@@ -148,6 +154,7 @@ class MLXEncoder:
     def encode(self, image, mlx_model) -> tuple:
         from ..runtime.diffusion_processing import encode_image
 
+        print("Encoding image to latents...")
         return encode_image(image, mlx_model)
 
 
