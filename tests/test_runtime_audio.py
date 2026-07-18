@@ -1,9 +1,12 @@
 import os
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import torch
-from comfyui_mlx_universal.runtime.audio_processing import execute_audio_transcription
+from comfyui_mlx_universal.runtime.audio_processing import (
+    execute_audio_transcription,
+    execute_kokoro_tts,
+)
 
 
 @unittest.skipIf(
@@ -30,6 +33,59 @@ class TestRuntimeAudio(unittest.TestCase):
         self.assertEqual(
             kwargs["path_or_hf_repo"], "mlx-community/whisper-large-v3-turbo"
         )
+
+    @patch("comfyui_mlx_universal.runtime.model_loader.load_kokoro_pipeline")
+    @patch("comfyui_mlx_universal.runtime.bridge.mlx_to_torch")
+    @patch("mlx.core.concatenate")
+    @patch("mlx.core.array")
+    @patch("mlx.core.eval")
+    def test_execute_kokoro_tts(
+        self, mock_eval, mock_array, mock_concatenate, mock_mlx_to_torch, mock_load
+    ):
+        mock_pipeline = MagicMock()
+        mock_pipeline.return_value = [("a", "b", [1, 2, 3])]
+        mock_load.return_value = mock_pipeline
+
+        mock_tensor = MagicMock()
+        mock_tensor.dim.return_value = 1
+        mock_tensor.unsqueeze.return_value = mock_tensor
+        mock_tensor.float.return_value = mock_tensor
+        mock_mlx_to_torch.return_value = mock_tensor
+
+        result = execute_kokoro_tts("Hello world!", "af_heart", 1.0)
+
+        self.assertIn("waveform", result)
+        self.assertIn("sample_rate", result)
+        self.assertEqual(result["sample_rate"], 24000)
+        mock_load.assert_called_once_with("prince-canuma/Kokoro-82M", lang_code="a")
+
+    @patch("comfyui_mlx_universal.runtime.model_loader.track_audio_model")
+    @patch("mlx_whisper.transcribe")
+    @patch("soundfile.write")
+    @patch("os.path.exists", return_value=True)
+    @patch("os.remove")
+    @patch("folder_paths.get_temp_directory", return_value="/tmp")
+    def test_execute_audio_transcription_full(
+        self,
+        mock_get_temp,
+        mock_remove,
+        mock_exists,
+        mock_sf_write,
+        mock_transcribe,
+        mock_track,
+    ):
+        mock_transcribe.return_value = {"text": "hello transcribed world"}
+
+        audio_dict = {"waveform": torch.zeros((1, 1, 16000)), "sample_rate": 16000}
+
+        result = execute_audio_transcription(
+            audio_dict, "mlx-community/whisper-large-v3-turbo"
+        )
+        self.assertEqual(result, "hello transcribed world")
+        mock_track.assert_called_once_with("mlx-community/whisper-large-v3-turbo")
+        mock_transcribe.assert_called_once()
+        mock_sf_write.assert_called_once()
+        mock_remove.assert_called_once()
 
 
 if __name__ == "__main__":
