@@ -1,6 +1,3 @@
-
-
-
 class MLXWhisperTranscribe:
     @classmethod
     def INPUT_TYPES(s) -> dict:
