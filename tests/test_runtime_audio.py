@@ -57,6 +57,9 @@ class TestRuntimeAudio(unittest.TestCase):
         self.assertIn("waveform", result)
         self.assertIn("sample_rate", result)
         self.assertEqual(result["sample_rate"], 24000)
+        mock_load.assert_called_once_with(
+            "prince-canuma/Kokoro-82M", lang_code="a"
+        )
 
     @patch("comfyui_mlx_universal.runtime.model_loader.track_audio_model")
     @patch("mlx_whisper.transcribe")

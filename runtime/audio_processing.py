@@ -55,7 +55,10 @@ def execute_kokoro_tts(text: str, voice: str, speed: float) -> dict:
     """
     from .model_loader import load_kokoro_pipeline
 
-    pipeline = load_kokoro_pipeline("prince-canuma/Kokoro-82M")
+    lang_code = voice[:1] if voice else "a"
+    pipeline = load_kokoro_pipeline(
+        "prince-canuma/Kokoro-82M", lang_code=lang_code
+    )
 
     print(f"Generating Kokoro TTS audio with voice '{voice}' at {speed}x speed...")
     audio_chunks = []

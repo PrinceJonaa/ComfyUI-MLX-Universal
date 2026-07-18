@@ -25,7 +25,7 @@ def generate_text_embedding(text: str, model_path: str) -> tuple:
         # standard HF tokenizer behavior fallback
         try:
             input_ids = tokenizer.encode(text, return_tensors="mlx")
-        except ValueError:
+        except (TypeError, ValueError):
             # fallback if 'mlx' is not supported
             input_ids_list = tokenizer.encode(text)
             input_ids = mx.array([input_ids_list])
