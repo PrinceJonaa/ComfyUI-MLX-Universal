@@ -51,7 +51,6 @@ if not USE_REAL_MLX:
 # Always mock these since they are specific to the ComfyUI application runtime
 mock_modules.extend(
     [
-        "soundfile",
         "beartype",
         "sentry_sdk",
         "folder_paths",
@@ -67,6 +66,7 @@ mock_modules.extend(
 if not USE_REAL_MLX:
     mock_modules.extend(
         [
+            "soundfile",
             "numpy",
             "huggingface_hub",
             "torch",
