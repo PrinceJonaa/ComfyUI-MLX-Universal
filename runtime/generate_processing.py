@@ -193,8 +193,78 @@ def execute_batch_image_description(
         results.append(response)
 
         # explicitly evaluate arrays and drop references
-        mx.eval()
         mx.metal.clear_cache()
 
     print("Batch image description complete.")
+    return "\n\n---\n\n".join(results)
+
+
+def execute_batch_text_generation(
+    mlx_model: LoadedMLXModel,
+    prompt: str,
+    batch_size: int,
+    max_tokens: int,
+    temperature: float,
+    top_p: float,
+    seed: int,
+    draft_model: Any = None,
+    enable_thinking: bool = False,
+    thinking_budget: int = 512,
+) -> str:
+    """
+    Executes batch text generation using mlx-lm.
+    This logic has been extracted from the UI nodes to ensure proper separation
+    of MLX background processing and ComfyUI interface objects.
+    """
+    import mlx_lm
+    from mlx_lm.sample_utils import make_sampler
+
+    tokenizer = mlx_model.processor
+    if hasattr(tokenizer, "chat_template") and tokenizer.chat_template is not None:
+        messages = [{"role": "user", "content": prompt}]
+        formatted_prompt = tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+    else:
+        formatted_prompt = prompt
+
+    sampler = make_sampler(temp=temperature, top_p=top_p)
+
+    gen_kwargs: dict[str, Any] = {
+        "sampler": sampler,
+        "max_tokens": max_tokens,
+        "verbose": False,
+        "enable_thinking": enable_thinking,
+        "thinking_budget": thinking_budget,
+    }
+
+    if draft_model is not None:
+        gen_kwargs["draft_model"] = draft_model
+
+    print(
+        f"Generating a batch of {batch_size} text responses (max {max_tokens} tokens each)..."
+    )
+
+    results = []
+
+    for i in range(batch_size):
+        print(f"Processing text generation {i + 1}/{batch_size}...")
+
+        # Increment seed for each item in the batch to produce different variations
+        current_seed = seed + i
+        mx.random.seed(current_seed)
+
+        response = mlx_lm.generate(
+            mlx_model.model,
+            tokenizer,
+            prompt=formatted_prompt,
+            **gen_kwargs,
+        )
+
+        results.append(response)
+
+        # explicitly evaluate arrays and drop references
+        mx.metal.clear_cache()
+
+    print("Batch text generation complete.")
     return "\n\n---\n\n".join(results)

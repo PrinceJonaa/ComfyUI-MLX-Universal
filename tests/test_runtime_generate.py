@@ -249,6 +249,46 @@ class TestRuntimeGenerate(unittest.TestCase):
         self.assertEqual(mock_apply_chat_template.call_count, 2)
         self.assertEqual(mock_mx.metal.clear_cache.call_count, 2)
 
+    @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
+    @patch("mlx_lm.generate", side_effect=["resp1", "resp2"])
+    @patch("mlx_lm.sample_utils.make_sampler")
+    def test_execute_batch_text_generation(
+        self, mock_make_sampler, mock_generate, mock_mx
+    ):
+        mock_make_sampler.return_value = "mocked_sampler_batch"
+        mocked_model = self.get_mocked_model()
+        mocked_model.processor.chat_template = "template"
+        mocked_model.processor.apply_chat_template.return_value = (
+            "formatted_batch_prompt"
+        )
+
+        from comfyui_mlx_universal.runtime.generate_processing import (
+            execute_batch_text_generation,
+        )
+
+        result = execute_batch_text_generation(
+            mlx_model=mocked_model,
+            prompt="Batch prompt",
+            batch_size=2,
+            max_tokens=50,
+            temperature=0.8,
+            top_p=0.95,
+            seed=10,
+            draft_model=None,
+            enable_thinking=False,
+            thinking_budget=0,
+        )
+
+        self.assertEqual(result, "resp1\n\n---\n\nresp2")
+        self.assertEqual(mock_generate.call_count, 2)
+
+        # Check that seed was incremented
+        mock_mx.random.seed.assert_any_call(10)
+        mock_mx.random.seed.assert_any_call(11)
+
+        # Check memory clear
+        self.assertEqual(mock_mx.metal.clear_cache.call_count, 2)
+
 
 if __name__ == "__main__":
     unittest.main()

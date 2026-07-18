@@ -58,3 +58,47 @@ class TestBatchNodes(unittest.TestCase):
             draft_model=None,
             draft_kind="dflash",
         )
+
+    def test_batch_lm_generate_text_node_delegates_to_runtime(self):
+        model = self.LoadedMLXModel(
+            family="mlx-lm",
+            model_path="mock-path",
+            model_type="mlx-lm",
+            trust_remote_code=False,
+            quantize_activations=False,
+            model=MagicMock(),
+            processor=MagicMock(),
+        )
+        node = self.batch_nodes.MLXBatchLMGenerateText()
+
+        with patch.object(
+            self.batch_nodes,
+            "execute_batch_text_generation",
+            return_value="done batch text",
+        ) as execute:
+            result = node.generate_batch(
+                mlx_model=model,
+                prompt="Batch text",
+                batch_size=3,
+                max_tokens=64,
+                temperature=0.7,
+                top_p=0.9,
+                seed=42,
+                draft_model="draft",
+                enable_thinking=True,
+                thinking_budget=128,
+            )
+
+        self.assertEqual(result, ("done batch text",))
+        execute.assert_called_once_with(
+            mlx_model=model,
+            prompt="Batch text",
+            batch_size=3,
+            max_tokens=64,
+            temperature=0.7,
+            top_p=0.9,
+            seed=42,
+            draft_model="draft",
+            enable_thinking=True,
+            thinking_budget=128,
+        )
