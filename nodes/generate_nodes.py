@@ -71,7 +71,7 @@ class MLXLMGenerateText:
     ) -> tuple:
         if mlx_model.family != "mlx-lm":
             raise ValueError(
-                f"Expected model family 'mlx-lm' but found '{mlx_model.family}'. Please ensure you are passing a text model loaded via 'MLX Load Model', not a Vision, Audio, or SAM model."
+                f"Expected model family 'mlx-lm' but found '{mlx_model.family}'. Ensure you passed a text model to 'MLX Load Model' (e.g. Qwen, Llama). If passing a Vision/Audio model, use the appropriate node."
             )
 
         response = execute_text_generation(
@@ -157,7 +157,7 @@ class MLXVLMDescribeImage:
 
         if mlx_model.family != "mlx-vlm":
             raise ValueError(
-                f"Expected model family 'mlx-vlm' but found '{mlx_model.family}'. Please ensure you are passing a Vision-Language Model loaded via 'MLX Load Model', not a standard text or SAM model."
+                f"Expected model family 'mlx-vlm' but found '{mlx_model.family}'. Ensure you passed a Vision-Language Model to 'MLX Load Model'. Check the supported models list if unsure."
             )
 
         response = execute_image_description(
