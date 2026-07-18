@@ -26,7 +26,7 @@ class MLXWhisperTranscribe:
             or "sample_rate" not in audio
         ):
             raise ValueError(
-                "Expected ComfyUI AUDIO dict format but found invalid or missing audio input. Connect a valid audio source node to this input."
+                "Expected ComfyUI AUDIO dict format but found invalid or missing audio input. Connect a valid audio source node (like 'Load Audio') to this input."
             )
 
         from ..runtime.audio_processing import execute_audio_transcription
