@@ -1,35 +1,32 @@
 ## Architectural Thesis
 
-The MLX diffusion implementation details (lazy evaluation triggers, tokenization logic, and complex MLX tensor manipulations) were heavily bleeding into the ComfyUI node wrappers in `nodes/diffusion_nodes.py`. This created a severely leaking abstraction where the UI layer had to juggle core dependencies (like `mlx.core` and `diffusionkit`) and perform low-level caching. By introducing `runtime/diffusion_processing.py` as a dedicated barrier, we isolate these responsibilities strictly to the runtime substrate, reducing dependency drift and completely satisfying the strict UI/MLX separation invariant.
+The `MLXSAM3Predictor.predict` method in `nodes/sam_nodes.py` directly instantiated the `Sam3Predictor` from `mlx_vlm` and invoked tensor-to-PIL conversion. This violated the strict separation invariant that UI nodes must remain lightweight wrappers and not directly interface with MLX execution logic. This PR extracts this logic into `execute_sam3_prediction` within the `runtime` substrate, preventing accidental memory exhaustion or dependency conflicts on node initialization and improving testing fault isolation.
 
 ## Debt Location
 
-- `nodes/diffusion_nodes.py`: Execution functions inside `MLXDecoder`, `MLXSampler`, `MLXClipTextEncoder`, and `MLXEncoder` classes.
-- `nodes/diffusion_nodes.py`: The `_tokenize` private helper method residing in the UI layer.
+- `nodes/sam_nodes.py` lines 42-53 inside `MLXSAM3Predictor.predict`
 
 ## What Changed
 
-- Introduced `runtime/diffusion_processing.py` containing four high-level execution functions: `decode_latents`, `generate_image`, `encode_clip_text`, and `encode_image`.
-- Migrated all `mx.eval()` calls, tokenization scaling logic, and diffusion tracking into these runtime functions.
-- Stripped all `mlx.core` and `diffusionkit` imports out of `nodes/diffusion_nodes.py`, converting it into a pure dictionary-passing frontend wrapper.
-- Extracted the `_tokenize` helper method out of the `MLXClipTextEncoder` class and into the runtime module.
+- Created `execute_sam3_prediction` in `runtime/sam_processing.py` to handle PIL conversion, predictor initialization, and inference.
+- Replaced the direct logic in `nodes/sam_nodes.py` with a simple call to the new `execute_sam3_prediction`.
+- Migrated tests in `tests/test_sam_nodes.py` to mock the newly exported function instead of internal methods.
+- Added a new unit test for `execute_sam3_prediction` in `tests/test_runtime_sam.py`.
 
 ## What Was Not Changed
 
-- All ComfyUI node definitions (`INPUT_TYPES`, `RETURN_TYPES`, `RETURN_NAMES`) remain 100% identical.
-- The public signatures and parameter keys are untouched. Existing saved user workflows will successfully deserialize and run without any modification.
-- Existing internal bridges (e.g., `runtime/bridge.py` and `runtime/model_loader.py`) remain completely unchanged, ensuring cache behaviors are unaffected.
+- The `INPUT_TYPES`, `RETURN_TYPES`, and internal signature of `MLXSAM3Predictor` were entirely preserved. Existing ComfyUI workflows will load and deserialize seamlessly.
+- The `process_sam3_result` logic remained functionally identical, only the invocation location shifted.
 
 ## Backward Compatibility
 
-- Ran `python3 -m unittest discover tests` successfully across all 20 existing unit tests, explicitly verifying that the newly abstracted node methods still correctly route and process mock MLX tensors via the bridge.
-- Confirmed `mypy .` and `ruff check --fix .` pass with zero failures, proving robust typing and separation.
-- Verified manual resolution of the project's roadmap merge conflicts without altering file tracking expectations.
+- Successfully executed the complete mock test suite via `make test` capturing UI logic flow, ensuring zero parameter regressions.
+- Verified all node interfaces visually align with the standard schema via tests.
 
 ## Rejected Alternatives
 
-- **Extracting tokenization to `bridge.py` instead of `diffusion_processing.py`**: This was rejected because `bridge.py` is explicitly designed for agnostic framework conversion (PyTorch ↔ MLX), whereas tokenization is specific to the diffusion process. Dumping it there would violate single-responsibility.
+- Leaving the inference logic inline and abstracting just the tensor conversions was rejected because `Sam3Predictor` instantiation still represented heavy MLX logic explicitly forbidden in the `nodes/` domain.
 
 ## Follow-On Candidates
 
-- Consider extracting the heavy dictionary parsing out of the node wrappers (like unpacking `mlx_positive_conditioning`) and handling parameter validation directly inside `diffusion_processing.py` to make the UI wrappers even thinner.
+- Investigate unifying SAM models via the global model cache `get_or_load_model` instead of reinstantiating `Sam3Predictor` per inference if memory pressure arises during sequential batch operations.
