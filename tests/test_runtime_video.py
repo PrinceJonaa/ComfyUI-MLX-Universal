@@ -68,7 +68,8 @@ class TestRuntimeVideo(unittest.TestCase):
         # Setup mock process that fails immediately
         mock_process = MagicMock()
         mock_process.stdout.read.return_value = ""
-        mock_process.poll.return_value = 1  # Exit code 1
+        mock_process.poll.return_value = 1  # For while loop exit
+        mock_process.wait.return_value = 1  # Exit code 1
         mock_popen.return_value = mock_process
 
         with self.assertRaisesRegex(RuntimeError, "process failed with exit code 1"):

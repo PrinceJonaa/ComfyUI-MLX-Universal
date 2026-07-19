@@ -6,7 +6,7 @@ from typing import Any
 class MLXDecoder:
     @classmethod
     def INPUT_TYPES(s) -> dict:
-        return {"required": {"latent_image": ("LATENT",), "mlx_vae": ("mlx_vae",)}}
+        return {"required": {"latent_image": ("LATENT",), "mlx_vae": ("MLX_VAE",)}}
 
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "decode"
@@ -23,7 +23,7 @@ class MLXSampler:
     def INPUT_TYPES(s) -> dict:
         return {
             "required": {
-                "mlx_model": ("mlx_model",),
+                "mlx_model": ("MLX_MODEL",),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
                 "steps": ("INT", {"default": 4, "min": 1, "max": 10000}),
                 "cfg": (
@@ -37,7 +37,7 @@ class MLXSampler:
                         "tooltip": "Classifier-Free Guidance. Base Flux models often use 0, while Schnell/Dev vary.",
                     },
                 ),
-                "mlx_positive_conditioning": ("mlx_conditioning",),
+                "mlx_positive_conditioning": ("MLX_CONDITIONING",),
                 "latent_image": ("LATENT",),
                 "denoise": (
                     "FLOAT",
@@ -94,7 +94,7 @@ class MLXLoadFlux:
             }
         }
 
-    RETURN_TYPES = ("mlx_model", "mlx_vae", "mlx_conditioning")
+    RETURN_TYPES = ("MLX_MODEL", "MLX_VAE", "MLX_CONDITIONING")
     FUNCTION = "load_flux_model"
     CATEGORY = "MLX Universal/Loaders"
 
@@ -121,11 +121,11 @@ class MLXClipTextEncoder:
         return {
             "required": {
                 "text": ("STRING", {"multiline": True, "dynamicPrompts": True}),
-                "mlx_conditioning": ("mlx_conditioning", {"forceInput": True}),
+                "mlx_conditioning": ("MLX_CONDITIONING", {"forceInput": True}),
             }
         }
 
-    RETURN_TYPES = ("mlx_conditioning",)
+    RETURN_TYPES = ("MLX_CONDITIONING",)
     FUNCTION = "encode"
     CATEGORY = "MLX Universal/Diffusion"
 
@@ -138,7 +138,7 @@ class MLXClipTextEncoder:
 class MLXEncoder:
     @classmethod
     def INPUT_TYPES(s) -> dict:
-        return {"required": {"image": ("IMAGE",), "mlx_model": ("mlx_model",)}}
+        return {"required": {"image": ("IMAGE",), "mlx_model": ("MLX_MODEL",)}}
 
     RETURN_TYPES = ("LATENT",)
     RETURN_NAMES = ("latent_image",)
