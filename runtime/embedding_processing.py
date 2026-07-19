@@ -21,7 +21,7 @@ def generate_text_embedding(text: str, model_path: str) -> tuple:
     # Wait, the code reviewer noted: "Hugging Face tokenizers generally do not support 'mlx' as a valid argument for return_tensors."
     # Let's fix it by passing the raw string or using mx.array. We will use the approach standard for mlx_lm/mlx_embeddings.
 
-    if hasattr(tokenizer, "encode") and hasattr(tokenizer, "pad_token_id"):
+    if hasattr(tokenizer, "encode"):
         # standard HF tokenizer behavior fallback
         try:
             input_ids = tokenizer.encode(text, return_tensors="mlx")
@@ -30,8 +30,9 @@ def generate_text_embedding(text: str, model_path: str) -> tuple:
             input_ids_list = tokenizer.encode(text)
             input_ids = mx.array([input_ids_list])
     else:
-        # Just in case, mlx_embeddings actually patched encode to support "mlx" as per its docs
-        input_ids = tokenizer.encode(text, return_tensors="mlx")
+        raise ValueError(
+            "Expected a tokenizer with an encode method to process text embeddings but found an incompatible tokenizer object. Ensure the selected model is a valid text embedding model."
+        )
 
     # Generate embeddings
     outputs = model(input_ids)
