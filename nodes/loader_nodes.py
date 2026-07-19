@@ -85,7 +85,7 @@ class MLXApplyLoRA:
     FUNCTION = "apply_lora"
     CATEGORY = "MLX Universal/Loaders"
 
-    def apply_lora(self, mlx_model: LoadedMLXModel, adapter_path: str):
+    def apply_lora(self, mlx_model: LoadedMLXModel, adapter_path: str) -> tuple:
         if not adapter_path:
             return (mlx_model,)
 

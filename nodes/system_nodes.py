@@ -7,7 +7,7 @@ class MLXClearCache:
         return {"required": {}}
 
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
+    def IS_CHANGED(cls, **kwargs) -> float:
         # Prevents the workflow execution engine from aggressively caching nodes with no required inputs
         return float("NaN")
 
@@ -16,7 +16,7 @@ class MLXClearCache:
     RETURN_NAMES = ("status",)
     FUNCTION = "clear"
 
-    def clear(self):
+    def clear(self) -> tuple:
         before = cache_stats()
         clear_all_caches()
         after = cache_stats()
@@ -31,7 +31,7 @@ class MLXCacheStats:
         return {"required": {}}
 
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
+    def IS_CHANGED(cls, **kwargs) -> float:
         # Prevents the workflow execution engine from aggressively caching nodes with no required inputs
         return float("NaN")
 
@@ -40,7 +40,7 @@ class MLXCacheStats:
     RETURN_NAMES = ("stats",)
     FUNCTION = "stats"
 
-    def stats(self):
+    def stats(self) -> tuple:
         stats = cache_stats()
         return (str(stats),)
 
