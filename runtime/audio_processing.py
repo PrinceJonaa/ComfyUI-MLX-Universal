@@ -73,7 +73,7 @@ def execute_kokoro_tts(text: str, voice: str, speed: float) -> dict:
 
     from .bridge import mlx_to_torch
 
-    # Convert to mlx arrays if they aren't already, and evaluate explicitly to avoid lazy evaluation traps
+    # Evaluated eagerly here to force buffer allocation before cross-framework concatenation.
     mlx_chunks = [mx.array(c) for c in audio_chunks]
     mx.eval(*mlx_chunks)
     final_audio = mx.concatenate(mlx_chunks, axis=0)

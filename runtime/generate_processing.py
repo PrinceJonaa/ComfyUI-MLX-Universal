@@ -192,7 +192,7 @@ def execute_batch_image_description(
 
         results.append(response)
 
-        # explicitly evaluate arrays and drop references
+        # Evaluated eagerly here to prevent cross-batch memory leaks in unified memory when iterating over multiple images.
         mx.eval()
         mx.metal.clear_cache()
 
