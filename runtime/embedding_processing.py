@@ -39,7 +39,7 @@ def generate_text_embedding(text: str, model_path: str) -> tuple:
     # Extract the mean pooled and normalized embeddings
     text_embeds = outputs.text_embeds
 
-    # Explicitly evaluate the lazy array before bridging to PyTorch
+    # Evaluated eagerly here to prevent ComfyUI event loop deadlocks when PyTorch attempts to read uncomputed memory.
     mx.eval(text_embeds)
     print("Embedding generation complete.")
 
