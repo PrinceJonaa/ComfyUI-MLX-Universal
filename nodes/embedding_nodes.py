@@ -22,7 +22,7 @@ class MLXTextEmbedding:
     FUNCTION = "generate_embedding"
     CATEGORY = "MLX Universal/Embeddings"
 
-    def generate_embedding(self, text: str, model_path: str) -> tuple[torch.Tensor]:
+    def generate_embedding(self, text: str, model_path: str) -> tuple:
         from ..runtime.embedding_processing import generate_text_embedding
 
         return generate_text_embedding(text, model_path)

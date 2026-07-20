@@ -31,7 +31,10 @@ def generate_text_embedding(text: str, model_path: str) -> tuple:
             input_ids = mx.array([input_ids_list])
     else:
         # Just in case, mlx_embeddings actually patched encode to support "mlx" as per its docs
-        input_ids = tokenizer.encode(text, return_tensors="mlx")
+        try:
+            input_ids = tokenizer.encode(text, return_tensors="mlx")
+        except (TypeError, ValueError):
+            input_ids = mx.array([tokenizer.encode(text)])
 
     # Generate embeddings
     outputs = model(input_ids)
