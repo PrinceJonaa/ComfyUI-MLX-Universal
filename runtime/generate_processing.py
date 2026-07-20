@@ -168,6 +168,7 @@ def execute_batch_image_description(
         f"Describing batch of {len(pil_images)} images (max {max_tokens} tokens per image)..."
     )
 
+    # Iterate serially instead of batching to prevent unified memory spikes when loading multiple large image tensors into VRAM simultaneously.
     results = []
 
     for i, pil_img in enumerate(pil_images):
