@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from comfyui_mlx_universal.runtime.data_types import LoadedMLXModel
 from comfyui_mlx_universal.runtime.generate_processing import (
     execute_batch_image_description,
+    execute_batch_text_generation,
     execute_image_description,
     execute_text_generation,
 )
@@ -247,6 +248,32 @@ class TestRuntimeGenerate(unittest.TestCase):
         self.assertEqual(result, "first\n\n---\n\nsecond")
         self.assertEqual(mock_generate.call_count, 2)
         self.assertEqual(mock_apply_chat_template.call_count, 2)
+        self.assertEqual(mock_mx.metal.clear_cache.call_count, 2)
+
+    @patch("comfyui_mlx_universal.runtime.generate_processing.mx")
+    @patch("mlx_lm.generate", side_effect=["first_gen", "second_gen"])
+    @patch("mlx_lm.sample_utils.make_sampler", return_value="mock_sampler")
+    def test_execute_batch_text_generation(
+        self, mock_make_sampler, mock_generate, mock_mx
+    ):
+        mocked_model = self.get_mocked_model()
+        # Simulate missing chat_template
+        del mocked_model.processor.chat_template
+
+        result = execute_batch_text_generation(
+            mlx_model=mocked_model,
+            prompts=["prompt one", "prompt two"],
+            max_tokens=64,
+            temperature=0.5,
+            top_p=0.9,
+            seed=3,
+            enable_thinking=False,
+            thinking_budget=0,
+            draft_model=None,
+        )
+
+        self.assertEqual(result, "first_gen\n\n---\n\nsecond_gen")
+        self.assertEqual(mock_generate.call_count, 2)
         self.assertEqual(mock_mx.metal.clear_cache.call_count, 2)
 
 
