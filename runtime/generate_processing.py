@@ -193,7 +193,6 @@ def execute_batch_image_description(
         results.append(response)
 
         # explicitly evaluate arrays and drop references
-        mx.eval()
         mx.metal.clear_cache()
 
     print("Batch image description complete.")
