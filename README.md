@@ -44,7 +44,6 @@ The **ComfyUI MLX Universal Node Architecture** serves as a foundational runtime
 - [🚀 Setup & Installation](#-setup--installation)
 - [⚡ Core Capabilities](#-core-capabilities)
 - [🏗️ Architecture Map](#️-architecture-map)
-- [🗺️ Development Roadmap](#️-development-roadmap)
 - [⚠️ Technical Edge Cases](#️-technical-considerations--known-edge-cases)
 - [🤝 Contribution Guidelines](#-contribution-guidelines)
 
@@ -75,7 +74,8 @@ pip install -r requirements.txt
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **VAEs** | `DiffusionKit` | Standalone causal image VAE encode/decode nodes. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Video** | `mlx_video` | CLI subprocess wrappers supporting Wan2.x, LTX-2, and CogVideoX. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Segmentation** | `SAM3` | Open-vocabulary semantic segmentation and object detection. |
-| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Audio** | `mlx-whisper` | Native Whisper integration. |
+| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Audio** | `mlx-whisper` / `kokoro` | Native Whisper and Kokoro TTS integration. |
+| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Embeddings** | `mlx-embeddings` | Text embedding extraction. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Adapters** | `registry.py` | Safe, dynamic LoRA fusions injected directly into the unified memory pool. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **System** | `mx.metal` | Explicit cache eviction to protect against Mac swap-memory death. |
 
@@ -89,15 +89,19 @@ This repository abandons "mega-nodes" in favor of strict separation of concerns.
 graph TD
     subgraph ComfyUI Canvas
         UI_Load[MLX Load Model]
+        UI_DraftLoad[MLX Load Draft Model]
         UI_LoRA[MLX Apply LoRA]
         UI_GenText[MLX Generate Text]
+        UI_Embed[MLX Generate Text Embedding]
         UI_VLM[MLX Understand Image]
+        UI_VLM_Batch[MLX Batch Understand Image]
         UI_SAM[MLX Segment Image]
         UI_Vid[MLX Generate Video]
         UI_LoadFlux[MLX Load Flux Model from HF]
         UI_ClipEnc[MLX CLIP Text Encoder]
         UI_Diff[MLX Generate Image (Flux)]
         UI_Audio[MLX Transcribe Audio (Whisper)]
+        UI_Kokoro[MLX Generate Audio (Kokoro)]
         UI_Encode[MLX VAE Encode (Flux)]
         UI_Decode[MLX VAE Decode (Flux)]
         UI_Sys[MLX Clear Cache]
@@ -106,9 +110,12 @@ graph TD
 
     subgraph nodes/ [Frontend Nodes]
         UI_Load --> LN[loader_nodes.py]
+        UI_DraftLoad --> LN
         UI_LoRA --> LN
         UI_GenText --> GN[generate_nodes.py]
         UI_VLM --> GN
+        UI_VLM_Batch --> BN[batch_nodes.py]
+        UI_Embed --> EN[embedding_nodes.py]
         UI_SAM --> SN[sam_nodes.py]
         UI_Vid --> VN[video_nodes.py]
         UI_LoadFlux --> DN[diffusion_nodes.py]
@@ -117,6 +124,7 @@ graph TD
         UI_Encode --> DN
         UI_Decode --> DN
         UI_Audio --> AN[audio_nodes.py]
+        UI_Kokoro --> AN
         UI_Sys --> SysN[system_nodes.py]
         UI_Stats --> SysN
     end
@@ -138,24 +146,6 @@ graph TD
         Bridge -.-> Tensors(Torch/PIL <-> MLX Arrays)
     end
 ```
-
-<!-- ─────────────────────── DIVIDER ─────────────────────────── -->
-<img width="100%" alt="" src="https://capsule-render.vercel.app/api?type=rect&color=gradient&customColorList=6,11,20&height=3" />
-
-## 🗺️ Development Roadmap
-
-> We need community help to build the remaining modules to achieve the final vision.
-
-**Phase 1: Stabilization (Completed)**
-- [x] Unified pipelines for Text, Vision, Samplers, and Video.
-- [x] Safe Native LoRA integration.
-- [x] `registry.py` tracking and `bridge.py` conversions.
-
-**Phase 2: Expansion (Help Wanted!)**
-
-| Status | Target | Goal |
-|:---:|---|---|
-| ![WIP](https://img.shields.io/badge/○-WIP-555555?style=flat-square&labelColor=0d0d0d) | **SDXL / ControlNet** | Native image pipelines beyond base Flux. |
 
 <!-- ─────────────────────── DIVIDER ─────────────────────────── -->
 <img width="100%" alt="" src="https://capsule-render.vercel.app/api?type=rect&color=gradient&customColorList=6,11,20&height=3" />

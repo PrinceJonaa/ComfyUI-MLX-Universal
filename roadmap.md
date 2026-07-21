@@ -1,6 +1,6 @@
 # Roadmap — ComfyUI-MLX-Universal
 
-> Last curated: 2026-07-11 at commit fbb4f37
+> Last curated: 2026-07-21 at commit 9affdf7
 > This file reflects verified current state, not aspiration. Every entry has
 > supporting evidence in the codebase or commit history — no entry is here
 > on a guess.
@@ -13,6 +13,16 @@
 - Why it matters: High cyclomatic complexity creates monolithic, untestable functions. Breaking them down into modular mapping pipelines reduces the risk of regression during future updates.
 
 ## Planned
+
+### [RM-019] Add mlx_audio to requirements.txt
+- Status: Planned
+- Evidence: `runtime/model_loader.py` imports `mlx_audio` but it's missing from `requirements.txt`.
+- Why it matters: Prevents `ModuleNotFoundError` during setup and runtime for new users.
+
+### [RM-018] Fix no-op mx.eval() call in execute_batch_image_description
+- Status: Planned
+- Evidence: `runtime/generate_processing.py:196` calls `mx.eval()` without arguments, which is a no-op in MLX.
+- Why it matters: Fails to explicitly evaluate the batch iteration arrays, potentially causing lazy evaluation graph accumulation and OOM errors over long runs.
 
 ### [RM-016] Modularize model_io.py in diffusionkit
 - Status: Planned
