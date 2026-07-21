@@ -262,3 +262,31 @@ def load_embedding_model(model_path: str):
         return model, tokenizer
 
     return get_or_load_model(cache_key, _loader)
+
+def load_sd3_pipeline(model_version: str):
+    """
+    Loads an SD3 Pipeline model, downloading it if necessary, and tracks it via the registry.
+    """
+    import os
+
+    home_dir = os.path.expanduser("~")
+    formatted_filename = model_version.replace("/", "--")
+    folder_path = os.path.join(
+        home_dir, ".cache/huggingface/hub/models--" + formatted_filename
+    )
+
+    if os.path.exists(folder_path):
+        print("Found existing model folder, verifying download...")
+    else:
+        print("Model folder not found, downloading from HuggingFace... 🤗")
+
+    # Lazy import to keep MLX separation
+    from ..diffusionkit.mlx import DiffusionPipeline
+    from .registry import get_or_load_model
+
+    def _loader():
+        return DiffusionPipeline(
+            model_version=model_version, low_memory_mode=False, w16=True, a16=True
+        )
+
+    return get_or_load_model(f"sd3_{model_version}", _loader)

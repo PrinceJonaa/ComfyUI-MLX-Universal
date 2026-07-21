@@ -115,6 +115,15 @@ def encode_clip_text(mlx_conditioning: dict, text: str) -> tuple:
     clip_l_embeddings = clip_l_encoder(clip_tokens[[0], :])
     clip_pooled_output = clip_l_embeddings.pooled_output
 
+    clip_g_encoder: CLIPTextModel = mlx_conditioning.get("clip_g_model")
+    clip_g_tokenizer: Tokenizer = mlx_conditioning.get("clip_g_tokenizer")
+
+    if clip_g_encoder is not None and clip_g_tokenizer is not None:
+        clip_g_tokens = _tokenize(tokenizer=clip_g_tokenizer, text=text)
+        clip_g_embeddings = clip_g_encoder(clip_g_tokens[[0], :])
+        clip_pooled_output = mx.concatenate([clip_pooled_output, clip_g_embeddings.pooled_output], axis=-1)
+
+
     t5_tokens = _tokenize(tokenizer=t5_tokenizer, text=text)
     target_len = T5_MAX_LENGTH.get(model_name, 256)
 
