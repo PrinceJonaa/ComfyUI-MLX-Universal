@@ -38,6 +38,7 @@ def mlx_to_torch(mlx_tensor) -> torch.Tensor:
     mx.eval(mlx_tensor)
     if mlx_tensor.dtype == mx.bfloat16:
         mlx_tensor = mlx_tensor.astype(mx.float32)
+        # Explicit evaluation required because type casting creates a new uncomputed lazy array
         mx.eval(mlx_tensor)
         np_arr = np.array(mlx_tensor)
     else:
@@ -68,6 +69,7 @@ def mlx_to_latent(mlx_tensor) -> dict:
     mx.eval(mlx_tensor)
     if mlx_tensor.dtype == mx.bfloat16:
         mlx_tensor = mlx_tensor.astype(mx.float32)
+        # Explicit evaluation required because type casting creates a new uncomputed lazy array
         mx.eval(mlx_tensor)
         np_arr = np.array(mlx_tensor)
     else:

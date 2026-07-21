@@ -37,5 +37,5 @@ MLX is lazy. If your node computes a mask or an image, explicitly call `mx.eval(
 ## How to Add a New Modality
 1. Create a new file in the `nodes/` directory (e.g., `nodes/audio_nodes.py`).
 2. Write your thin wrapper node.
-3. Import your new mappings into the root `__init__.py` file dynamically.
+3. Import your new mappings into the root `__init__.py` file and update the mapping dictionaries.
 4. If your modality introduces new data payloads, add a `@dataclass` to `runtime/data_types.py`.
