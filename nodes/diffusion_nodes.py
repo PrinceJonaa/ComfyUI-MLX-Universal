@@ -115,6 +115,44 @@ class MLXLoadFlux:
         return (model, model.decoder, clip)
 
 
+
+class MLXLoadSD3:
+    @classmethod
+    def INPUT_TYPES(s) -> dict:
+        return {
+            "required": {
+                "model_version": (
+                    [
+                        "argmaxinc/mlx-stable-diffusion-3-medium",
+                        "sd3-8b-unreleased",
+                    ],
+                )
+            }
+        }
+
+    RETURN_TYPES = ("mlx_model", "mlx_vae", "mlx_conditioning")
+    FUNCTION = "load_sd3_model"
+    CATEGORY = "MLX Universal/Loaders"
+
+    def load_sd3_model(self, model_version: str) -> tuple:
+        from ..runtime.model_loader import load_sd3_pipeline
+
+        model = load_sd3_pipeline(model_version)
+
+        clip = {
+            "model_name": model_version,
+            "clip_l_model": model.clip_l,
+            "clip_l_tokenizer": model.tokenizer_l,
+            "clip_g_model": getattr(model, "clip_g", None),
+            "clip_g_tokenizer": getattr(model, "tokenizer_g", None),
+            "t5_model": model.t5_encoder,
+            "t5_tokenizer": model.t5_tokenizer,
+        }
+
+        print("Model successfully loaded.")
+        return (model, model.decoder, clip)
+
+
 class MLXClipTextEncoder:
     @classmethod
     def INPUT_TYPES(s) -> dict:
@@ -155,6 +193,7 @@ NODE_CLASS_MAPPINGS = {
     "MLXEncoder": MLXEncoder,
     "MLXClipTextEncoder": MLXClipTextEncoder,
     "MLXLoadFlux": MLXLoadFlux,
+    "MLXLoadSD3": MLXLoadSD3,
     "MLXSampler": MLXSampler,
     "MLXDecoder": MLXDecoder,
 }
@@ -163,6 +202,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "MLXEncoder": "MLX VAE Encode (Flux)",
     "MLXClipTextEncoder": "MLX CLIP Text Encoder",
     "MLXLoadFlux": "MLX Load Flux Model from HF",
+    "MLXLoadSD3": "MLX Load SD3 Model from HF",
     "MLXSampler": "MLX Generate Image (Flux)",
     "MLXDecoder": "MLX VAE Decode (Flux)",
 }
