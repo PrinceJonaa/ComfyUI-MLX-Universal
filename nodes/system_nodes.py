@@ -16,7 +16,7 @@ class MLXClearCache:
     RETURN_NAMES = ("status",)
     FUNCTION = "clear"
 
-    def clear(self):
+    def clear(self) -> tuple:
         before = cache_stats()
         clear_all_caches()
         after = cache_stats()
@@ -40,7 +40,7 @@ class MLXCacheStats:
     RETURN_NAMES = ("stats",)
     FUNCTION = "stats"
 
-    def stats(self):
+    def stats(self) -> tuple:
         stats = cache_stats()
         return (str(stats),)
 
