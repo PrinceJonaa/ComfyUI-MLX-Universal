@@ -76,6 +76,8 @@ pip install -r requirements.txt
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Video** | `mlx_video` | CLI subprocess wrappers supporting Wan2.x, LTX-2, and CogVideoX. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Segmentation** | `SAM3` | Open-vocabulary semantic segmentation and object detection. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Audio** | `mlx-whisper` | Native Whisper integration. |
+| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Audio TTS** | `Kokoro` | Native Kokoro integration. |
+| ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Embeddings** | `mlx-embeddings` | Text embedding generation. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **Adapters** | `registry.py` | Safe, dynamic LoRA fusions injected directly into the unified memory pool. |
 | ![Active](https://img.shields.io/badge/●-ACTIVE-7c3aed?style=flat-square&labelColor=0d0d0d) | **System** | `mx.metal` | Explicit cache eviction to protect against Mac swap-memory death. |
 
@@ -92,6 +94,9 @@ graph TD
         UI_LoRA[MLX Apply LoRA]
         UI_GenText[MLX Generate Text]
         UI_VLM[MLX Understand Image]
+        UI_BatchVLM[MLX Batch Understand Image]
+        UI_Embed[MLX Generate Text Embedding]
+        UI_TTS[MLX Generate Audio (Kokoro)]
         UI_SAM[MLX Segment Image]
         UI_Vid[MLX Generate Video]
         UI_LoadFlux[MLX Load Flux Model from HF]
@@ -109,6 +114,9 @@ graph TD
         UI_LoRA --> LN
         UI_GenText --> GN[generate_nodes.py]
         UI_VLM --> GN
+        UI_BatchVLM --> BN[batch_nodes.py]
+        UI_Embed --> EN[embedding_nodes.py]
+        UI_TTS --> AN[audio_nodes.py]
         UI_SAM --> SN[sam_nodes.py]
         UI_Vid --> VN[video_nodes.py]
         UI_LoadFlux --> DN[diffusion_nodes.py]
