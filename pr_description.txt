@@ -1,0 +1,17 @@
+## Hygiene Tasks Completed
+- Reviewed `pyproject.toml` and confirmed target type-checking strictness via `mypy` and `ruff`.
+- Scanned repository and identified type errors, addressing `B010` attribute assignments in `tests/test_helper.py` by converting `setattr()` back to direct assignment and ignoring the attr-defined error for mypy.
+- Patched `runtime/generate_processing.py` to prevent `NoneType` errors by verifying the `tokenizer` existence before checking `chat_template`.
+- Appended missing `.ruff_cache/` entry to `.gitignore` to prevent caching issues.
+- Enforced strict node wrapper cleanliness inside `nodes/loader_nodes.py` and `nodes/system_nodes.py` by enforcing Python `-> tuple:` return type annotations for `apply_lora`, `clear`, and `stats` to map correctly to ComfyUI's standard return behavior and meet MyPy requirements.
+
+## Specific Linters & Logic Rules Applied
+- Ruff `B010` (setattr attribute assignment replacements)
+- Mypy `attr-defined` (suppressed with `# type: ignore[attr-defined]` after `B010` resolution)
+- Type definitions enforced via architectural constraints (`-> tuple:` explicitly mapped to `FUNCTION`).
+
+## Verification
+- Clean output running `mypy .`
+- Clean output running `ruff check .`
+- Global & Node Tests successfully passing using `make test`.
+- Verified `make check` mega-loop functionality.

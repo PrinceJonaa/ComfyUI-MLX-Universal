@@ -29,3 +29,6 @@ htmlcov/
 .mypy_cache/
 .venv_test
 .venv2
+
+# Ruff cache
+.ruff_cache/
