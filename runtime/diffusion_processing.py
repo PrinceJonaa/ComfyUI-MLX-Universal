@@ -108,7 +108,7 @@ def encode_clip_text(mlx_conditioning: dict, text: str) -> tuple:
         t5_tokenizer: T5Tokenizer = mlx_conditioning["t5_tokenizer"]
     except (KeyError, TypeError, AttributeError):
         raise ValueError(
-            "Expected a valid MLX conditioning dictionary from an MLX Load Flux Model node + Invalid or missing conditioning input + Ensure the MLX Load Flux Model node is properly connected"
+            "Expected a valid MLX conditioning dictionary from an MLX Load Flux Model node but found an invalid or missing conditioning input. Ensure the MLX Load Flux Model node is properly connected."
         )
 
     clip_tokens = _tokenize(tokenizer=clip_l_tokenizer, text=text)
