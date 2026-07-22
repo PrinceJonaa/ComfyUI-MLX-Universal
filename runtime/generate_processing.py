@@ -24,6 +24,7 @@ def execute_text_generation(
     This logic has been extracted from the UI nodes to ensure proper separation
     of MLX background processing and ComfyUI interface objects.
     """
+    # explicit seeding at execution time prevents ComfyUI's global seed from being swallowed by MLX's internal PRNG state
     mx.random.seed(seed)
     import mlx_lm
     from mlx_lm.sample_utils import make_sampler
@@ -81,6 +82,7 @@ def execute_image_description(
     This logic has been extracted from the UI nodes to ensure proper separation
     of MLX background processing and ComfyUI interface objects.
     """
+    # explicit seeding at execution time prevents ComfyUI's global seed from being swallowed by MLX's internal PRNG state
     mx.random.seed(seed)
     import mlx_vlm
     from mlx_vlm.prompt_utils import apply_chat_template
@@ -139,6 +141,7 @@ def execute_batch_image_description(
     This logic has been extracted from the UI nodes to ensure proper separation
     of MLX background processing and ComfyUI interface objects.
     """
+    # explicit seeding at execution time prevents ComfyUI's global seed from being swallowed by MLX's internal PRNG state
     mx.random.seed(seed)
     import mlx_vlm
     from mlx_vlm.prompt_utils import apply_chat_template
