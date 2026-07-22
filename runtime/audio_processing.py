@@ -67,7 +67,9 @@ def execute_kokoro_tts(text: str, voice: str, speed: float) -> dict:
             audio_chunks.append(audio)
 
     if not audio_chunks:
-        raise ValueError("Kokoro TTS generated no audio for the given text.")
+        raise ValueError(
+            "Expected Kokoro TTS to generate an audio waveform but found none. This usually means the input text was empty or contained unprocessable characters. Try simplifying your text prompt."
+        )
 
     import mlx.core as mx
 

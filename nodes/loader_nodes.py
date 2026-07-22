@@ -125,7 +125,9 @@ class MLXDraftModelLoader:
 
     def load_model(self, model_path: str, model_family: str) -> tuple:
         if not model_path:
-            raise ValueError("Draft model path cannot be empty.")
+            raise ValueError(
+                "Expected a valid draft model path string but found an empty string. Please provide a valid Hugging Face repository ID or local directory path for the draft model."
+            )
 
         loaded = load_draft_model(model_path, model_family)
         return (loaded,)

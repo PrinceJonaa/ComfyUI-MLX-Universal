@@ -10,7 +10,13 @@ class MLXSAM3Predictor:
             "required": {
                 "mlx_model": ("MLX_MODEL",),
                 "image": ("IMAGE",),
-                "text_prompt": ("STRING", {"default": "a dog"}),
+                "text_prompt": (
+                    "STRING",
+                    {
+                        "default": "a dog",
+                        "tooltip": "Object or feature you want to segment (e.g., 'a dog', 'the background').",
+                    },
+                ),
                 "score_threshold": (
                     "FLOAT",
                     {

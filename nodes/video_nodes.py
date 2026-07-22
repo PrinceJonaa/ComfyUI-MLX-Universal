@@ -22,18 +22,44 @@ class MLXVideoGenerator:
                     },
                 ),
                 "negative_prompt": ("STRING", {"default": "blurry, low quality"}),
-                "width": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
-                "height": ("INT", {"default": 512, "min": 64, "max": 2048, "step": 64}),
+                "width": (
+                    "INT",
+                    {
+                        "default": 512,
+                        "min": 64,
+                        "max": 2048,
+                        "step": 64,
+                        "tooltip": "Width of the generated video frames.",
+                    },
+                ),
+                "height": (
+                    "INT",
+                    {
+                        "default": 512,
+                        "min": 64,
+                        "max": 2048,
+                        "step": 64,
+                        "tooltip": "Height of the generated video frames.",
+                    },
+                ),
                 "num_frames": (
                     "INT",
                     {
-                        "default": 16,
+                        "default": 8,
                         "min": 1,
                         "max": 500,
                         "tooltip": "Number of frames to generate. Lower this if you run out of unified memory.",
                     },
                 ),
-                "steps": ("INT", {"default": 30, "min": 1, "max": 200}),
+                "steps": (
+                    "INT",
+                    {
+                        "default": 30,
+                        "min": 1,
+                        "max": 200,
+                        "tooltip": "Number of denoising steps. Higher values take longer but improve quality.",
+                    },
+                ),
                 "guide_scale": (
                     "FLOAT",
                     {
@@ -44,7 +70,15 @@ class MLXVideoGenerator:
                         "tooltip": "Classifier-Free Guidance (CFG) scale. Higher values closely follow the prompt but may introduce artifacts.",
                     },
                 ),
-                "seed": ("INT", {"default": 42, "min": -1, "max": 2**32 - 1}),
+                "seed": (
+                    "INT",
+                    {
+                        "default": 42,
+                        "min": -1,
+                        "max": 2**32 - 1,
+                        "tooltip": "Random seed for reproducible generation. -1 for random.",
+                    },
+                ),
             },
             "optional": {
                 "image": ("IMAGE",),
