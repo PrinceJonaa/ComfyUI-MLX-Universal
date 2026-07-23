@@ -50,7 +50,7 @@ class DiffusionPipeline:
         self,
         w16: bool = False,
         shift: float = 1.0,
-        use_t5: bool = True,
+        use_t5: bool = True,  # noqa: ARG002
         model_version: str = "argmaxinc/mlx-stable-diffusion-3-medium",
         low_memory_mode: bool = True,
         a16: bool = False,
@@ -175,8 +175,8 @@ class DiffusionPipeline:
         if negative_text is not None:
             tokens += [tokenizer.tokenize(negative_text)]
         lengths = [len(t) for t in tokens]
-        N = max(lengths)
-        tokens = [t + [pad_token] * (N - len(t)) for t in tokens]
+        max_len = max(lengths)
+        tokens = [t + [pad_token] * (max_len - len(t)) for t in tokens]
         tokens = mx.array(tokens)
 
         return tokens
@@ -254,16 +254,16 @@ class DiffusionPipeline:
         logger.info(f"Seed: {seed}")
         mx.random.seed(seed)
 
-        x_T = self.get_empty_latent(*latent_size)
+        x_t = self.get_empty_latent(*latent_size)
         if input_latents is not None:
-            x_T = input_latents
-            x_T = self.latent_format.process_in(x_T)
+            x_t = input_latents
+            x_t = self.latent_format.process_in(x_t)
         elif image_path is None:
             denoise = 1.0
         else:
-            x_T = self.encode_image_to_latents(image_path, seed=seed)
-            x_T = self.latent_format.process_in(x_T)
-        noise = self.get_noise(seed, x_T)
+            x_t = self.encode_image_to_latents(image_path, seed=seed)
+            x_t = self.latent_format.process_in(x_t)
+        noise = self.get_noise(seed, x_t)
         sigmas = self.get_sigmas(self.sampler, num_steps)
         sigmas = sigmas[int(num_steps * (1 - denoise)) :]
         extra_args = {
@@ -272,7 +272,7 @@ class DiffusionPipeline:
             "pooled_conditioning": pooled_conditioning,
         }
         noise_scaled = self.sampler.noise_scaling(
-            sigmas[0], noise, x_T, self.max_denoise(sigmas)
+            sigmas[0], noise, x_t, self.max_denoise(sigmas)
         )
         latent, iter_time = sample_euler(
             CFGDenoiser(self), noise_scaled, sigmas, extra_args=extra_args
@@ -530,21 +530,21 @@ class DiffusionPipeline:
         img = Image.open(image_path)
 
         # Make sure image shape is divisible by 64
-        W, H = (dim - dim % 64 for dim in (img.width, img.height))
-        if W != img.width or H != img.height:
+        img_w, img_h = (dim - dim % 64 for dim in (img.width, img.height))
+        if img_w != img.width or img_h != img.height:
             logger.warning(
-                f"Warning: image shape is not divisible by 64, downsampling to {W}x{H}"
+                f"Warning: image shape is not divisible by 64, downsampling to {img_w}x{img_h}"
             )
-            img = img.resize((W, H), Image.LANCZOS)  # use desired downsampling filter
+            img = img.resize((img_w, img_h), Image.LANCZOS)  # use desired downsampling filter
 
         img = mx.array(np.array(img))
         img = (img[:, :, :3].astype(mx.float32) / 255) * 2 - 1.0
 
         return mx.expand_dims(img, axis=0)
 
-    def get_noise(self, seed, x_T):
+    def get_noise(self, seed, x_t):
         np.random.seed(seed)
-        noise = np.random.randn(*x_T.transpose(0, 3, 1, 2).shape)
+        noise = np.random.randn(*x_t.transpose(0, 3, 1, 2).shape)
         noise = mx.array(noise).transpose(0, 2, 3, 1)
         return noise
 
@@ -591,7 +591,7 @@ class FluxPipeline(DiffusionPipeline):
         self,
         w16: bool = False,
         shift: float = 1.0,
-        use_t5: bool = True,
+        use_t5: bool = True,  # noqa: ARG002
         model_version: str = "argmaxinc/mlx-FLUX.1-schnell",
         low_memory_mode: bool = True,
         a16: bool = False,
@@ -683,7 +683,7 @@ class CFGDenoiser(nn.Module):
         sigma,
         conditioning,
         cfg_weight: float = 7.5,
-        pooled_conditioning=None,
+        pooled_conditioning=None,  # noqa: ARG002
     ):
         if cfg_weight <= 0:
             logger.debug("CFG Weight disabled")

@@ -5,7 +5,7 @@ from typing import Any
 
 class MLXDecoder:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {"required": {"latent_image": ("LATENT",), "mlx_vae": ("mlx_vae",)}}
 
     RETURN_TYPES = ("IMAGE",)
@@ -20,7 +20,7 @@ class MLXDecoder:
 
 class MLXSampler:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {
             "required": {
                 "mlx_model": ("mlx_model",),
@@ -81,7 +81,7 @@ class MLXSampler:
 
 class MLXLoadFlux:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {
             "required": {
                 "model_version": (
@@ -117,7 +117,7 @@ class MLXLoadFlux:
 
 class MLXClipTextEncoder:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {
             "required": {
                 "text": ("STRING", {"multiline": True, "dynamicPrompts": True}),
@@ -137,7 +137,7 @@ class MLXClipTextEncoder:
 
 class MLXEncoder:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {"required": {"image": ("IMAGE",), "mlx_model": ("mlx_model",)}}
 
     RETURN_TYPES = ("LATENT",)

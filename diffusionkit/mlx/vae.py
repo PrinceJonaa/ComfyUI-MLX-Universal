@@ -18,9 +18,9 @@ logger = get_logger(__name__)
 
 
 def upsample_nearest(x, scale: int = 2):
-    B, H, W, C = x.shape
-    x = mx.broadcast_to(x[:, :, None, :, None, :], (B, H, scale, W, scale, C))
-    x = x.reshape(B, H * scale, W * scale, C)
+    b, h, w, c = x.shape
+    x = mx.broadcast_to(x[:, :, None, :, None, :], (b, h, scale, w, scale, c))
+    x = x.reshape(b, h * scale, w * scale, c)
 
     return x
 
@@ -38,18 +38,18 @@ class Attention(nn.Module):
         self.out_proj = nn.Linear(dims, dims)
 
     def __call__(self, x):
-        B, H, W, C = x.shape
+        b, h, w, c = x.shape
 
         y = self.group_norm(x)
 
-        queries = self.query_proj(y).reshape(B, H * W, C)
-        keys = self.key_proj(y).reshape(B, H * W, C)
-        values = self.value_proj(y).reshape(B, H * W, C)
+        queries = self.query_proj(y).reshape(b, h * w, c)
+        keys = self.key_proj(y).reshape(b, h * w, c)
+        values = self.value_proj(y).reshape(b, h * w, c)
 
         scale = 1 / math.sqrt(queries.shape[-1])
         scores = (queries * scale) @ keys.transpose(0, 2, 1)
         attn = mx.softmax(scores, axis=-1)
-        y = (attn @ values).reshape(B, H, W, C)
+        y = (attn @ values).reshape(b, h, w, c)
 
         y = self.out_proj(y)
         x = x + y

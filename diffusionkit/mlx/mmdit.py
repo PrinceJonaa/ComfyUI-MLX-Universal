@@ -528,7 +528,7 @@ class TransformerBlock(nn.Module):
         post_norm2_shift: Optional[mx.array] = None,
         post_norm2_residual_scale: Optional[mx.array] = None,
         post_mlp_scale: Optional[mx.array] = None,
-        **kwargs,
+        **kwargs,  # noqa: ARG002
     ):
         attention_out = self.attn.o_proj(sdpa_output)
         if self.parallel_mlp:
@@ -886,7 +886,7 @@ class RoPE(nn.Module):
 
         return text_and_image_positions
 
-    def rope(self, positions: mx.array, dim: int, theta: int = 10_000) -> mx.array:
+    def rope(self, positions: mx.array, dim: int, theta: int = 10_000) -> mx.array:  # noqa: ARG002
         def _rope_per_dim(positions, dim, theta):
             scale = mx.arange(0, dim, 2, dtype=mx.float32) / dim
             omega = 1.0 / (theta**scale)

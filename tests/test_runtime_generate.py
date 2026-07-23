@@ -118,7 +118,7 @@ class TestRuntimeGenerate(unittest.TestCase):
     def test_execute_image_description_no_draft_model(
         self,
         mock_tensor_to_pil,
-        mock_os_exists,
+        mock_os_exists,  # noqa: ARG002
         mock_apply_chat_template,
         mock_generate,
         mock_mx,
@@ -174,7 +174,7 @@ class TestRuntimeGenerate(unittest.TestCase):
     def test_execute_image_description_with_draft_model(
         self,
         mock_tensor_to_pil,
-        mock_os_exists,
+        mock_os_exists,  # noqa: ARG002
         mock_apply_chat_template,
         mock_generate,
         mock_mx,

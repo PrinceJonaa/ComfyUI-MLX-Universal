@@ -36,7 +36,7 @@ class BaseSampler(nn.Module):
         sigma = sigma.reshape(sigma.shape[:1] + (1,) * (model_output.ndim - 1))
         return model_input - model_output * sigma
 
-    def noise_scaling(self, sigma, noise, latent_image, max_denoise=False):
+    def noise_scaling(self, sigma, noise, latent_image, max_denoise=False):  # noqa: ARG002
         return sigma * noise + (1.0 - sigma) * latent_image
 
 

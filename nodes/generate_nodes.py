@@ -11,7 +11,7 @@ from ..runtime.generate_processing import (
 
 class MLXLMGenerateText:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
@@ -90,7 +90,7 @@ class MLXLMGenerateText:
 
 class MLXVLMDescribeImage:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),

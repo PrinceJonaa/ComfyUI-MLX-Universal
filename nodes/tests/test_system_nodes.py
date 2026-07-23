@@ -15,14 +15,14 @@ class TestMLXCacheStats(unittest.TestCase):
     def test_stats(self):
         # Dynamically import system_nodes using our test helper
         system_nodes = import_node_module("system_nodes")
-        MLXCacheStats = system_nodes.MLXCacheStats
+        mlx_cache_stats = system_nodes.MLXCacheStats
 
         # Patch cache_stats in the imported module namespace
         with patch.object(system_nodes, "cache_stats") as mock_cache_stats:
             mock_stats_data = {"model_count": 2, "draft_count": 1}
             mock_cache_stats.return_value = mock_stats_data
 
-            node = MLXCacheStats()
+            node = mlx_cache_stats()
             result = node.stats()
 
             mock_cache_stats.assert_called_once()

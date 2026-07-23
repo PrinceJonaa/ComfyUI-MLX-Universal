@@ -1,0 +1,16 @@
+[Fix] Code Health: Resolve mypy typing errors and ruff static analysis violations
+
+## Summary
+Resolved several static analysis issues identified by `mypy` and `ruff`.
+
+## Automated Hygiene Tasks Completed
+- Addressed `mypy` typing errors regarding mocked dynamic attributes and union types with `None` when dealing with `tokenizer.chat_template`.
+- Resolved `ruff` unused argument violations (ARG001, ARG002, ARG003) across test suites and core scripts by explicitly dropping them or using standard `# noqa: ARG00x` pragma directives when they must remain for ComfyUI's standard signature APIs.
+- Fixed `ruff` undefined variable violations (F821) by using consistent lowercase variable names from the shape unpacked tuples (e.g., matching `img_w`, `img_h` and correctly utilizing the `h`, `w` vars).
+- Renamed numerous one-letter uppercase variables to adhere to PEP-8 guidelines (e.g., renaming `W`, `H`, `B`, `C`, `N` to lowercase equivalents).
+- Fixed class method definitions inside `nodes/` by using `cls` instead of `s` and explicitly overriding `ruff` checks with `# noqa: N802` for mandatory ComfyUI conventions (like uppercase `INPUT_TYPES` and `IS_CHANGED`).
+
+## Verification
+- Verified fixes using `ruff check .`
+- Verified typing with `mypy .`
+- Ran standard unit tests `make test` which executed successfully without issues.

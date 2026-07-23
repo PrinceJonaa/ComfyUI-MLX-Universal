@@ -5,7 +5,7 @@ from ..runtime.sam_processing import process_sam3_result
 
 class MLXSAM3Predictor:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
@@ -50,7 +50,7 @@ class MLXSAM3Predictor:
             )
 
         pil_img = pil_images[0]
-        W, H = pil_img.size
+        img_w, img_h = pil_img.size
 
         predictor = Sam3Predictor(
             mlx_model.model, mlx_model.processor, score_threshold=score_threshold

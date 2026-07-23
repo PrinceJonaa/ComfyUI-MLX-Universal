@@ -28,9 +28,9 @@ def process_sam3_result(
             - individual_masks (torch.Tensor): A batch tensor of individual masks.
             - json_data (str): JSON string containing bounding boxes and confidence scores.
     """
-    W, H = pil_img.size
+    img_w, img_h = pil_img.size
     overlay = pil_img.copy()
-    draw_width = max(2, int(min(W, H) * 0.005))
+    draw_width = max(2, int(min(img_w, img_h) * 0.005))
 
     colors = [
         (255, 0, 0, 100),
@@ -46,7 +46,7 @@ def process_sam3_result(
     boxes_data = []
     raw_masks = result.masks
 
-    mask_rgba = np.zeros((H, W, 4), dtype=np.uint8)
+    mask_rgba = np.zeros((img_h, img_w, 4), dtype=np.uint8)
     draw = ImageDraw.Draw(overlay)
 
     for i in range(num_detections):
@@ -54,8 +54,8 @@ def process_sam3_result(
         box = result.boxes[i]
         x1, y1, x2, y2 = map(float, box)
         mask = np.array(raw_masks[i]).squeeze()
-        if mask.shape != (H, W):
-            mask_pil = Image.fromarray(mask.astype(np.uint8) * 255).resize((W, H))
+        if mask.shape != (img_h, img_w):
+            mask_pil = Image.fromarray(mask.astype(np.uint8) * 255).resize((img_w, img_h))
             mask = np.array(mask_pil) > 0
         else:
             mask = mask > 0
@@ -78,7 +78,7 @@ def process_sam3_result(
         combined_mask = torch.from_numpy(combined_mask_np).unsqueeze(0)
         individual_masks = torch.from_numpy(np.stack(masks_list).astype(np.float32))
     else:
-        combined_mask = torch.zeros((1, H, W), dtype=torch.float32)
-        individual_masks = torch.zeros((1, H, W), dtype=torch.float32)
+        combined_mask = torch.zeros((1, img_h, img_w), dtype=torch.float32)
+        individual_masks = torch.zeros((1, img_h, img_w), dtype=torch.float32)
 
     return out_image, combined_mask, individual_masks, json.dumps(boxes_data)
