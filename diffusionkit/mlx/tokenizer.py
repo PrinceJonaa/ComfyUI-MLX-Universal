@@ -3,7 +3,6 @@
 from typing import List
 
 import mlx.core as mx
-import numpy as np
 import regex
 from argmaxtools.utils import get_logger
 from transformers import AutoTokenizer, T5Config
@@ -156,5 +155,5 @@ class T5Tokenizer:
         tokens = self._tokenizer.convert_ids_to_tokens(t)
         return "".join(t.replace("▁", " " if with_sep else "") for t in tokens)
 
-    def tokenize(self, s: str) -> np.array:
+    def tokenize(self, s: str) -> List[int]:
         return [t.item() for t in self.encode(s)[0]]
