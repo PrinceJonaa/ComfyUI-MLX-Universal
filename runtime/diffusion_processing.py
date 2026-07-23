@@ -91,8 +91,8 @@ def _tokenize(tokenizer, text: str, negative_text: Optional[str] = None) -> mx.a
     if negative_text is not None:
         tokens += [tokenizer.tokenize(negative_text)]
     lengths = [len(t) for t in tokens]
-    N = max(lengths)
-    tokens = [t + [pad_token] * (N - len(t)) for t in tokens]
+    max_len = max(lengths)
+    tokens = [t + [pad_token] * (max_len - len(t)) for t in tokens]
     return mx.array(tokens)
 
 

@@ -40,7 +40,7 @@ class TestRuntimeAudio(unittest.TestCase):
     @patch("mlx.core.array")
     @patch("mlx.core.eval")
     def test_execute_kokoro_tts(
-        self, mock_eval, mock_array, mock_concatenate, mock_mlx_to_torch, mock_load
+        self, mock_eval, mock_array, mock_concatenate, mock_mlx_to_torch, mock_load  # noqa: ARG002
     ):
         mock_pipeline = MagicMock()
         mock_pipeline.return_value = [("a", "b", [1, 2, 3])]
@@ -67,9 +67,9 @@ class TestRuntimeAudio(unittest.TestCase):
     @patch("folder_paths.get_temp_directory", return_value="/tmp")
     def test_execute_audio_transcription_full(
         self,
-        mock_get_temp,
+        mock_get_temp,  # noqa: ARG002
         mock_remove,
-        mock_exists,
+        mock_exists,  # noqa: ARG002
         mock_sf_write,
         mock_transcribe,
         mock_track,

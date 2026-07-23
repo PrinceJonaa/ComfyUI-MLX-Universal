@@ -120,11 +120,11 @@ class MultiHeadAttention(nn.Module):
         values = self.value_proj(values)
 
         num_heads = self.num_heads
-        B, L, _ = queries.shape
-        _, S, _ = keys.shape
-        queries = queries.reshape(B, L, num_heads, -1).transpose(0, 2, 1, 3)
-        keys = keys.reshape(B, S, num_heads, -1).transpose(0, 2, 3, 1)
-        values = values.reshape(B, S, num_heads, -1).transpose(0, 2, 1, 3)
+        b, seq_len, _ = queries.shape
+        _, s, _ = keys.shape
+        queries = queries.reshape(b, seq_len, num_heads, -1).transpose(0, 2, 1, 3)
+        keys = keys.reshape(b, s, num_heads, -1).transpose(0, 2, 3, 1)
+        values = values.reshape(b, s, num_heads, -1).transpose(0, 2, 1, 3)
 
         if cache is not None:
             key_cache, value_cache = cache
@@ -137,7 +137,7 @@ class MultiHeadAttention(nn.Module):
             scores = scores + mask.astype(scores.dtype)
 
         scores = mx.softmax(scores.astype(mx.float32), axis=-1).astype(scores.dtype)
-        values_hat = (scores @ values).transpose(0, 2, 1, 3).reshape(B, L, -1)
+        values_hat = (scores @ values).transpose(0, 2, 1, 3).reshape(b, seq_len, -1)
         return self.out_proj(values_hat), (keys, values)
 
 
@@ -291,8 +291,8 @@ class TransformerDecoder(nn.Module):
             offset = 0
             cache = [None] * len(self.layers)
 
-        T = offset + x.shape[1]
-        pos_bias = self.relative_attention_bias(T, T, offset=offset)
+        t = offset + x.shape[1]
+        pos_bias = self.relative_attention_bias(t, t, offset=offset)
         if mask is not None:
             mask += pos_bias
         else:

@@ -7,7 +7,7 @@ from ..runtime.video_processing import execute_video_generation
 
 class MLXVideoGenerator:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {
             "required": {
                 "model_repo_or_dir": (

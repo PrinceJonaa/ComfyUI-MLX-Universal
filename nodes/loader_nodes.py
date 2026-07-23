@@ -4,7 +4,7 @@ from ..runtime.model_loader import load_draft_model, load_unified_mlx_model
 
 class MLXModelLoaderUnified:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {
             "required": {
                 "model_path": (
@@ -66,7 +66,7 @@ class MLXModelLoaderUnified:
 
 class MLXApplyLoRA:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
@@ -104,7 +104,7 @@ class MLXApplyLoRA:
 
 class MLXDraftModelLoader:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {
             "required": {
                 "model_path": (

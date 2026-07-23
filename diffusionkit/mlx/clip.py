@@ -80,8 +80,8 @@ class CLIPTextModel(nn.Module):
                 config.model_dims, config.projection_dim, bias=False
             )
 
-    def _get_mask(self, N, dtype):
-        indices = mx.arange(N)
+    def _get_mask(self, n, dtype):
+        indices = mx.arange(n)
         mask = indices[:, None] < indices[None]
         mask = mask.astype(dtype) * (
             -6e4 if (dtype == mx.bfloat16 or dtype == mx.float16) else -1e9
@@ -90,15 +90,15 @@ class CLIPTextModel(nn.Module):
 
     def __call__(self, x):
         # Extract some shapes
-        B, N = x.shape
+        b, n = x.shape
         eos_tokens = x.argmax(-1)
 
         # Compute the embeddings
         x = self.token_embedding(x)
-        x = x + self.position_embedding.weight[:N]
+        x = x + self.position_embedding.weight[:n]
 
         # Compute the features from the transformer
-        mask = self._get_mask(N, x.dtype)
+        mask = self._get_mask(n, x.dtype)
         hidden_states = []
         for layer in self.layers:
             x = layer(x, mask)

@@ -3,11 +3,11 @@ from ..runtime.registry import cache_stats, clear_all_caches
 
 class MLXClearCache:
     @classmethod
-    def INPUT_TYPES(cls) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {"required": {}}
 
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
+    def IS_CHANGED(cls, **kwargs):  # noqa: ARG003, N802
         # Prevents the workflow execution engine from aggressively caching nodes with no required inputs
         return float("NaN")
 
@@ -27,11 +27,11 @@ class MLXClearCache:
 
 class MLXCacheStats:
     @classmethod
-    def INPUT_TYPES(cls) -> dict:
+    def INPUT_TYPES(cls) -> dict:  # noqa: N802
         return {"required": {}}
 
     @classmethod
-    def IS_CHANGED(cls, **kwargs):
+    def IS_CHANGED(cls, **kwargs):  # noqa: ARG003, N802
         # Prevents the workflow execution engine from aggressively caching nodes with no required inputs
         return float("NaN")
 

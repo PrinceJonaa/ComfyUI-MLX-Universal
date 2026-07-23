@@ -96,7 +96,7 @@ MAX_LATENT_RESOLUTION = {
 LOCAL_SD3_CKPT = None
 
 
-def flux_state_dict_adjustments(state_dict, prefix="", hidden_size=3072, mlp_ratio=4):
+def flux_state_dict_adjustments(state_dict, prefix="", hidden_size=3072, mlp_ratio=4):  # noqa: ARG001
     state_dict = {
         k.replace("double_blocks", "multimodal_transformer_blocks"): v
         for k, v in state_dict.items()
