@@ -25,9 +25,9 @@ def image_psnr(reference: Image, proxy: Image) -> float:
     return 20 * np.log10((peak_signal + 1e-5) / (mse + 1e-10))
 
 
-def compute_psnr(reference: np.array, proxy: np.array) -> float:
+def compute_psnr(reference: np.ndarray, proxy: np.ndarray) -> float:
     """Peak-Signal-to-Noise-Ratio in dB between a reference
-    and a proxy np.array
+    and a proxy np.ndarray
     """
     assert reference.squeeze().shape == proxy.squeeze().shape, (
         f"{reference.shape} is incompatible with {proxy.shape}!"

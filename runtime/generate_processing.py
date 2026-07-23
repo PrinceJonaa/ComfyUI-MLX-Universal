@@ -29,10 +29,13 @@ def execute_text_generation(
     from mlx_lm.sample_utils import make_sampler
 
     tokenizer = mlx_model.processor
-    if hasattr(tokenizer, "chat_template") and tokenizer.chat_template is not None:
+    if (
+        hasattr(tokenizer, "chat_template")
+        and getattr(tokenizer, "chat_template") is not None
+    ):
         messages = [{"role": "user", "content": prompt}]
         # tokenize=False ensures the template returns a formatted string instead of token IDs, which mlx_lm.generate expects.
-        formatted_prompt = tokenizer.apply_chat_template(
+        formatted_prompt = getattr(tokenizer, "apply_chat_template")(
             messages, tokenize=False, add_generation_prompt=True
         )
     else:
