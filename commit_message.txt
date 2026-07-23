@@ -1,0 +1,14 @@
+[Feature] MLXBatchGenerateText: Add batch processing for LLMs
+
+## What This Fixes
+This PR introduces the missing feature of batch processing text generation via `mlx-lm`. Prior to this PR, users could only generate batch image descriptions (`MLXBatchVLMDescribeImage`), but standard text LLMs required external looping or complex workarounds to batch generate prompts.
+
+## Implementation
+1. **Runtime Layer (`runtime/generate_processing.py`)**: Adds a dedicated `execute_batch_text_generation` function that efficiently cycles through a list of prompts separated by a string delimiter, explicitly forcing MLX to evaluate memory (`mx.eval()`) and clearing cache (`mx.metal.clear_cache()`) between loop iterations to prevent cumulative OOM errors on large context batches.
+2. **Node Layer (`nodes/batch_nodes.py`)**: Introduces `MLXBatchLMGenerateText` wrapper. Implements input UI for prompts using a multi-line string combined with a custom `delimiter` (default `\n---\n`), mirroring batch VLM design.
+3. **Tests (`tests/test_batch_nodes.py`, `tests/test_runtime_generate.py`)**: Adds unit tests ensuring safe routing and execution flow.
+
+## Verification
+- Added mock tests pass in the sandbox environment.
+- Code style and complexity constraints hold (verified via `make test` and `make check`).
+- The new frontend node complies strictly with ComfyUI specifications and the `ComfyUI-MLX-Universal` design constraints (cache registry and architectural UI split).
