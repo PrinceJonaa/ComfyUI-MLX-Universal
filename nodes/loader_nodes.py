@@ -4,7 +4,7 @@ from ..runtime.model_loader import load_draft_model, load_unified_mlx_model
 
 class MLXModelLoaderUnified:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:
         return {
             "required": {
                 "model_path": (
@@ -66,7 +66,7 @@ class MLXModelLoaderUnified:
 
 class MLXApplyLoRA:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),
@@ -85,7 +85,7 @@ class MLXApplyLoRA:
     FUNCTION = "apply_lora"
     CATEGORY = "MLX Universal/Loaders"
 
-    def apply_lora(self, mlx_model: LoadedMLXModel, adapter_path: str):
+    def apply_lora(self, mlx_model: LoadedMLXModel, adapter_path: str) -> tuple:
         if not adapter_path:
             return (mlx_model,)
 
@@ -104,7 +104,7 @@ class MLXApplyLoRA:
 
 class MLXDraftModelLoader:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:
         return {
             "required": {
                 "model_path": (
