@@ -5,7 +5,7 @@ from ..runtime.sam_processing import process_sam3_result
 
 class MLXSAM3Predictor:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),

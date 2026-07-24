@@ -1,6 +1,6 @@
 class MLXWhisperTranscribe:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:
         return {
             "required": {
                 "audio": ("AUDIO",),
@@ -37,7 +37,7 @@ class MLXWhisperTranscribe:
 
 class MLXKokoroTTS:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:
         return {
             "required": {
                 "text": (

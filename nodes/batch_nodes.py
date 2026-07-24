@@ -8,7 +8,7 @@ from ..runtime.generate_processing import execute_batch_image_description
 
 class MLXBatchVLMDescribeImage:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:
         return {
             "required": {
                 "mlx_model": ("MLX_MODEL",),

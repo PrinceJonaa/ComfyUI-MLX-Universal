@@ -17,13 +17,19 @@ Apple Silicon uses Unified Memory. If you load a 14B VLM without tracking it, yo
 ```python
 # BAD
 import mlx_vlm
+
 model, processor = mlx_vlm.load("mlx-community/model")
 ```
 **DO** this:
 ```python
 # GOOD
 from ..runtime.registry import get_or_load_model
-def _loader(): return mlx_vlm.load("model_path")
+
+
+def _loader():
+    return mlx_vlm.load("model_path")
+
+
 loaded = get_or_load_model("my_unique_key", _loader)
 ```
 

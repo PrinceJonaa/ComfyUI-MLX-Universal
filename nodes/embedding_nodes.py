@@ -3,7 +3,7 @@ import torch
 
 class MLXTextEmbedding:
     @classmethod
-    def INPUT_TYPES(s) -> dict:
+    def INPUT_TYPES(cls) -> dict:
         return {
             "required": {
                 "text": ("STRING", {"multiline": True, "default": "I like reading"}),
